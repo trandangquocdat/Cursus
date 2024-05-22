@@ -7,11 +7,9 @@ import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin("*")
@@ -31,4 +29,16 @@ public class AuthenticationController {
         LoginResDto newAcoount = authenticationService.login(account);
         return ResponseEntity.ok(newAcoount);
     }
+
+    @PutMapping("/verifyAccount")
+    public ResponseEntity<String> verifyAccount(@RequestParam String email,
+                                                @RequestParam String otp) {
+        return new ResponseEntity<>(authenticationService.verifyAccount(email, otp), HttpStatus.OK);
+    }
+    @GetMapping("/regenerateOtp")
+    public ResponseEntity<String> regenerateOtp(@RequestParam String email) {
+        return new ResponseEntity<>(authenticationService.regenerateOtp(email), HttpStatus.OK);
+    }
+
+
 }
