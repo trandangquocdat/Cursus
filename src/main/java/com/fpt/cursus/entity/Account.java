@@ -32,7 +32,7 @@ public class Account implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
     @Enumerated(EnumType.STRING)
-    private AccountStatus status;
+    private AccountStatus status = AccountStatus.INACTIVE;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
