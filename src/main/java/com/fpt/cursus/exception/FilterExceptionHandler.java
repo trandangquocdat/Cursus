@@ -1,6 +1,6 @@
 package com.fpt.cursus.exception;
 
-import com.fpt.cursus.exception.exceptions.AuthenticationException;
+import com.fpt.cursus.exception.exceptions.AuthException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +22,6 @@ public class FilterExceptionHandler implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException authException) throws IOException, ServletException {
-        resolver.resolveException(request, response, null, new AuthenticationException("Access Deny"));
+        resolver.resolveException(request, response, null, new AuthException("Từ chối truy cập"));
     }
 }
