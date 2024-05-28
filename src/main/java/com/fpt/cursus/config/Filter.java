@@ -1,7 +1,7 @@
 package com.fpt.cursus.config;
 
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.exception.exceptions.AuthenticationException;
+import com.fpt.cursus.exception.exceptions.AuthException;
 import com.fpt.cursus.repository.AccountRepo;
 import com.fpt.cursus.util.TokenHandler;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -40,17 +40,17 @@ public class Filter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }else{
             if(token == null){
-                resolver.resolveException(request, response, null, new AuthenticationException("Empty Token"));
+                resolver.resolveException(request, response, null, new AuthException("Empty Token"));
                 return;
             }
             String username;
             try{
                 username = tokenHandler.getInfoByToken(token);
             }catch (SignatureException e){
-                resolver.resolveException(request, response, null, new AuthenticationException(e.getMessage()));
+                resolver.resolveException(request, response, null, new AuthException(e.getMessage()));
                 return;
             }catch (ExpiredJwtException e){
-                resolver.resolveException(request, response, null, new AuthenticationException(e.getMessage()));
+                resolver.resolveException(request, response, null, new AuthException(e.getMessage()));
                 return;
             }
             Account account = accountRepo.findAccountByUsername(username);

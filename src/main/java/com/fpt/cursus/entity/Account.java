@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fpt.cursus.enums.AccountStatus;
 import com.fpt.cursus.enums.Role;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,14 +20,12 @@ import java.util.Collection;
 public class Account implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(unique = true, nullable = false)
+    private long id;
     private String username;
-    private String avatar;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String fullName;
-    @Column(unique = true, nullable = false)
+    @Email
     private String email;
     private String phone;
     @Enumerated(EnumType.STRING)

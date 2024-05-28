@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Component
 public class TokenHandler {
-    private final String SECRET_KEY = "skillforge";
+    private final String SECRET_KEY = "cursus";
     //    1s => 1000ms
     //    private final UUID EXPIRATION = 1 * 60 * 1000;
     private final long EXPIRATION = 1 * 24 * 60 * 60 * 1000;
@@ -17,7 +17,6 @@ public class TokenHandler {
     public String generateToken(Account account) {
         Date now = new Date(); // get current time
         Date expirationDate = new Date(now.getTime() + EXPIRATION);
-
         String token = Jwts.builder().setSubject(account.getUsername()).setIssuedAt(now).setExpiration(expirationDate).signWith(SignatureAlgorithm.HS512, SECRET_KEY).compact();
         return token;
     }
