@@ -1,6 +1,6 @@
 package com.fpt.cursus.enums;
 
-public enum AccountStatus {
+public enum UserStatus {
     INACTIVE,
     ACTIVE,
     DELETED,

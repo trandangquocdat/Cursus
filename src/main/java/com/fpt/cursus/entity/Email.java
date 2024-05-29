@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class Mail {
+public class Email {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

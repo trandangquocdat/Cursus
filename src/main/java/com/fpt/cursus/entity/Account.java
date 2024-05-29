@@ -1,7 +1,7 @@
 package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fpt.cursus.enums.AccountStatus;
+import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -31,7 +31,7 @@ public class Account implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
     @Enumerated(EnumType.STRING)
-    private AccountStatus status = AccountStatus.INACTIVE;
+    private UserStatus status = UserStatus.INACTIVE;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
