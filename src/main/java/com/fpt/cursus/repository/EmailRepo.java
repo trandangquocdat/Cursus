@@ -11,4 +11,6 @@ public interface EmailRepo extends JpaRepository<Email, Long> {
     Optional<Email> findByEmail(String email);
     Email findMailByEmail(String email);
 
+    Email findByEmailAndType(String email, String type);
+
 }
