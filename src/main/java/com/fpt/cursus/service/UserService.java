@@ -1,13 +1,16 @@
 package com.fpt.cursus.service;
 
+import com.fpt.cursus.dto.ChangePasswordDto;
 import com.fpt.cursus.dto.LoginReqDto;
 import com.fpt.cursus.dto.LoginResDto;
 import com.fpt.cursus.dto.RegisterReqDto;
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.entity.Mail;
-import com.fpt.cursus.enums.AccountStatus;
+import com.fpt.cursus.entity.Email;
+import com.fpt.cursus.enums.UserStatus;
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
-import com.fpt.cursus.repository.MailRepo;
+import com.fpt.cursus.repository.EmailRepo;
 import com.fpt.cursus.util.AccountUtil;
 import com.fpt.cursus.util.EmailUtil;
 import com.fpt.cursus.util.OtpUtil;
@@ -26,11 +29,11 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Service
-public class AuthService {
+public class UserService {
     @Autowired
     private AccountRepo accountRepo;
     @Autowired
-    private MailRepo mailRepo;
+    private EmailRepo emailRepo;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -47,20 +50,20 @@ public class AuthService {
     public Account register(RegisterReqDto registerReqDTO) {
         // Validate email
         if (!emailUtil.isValidEmail(registerReqDTO.getEmail())) {
-            throw new IllegalArgumentException("Email không hợp lệ.");
+            throw new AppException(ErrorCode.EMAIL_INVALID);
         }
         // Validate username
         if (accountRepo.existsByUsername(registerReqDTO.getUsername()))
-            throw new RuntimeException("Người dùng đã tồn tại trong hệ thống.");
+            throw new AppException(ErrorCode.USER_EXISTS);
         // Validate email
         if (accountRepo.existsByEmail(registerReqDTO.getEmail()))
-            throw new RuntimeException("Email đã tồn tại trong hệ thống.");
+            throw new AppException(ErrorCode.EMAIL_EXISTS);
         // Send OTP
         String otp = otpUtil.generateOtp();
         try {
             emailUtil.sendOtpEmail(registerReqDTO.getEmail(), otp);
         } catch (Exception e) {
-            throw new RuntimeException("Không thể gửi email. Vui lòng thử lại sau.");
+            throw new AppException(ErrorCode.EMAIL_CAN_NOT_SEND);
         }
         // Create account
         Account account = new Account();
@@ -71,14 +74,14 @@ public class AuthService {
         account.setFullName(registerReqDTO.getFullName());
         account.setRole(registerReqDTO.getRole());
         account.setPhone(registerReqDTO.getPhone());
-        account.setStatus(AccountStatus.INACTIVE);
+        account.setStatus(UserStatus.INACTIVE);
         Account newAccount = accountRepo.save(account);
         // Create mail
-        Mail accountMail = new Mail();
-        accountMail.setEmail(registerReqDTO.getEmail());
-        accountMail.setOtp(otp);
-        accountMail.setOtpGeneratedTime(LocalDateTime.now());
-        mailRepo.save(accountMail);
+        Email accountEmail = new Email();
+        accountEmail.setEmail(registerReqDTO.getEmail());
+        accountEmail.setOtp(otp);
+        accountEmail.setOtpGeneratedTime(LocalDateTime.now());
+        emailRepo.save(accountEmail);
         return newAccount;
     }
 
@@ -89,8 +92,8 @@ public class AuthService {
 
             Account account = (Account) authentication.getPrincipal();
 
-            if (!account.getStatus().equals(AccountStatus.ACTIVE))
-                throw new RuntimeException("Tài khoản chưa xác thực email");
+            if (!account.getStatus().equals(UserStatus.ACTIVE))
+                throw new AppException(ErrorCode.EMAIL_UNAUTHENTICATED);
 
             LoginResDto loginResDto = new LoginResDto();
             loginResDto.setToken(tokenHandler.generateToken(account));
@@ -102,21 +105,21 @@ public class AuthService {
             return loginResDto;
         } catch (Exception e) {
             if (e instanceof BadCredentialsException)
-                throw new RuntimeException("Mật khẩu không chính xác ");
+                throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);
             else
-                throw new InternalAuthenticationServiceException(e.getMessage());
+                throw new AppException(ErrorCode.USER_EXISTS);
         }
     }
 
     public String verifyAccount(String email, String otp) {
 
         Account account = accountRepo.findByEmail(email).orElseThrow(()
-                -> new RuntimeException("Không tìm thấy email: " + email));
-        Mail userMail = mailRepo.findMailByEmail(email);
+                -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Email userEmail = emailRepo.findMailByEmail(email);
 
-        if (Duration.between(userMail.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (1 * 60)) {
-            if (userMail.getOtp().equals(otp)) {
-                account.setStatus(AccountStatus.ACTIVE);
+        if (Duration.between(userEmail.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (1 * 24 * 60 * 60)) {
+            if (userEmail.getOtp().equals(otp)) {
+                account.setStatus(UserStatus.ACTIVE);
                 accountRepo.save(account);
                 return "Xác thực thành công";
             } else {
@@ -125,11 +128,10 @@ public class AuthService {
         } else {
             return "Mã xác thực đã hết hiệu lực ";
         }
-
     }
 
     public String regenerateOtp(String email) {
-        Mail userMail = mailRepo.findByEmail(email).orElseThrow(()
+        Email userEmail = emailRepo.findByEmail(email).orElseThrow(()
                 -> new RuntimeException("Không tìm thấy người dùng có email:  " + email));
         String otp = otpUtil.generateOtp();
         try {
@@ -137,18 +139,43 @@ public class AuthService {
         } catch (MessagingException e) {
             throw new RuntimeException("Vui lòng thử lại ");
         }
-        userMail.setOtp(otp);
-        userMail.setOtpGeneratedTime(LocalDateTime.now());
-        mailRepo.save(userMail);
+        userEmail.setOtp(otp);
+        userEmail.setOtpGeneratedTime(LocalDateTime.now());
+        emailRepo.save(userEmail);
         return "Đã gửi mã xác thực. Vui lòng xác thực trong vòng 1 phút.";
     }
 
     public Account deleteAccount(String username) {
         Account account = accountRepo.findByUsername(username).orElseThrow(()
                 -> new RuntimeException("Không tìm thấy người dùng có email: " + username));
-        account.setStatus(AccountStatus.DELETED);
+        account.setStatus(UserStatus.DELETED);
         accountRepo.save(account);
         return account;
     }
+    public String changePassword(ChangePasswordDto changePasswordDto) {
+        Account account = accountUtil.getCurrentAccount();
+        if (account != null) {
+            if (!passwordEncoder.matches(changePasswordDto.getOldPassword(), account.getPassword())) {
+                return "Mật khẩu không chính xác ";
+            }
+
+            // Step 2: Check that new password is different from current password
+            if (passwordEncoder.matches(changePasswordDto.getNewPassword(), account.getPassword())) {
+                return "Mật khẩu mới không được trùng với mật khẩu hiện tại. ";
+            }
+
+            // Step 3: Confirm that new password matches confirmation password
+            if (!changePasswordDto.getNewPassword().equals(changePasswordDto.getConfirmNewPassword())) {
+                return "Mật khẩu không trùng khớp";
+            }
+            // Update password
+            account.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+            accountRepo.save(account);
+
+            return "Mật khẩu đã thay đổi";
+        }
+        return "Không tìm thấy người dùng";
+    }
+
 
 }

@@ -1,5 +1,6 @@
 package com.fpt.cursus.exception;
 
+import com.fpt.cursus.dto.ApiRes;
 import com.fpt.cursus.exception.exceptions.AuthException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,18 +12,30 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class AuthExceptionHandler {
     @ExceptionHandler(AuthException.class)
-    public ResponseEntity<?> duplicate(AuthException exception) {
-        return new ResponseEntity<String>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ApiRes> duplicate(AuthException exception) {
+        ApiRes apiRes = new ApiRes();
+        apiRes.setStatus(false);
+        apiRes.setMessage(exception.getMessage());
+        apiRes.setCode(HttpStatus.UNAUTHORIZED.value());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 
     @ExceptionHandler(InternalAuthenticationServiceException.class)
-    public ResponseEntity<?> handleException(InternalAuthenticationServiceException exception) {
-        return new ResponseEntity<String>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ApiRes> handleException(InternalAuthenticationServiceException exception) {
+        ApiRes apiRes = new ApiRes();
+        apiRes.setStatus(false);
+        apiRes.setMessage(exception.getMessage());
+        apiRes.setCode(HttpStatus.UNAUTHORIZED.value());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<?> handleException(AccessDeniedException exception) {
-        return new ResponseEntity<String>("Từ chối truy cập", HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ApiRes> handleException(AccessDeniedException exception) {
+        ApiRes apiRes = new ApiRes();
+        apiRes.setStatus(false);
+        apiRes.setMessage("Từ chối truy cập");
+        apiRes.setCode(HttpStatus.UNAUTHORIZED.value());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 
 }
