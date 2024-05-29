@@ -18,7 +18,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/authentication/register")
+    @PostMapping("/register")
     public ApiRes<Account> register(@RequestBody @Valid RegisterReqDto account) {
         ApiRes<Account> apiRes = new ApiRes<>();
         Account newAccount = userService.register(account);
@@ -29,7 +29,7 @@ public class UserController {
         return apiRes;
     }
 
-    @PostMapping("/authentication/login")
+    @PostMapping("/login")
     public ApiRes<LoginResDto> login(@RequestBody @Valid LoginReqDto account) {
         ApiRes<LoginResDto> apiRes = new ApiRes<>();
         LoginResDto newAccount = userService.login(account);
@@ -47,21 +47,33 @@ public class UserController {
         apiRes.setStatus(true);
         apiRes.setCode(HttpStatus.OK.value());
         apiRes.setMessage(userService.verifyAccount(email, otp));
-
         return apiRes;
     }
     @PatchMapping("/regenerateOtp")
-    public ResponseEntity<String> regenerateOtp(@RequestParam String email) {
-        return new ResponseEntity<>(userService.regenerateOtp(email), HttpStatus.OK);
+    public ApiRes<String> regenerateOtp(@RequestParam String email) {
+        ApiRes<String> apiRes = new ApiRes<>();
+        apiRes.setStatus(true);
+        apiRes.setCode(HttpStatus.OK.value());
+        apiRes.setMessage(userService.regenerateOtp(email));
+        return apiRes;
     }
-    @DeleteMapping("/deleteAccount")
+    @DeleteMapping("/delete-account") //
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> deleteAccount(@RequestParam String email) {
-        return new ResponseEntity<>(userService.deleteAccount(email), HttpStatus.OK);
+    public ApiRes<String> deleteAccount(@RequestParam String email) {
+        ApiRes<String> apiRes = new ApiRes<>();
+        apiRes.setStatus(true);
+        apiRes.setCode(HttpStatus.OK.value());
+        apiRes.setMessage(userService.deleteAccount(email));
+        return apiRes;
     }
+
     @PatchMapping("/changePassword")
-    public ResponseEntity<String> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
-        return new ResponseEntity<>(userService.changePassword(changePasswordDto), HttpStatus.OK);
+    public ApiRes<String> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
+        ApiRes<String> apiRes = new ApiRes<>();
+        apiRes.setStatus(true);
+        apiRes.setCode(HttpStatus.OK.value());
+        apiRes.setMessage(userService.changePassword(changePasswordDto));
+        return apiRes;
     }
 
 }

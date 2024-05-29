@@ -15,5 +15,6 @@ public class Email {
     @Column(unique = true, nullable = false)
     private String email;
     private String otp;
+    private String type;
     private LocalDateTime otpGeneratedTime;
 }

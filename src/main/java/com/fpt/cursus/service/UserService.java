@@ -61,7 +61,7 @@ public class UserService {
         // Send OTP
         String otp = otpUtil.generateOtp();
         try {
-            emailUtil.sendOtpEmail(registerReqDTO.getEmail(), otp);
+            emailUtil.sendOtpEmail(registerReqDTO.getEmail(), otp); // chay rieng // dat ten email khac
         } catch (Exception e) {
             throw new AppException(ErrorCode.EMAIL_CAN_NOT_SEND);
         }
@@ -75,7 +75,7 @@ public class UserService {
         account.setRole(registerReqDTO.getRole());
         account.setPhone(registerReqDTO.getPhone());
         account.setStatus(UserStatus.INACTIVE);
-        Account newAccount = accountRepo.save(account);
+        Account newAccount = accountRepo.save(account); // try catch
         // Create mail
         Email accountEmail = new Email();
         accountEmail.setEmail(registerReqDTO.getEmail());
@@ -145,12 +145,12 @@ public class UserService {
         return "Đã gửi mã xác thực. Vui lòng xác thực trong vòng 1 phút.";
     }
 
-    public Account deleteAccount(String username) {
+    public String deleteAccount(String username) {
         Account account = accountRepo.findByUsername(username).orElseThrow(()
                 -> new RuntimeException("Không tìm thấy người dùng có email: " + username));
         account.setStatus(UserStatus.DELETED);
         accountRepo.save(account);
-        return account;
+        return "Deleted successfully";
     }
     public String changePassword(ChangePasswordDto changePasswordDto) {
         Account account = accountUtil.getCurrentAccount();
