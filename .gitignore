@@ -49,3 +49,6 @@ build/
 
 # Ignore environment files
 .env
+
+mvnw
+mvnw.cmd
