@@ -50,5 +50,6 @@ build/
 # Ignore environment files
 .env
 
+.mvn/
 mvnw
 mvnw.cmd
