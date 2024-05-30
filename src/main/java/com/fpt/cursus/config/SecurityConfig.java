@@ -46,7 +46,7 @@ public class SecurityConfig {
     @Bean
 
     public UserDetailsService userDetailsService() {
-        return username -> accountRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Account not found !!!!!!!"));
+        return username -> accountRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Account not found"));
     }
     @Bean
     public AuthenticationProvider authenticationProvider() {
