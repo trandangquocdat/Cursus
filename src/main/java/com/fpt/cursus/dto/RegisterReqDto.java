@@ -1,6 +1,7 @@
 package com.fpt.cursus.dto;
 
 import com.fpt.cursus.enums.Role;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -9,21 +10,27 @@ import org.hibernate.validator.constraints.UniqueElements;
 
 @Data
 public class RegisterReqDto {
-    @NotEmpty(message = "Vui lòng nhập username")
-    @NotBlank (message = "Vui lòng không điền khoảng trắng trong username")
+    @NotEmpty(message = "Please input username")
+    @NotBlank (message = "Please don't leave BLANK in username")
     private String username;
-    @NotEmpty(message = "Vui lòng nhập password")
-    @NotBlank (message = "Vui lòng không điền khoảng trắng trong password")
+
+    @NotEmpty(message = "Please input password")
+    @NotBlank (message = "Please don't leave BLANK in password")
     private String password;
-    @NotEmpty(message = "Vui lòng nhập email")
-    @NotBlank(message = "Vui lòng không điền khoảng trắng trong email")
+
+    @NotEmpty(message = "Please input email")
+    @NotBlank(message = "Please don't leave BLANK in email")
+    @Email(message = "Please input valid email")
     private String email;
 
-    @NotEmpty (message = "Vui lòng nhập fullname")
-    @Size(max = 200, message = "Vui lòng nhập dưới 200 kí tự")
+    @NotEmpty (message = "Please input fullname")
+    @Size(max = 200, message = "Fullname must be less than 200 characters")
     private String fullName;
-    @NotEmpty
-    @NotBlank(message = "Vui lòng không điền khoảng trắng trong số điện thoại ")
+
+    @NotEmpty(message = "Please input phone")
+    @NotBlank(message = "Please don't leave BLANK in phone")
+
     private String phone;
+
     private Role role;
 }

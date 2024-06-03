@@ -24,7 +24,7 @@ public class UserController {
         Account newAccount = userService.register(account);
         apiRes.setCode(HttpStatus.CREATED.value());
         apiRes.setStatus(true);
-        apiRes.setMessage("Đăng ký thành công. Vui lòng kiểm tra email để hoàn thành xác nhận tài khoản.");
+        apiRes.setMessage("Register successfully. Please check your email to verify your account");
         apiRes.setResult(newAccount);
         return apiRes;
     }
@@ -36,44 +36,28 @@ public class UserController {
         apiRes.setCode(HttpStatus.OK.value());
         apiRes.setStatus(true);
         apiRes.setResult(newAccount);
-        apiRes.setMessage("Đăng nhập thành công");
+        apiRes.setMessage("Login successfully");
         return apiRes;
     }
 
-    @PutMapping("/verifyAccount")
-    public ApiRes<String> verifyAccount(@RequestParam String email,
+    @PatchMapping("/verify-account")
+    public ApiRes<?> verifyAccount(@RequestParam String email,
                                                 @RequestParam String otp) {
-        ApiRes<String> apiRes = new ApiRes<>();
-        apiRes.setStatus(true);
-        apiRes.setCode(HttpStatus.OK.value());
-        apiRes.setMessage(userService.verifyAccount(email, otp));
-        return apiRes;
+        return userService.verifyAccount(email, otp);
     }
-    @PatchMapping("/regenerateOtp")
-    public ApiRes<String> regenerateOtp(@RequestParam String email) {
-        ApiRes<String> apiRes = new ApiRes<>();
-        apiRes.setStatus(true);
-        apiRes.setCode(HttpStatus.OK.value());
-        apiRes.setMessage(userService.regenerateOtp(email));
-        return apiRes;
+    @PutMapping("/regenerate-otp")
+    public ApiRes<?> regenerateOtp(@RequestParam String email) {
+        return userService.regenerateOtp(email);
     }
     @DeleteMapping("/delete-account") //
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ApiRes<String> deleteAccount(@RequestParam String email) {
-        ApiRes<String> apiRes = new ApiRes<>();
-        apiRes.setStatus(true);
-        apiRes.setCode(HttpStatus.OK.value());
-        apiRes.setMessage(userService.deleteAccount(email));
-        return apiRes;
+    public ApiRes<?> deleteAccount(@RequestParam String username) {
+        return userService.deleteAccount(username);
     }
 
-    @PatchMapping("/changePassword")
-    public ApiRes<String> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
-        ApiRes<String> apiRes = new ApiRes<>();
-        apiRes.setStatus(true);
-        apiRes.setCode(HttpStatus.OK.value());
-        apiRes.setMessage(userService.changePassword(changePasswordDto));
-        return apiRes;
+    @PatchMapping("/change-password")
+    public ApiRes<?> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
+        return userService.changePassword(changePasswordDto);
     }
 
 }

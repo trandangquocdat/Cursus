@@ -7,12 +7,11 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class Email {
+public class Otp {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique = true, nullable = false)
     private String email;
     private String otp;
     private String type;

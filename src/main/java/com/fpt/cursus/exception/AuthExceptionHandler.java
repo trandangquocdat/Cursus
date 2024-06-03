@@ -33,7 +33,7 @@ public class AuthExceptionHandler {
     public ResponseEntity<ApiRes> handleException(AccessDeniedException exception) {
         ApiRes apiRes = new ApiRes();
         apiRes.setStatus(false);
-        apiRes.setMessage("Từ chối truy cập");
+        apiRes.setMessage("Access denied");
         apiRes.setCode(HttpStatus.UNAUTHORIZED.value());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }

@@ -22,6 +22,6 @@ public class FilterExceptionHandler implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException authException) throws IOException, ServletException {
-        resolver.resolveException(request, response, null, new AuthException("Từ chối truy cập"));
+        resolver.resolveException(request, response, null, new AuthException("Access Denied"));
     }
 }
