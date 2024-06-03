@@ -1,8 +1,6 @@
 HELP.md
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+target/*
+/target
 
 ### STS ###
 .apt_generated
@@ -31,3 +29,21 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore Docker build artifacts
+**/target/
+**/out/
+
+# Ignore Docker volumes
+**/volumes/
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+*.bak
+*.swp
+
+# Ignore environment files
+.env
