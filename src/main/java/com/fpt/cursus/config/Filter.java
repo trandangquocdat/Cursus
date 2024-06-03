@@ -36,7 +36,7 @@ public class Filter extends OncePerRequestFilter {
         String token = getToken(request);
         String uri = request.getRequestURI();
         if (uri.contains("login") || uri.contains("register") || uri.contains("swagger-ui") || uri.contains("v3")
-                || uri.contains("verifyAccount") || uri.contains("regenerateOtp")) {
+                || uri.contains("verify-account") || uri.contains("regenerate-otp") ) {
             filterChain.doFilter(request, response);
         }else{
             if(token == null){

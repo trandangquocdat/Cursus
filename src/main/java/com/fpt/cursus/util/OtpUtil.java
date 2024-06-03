@@ -2,6 +2,7 @@ package com.fpt.cursus.util;
 
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
@@ -10,7 +11,6 @@ import java.util.Random;
 public class OtpUtil {
     @Autowired
     EmailUtil emailUtil;
-
     public String generateOtp() {
         Random random = new Random();
         int randomNumber = random.nextInt(999999);
