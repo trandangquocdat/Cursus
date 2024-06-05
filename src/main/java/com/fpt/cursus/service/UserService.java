@@ -8,6 +8,7 @@ import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
 import com.fpt.cursus.repository.OtpRepo;
+import com.fpt.cursus.service.kafka.EmailProducer;
 import com.fpt.cursus.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class UserService {
     @Autowired
     private EmailUtil emailUtil;
     @Autowired
-    private OtpProducer otpProducer;
+    private EmailProducer emailProducer;
     @Autowired
     private Regex regex;
 
@@ -49,7 +50,8 @@ public class UserService {
             throw new AppException(ErrorCode.PHONE_NOT_VALID);
         }
         String otp = otpUtil.generateOtp();
-        otpProducer.sendOtpEmail(registerReqDTO.getEmail(), otp);
+//        otpProducer.sendOtpEmail(registerReqDTO.getEmail(), otp);
+        emailProducer.sendOtpEmail("service-topic", registerReqDTO.getEmail(), otp);
         Account account = new Account();
         account.setUsername(registerReqDTO.getUsername());
         account.setPassword(passwordEncoder.encode(registerReqDTO.getPassword()));
@@ -109,7 +111,7 @@ public class UserService {
             otpRepo.deleteOldOtps(email,expiryTime);
             String otp = otpUtil.generateOtp();
             try {
-                otpProducer.sendOtpEmail(email, otp);
+                emailProducer.sendOtpEmail("service-topic", email, otp);
                 var apiRes = new ApiRes<>();
                 apiRes.setCode(HttpStatus.OK.value());
                 apiRes.setStatus(true);
@@ -159,6 +161,30 @@ public class UserService {
             return apiRes;
         }
         throw new AppException(ErrorCode.USER_NOT_FOUND);
+    }
+
+    public ApiRes<?> resetPassword(String email, String otp) {
+
+        Account account = accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Otp userOtp = otpRepo.findMailByEmail(email);
+        emailProducer.sendOtpEmail("service-topic-fp", email, otp);
+        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (2 * 60)) {
+            if (userOtp.getOtp().equals(otp)) {
+
+                LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
+                otpRepo.deleteOldOtps(email,expiryTime);
+                var apiRes = new ApiRes<>();
+                apiRes.setCode(HttpStatus.OK.value());
+                apiRes.setStatus(true);
+                apiRes.setMessage("Verified account successfully");
+
+                return apiRes;
+            } else {
+                throw new AppException(ErrorCode.OTP_INVALID);
+            }
+        } else {
+            throw new AppException(ErrorCode.OTP_EXPIRED);
+        }
     }
 
 
