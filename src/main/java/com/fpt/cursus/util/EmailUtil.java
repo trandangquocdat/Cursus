@@ -1,10 +1,10 @@
 package com.fpt.cursus.util;
+
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,16 +23,16 @@ public class EmailUtil {
     }
 
     public void sendOtpEmail(String email, String otp) throws MessagingException {
-        String subject = "Comfirm OTP";
+        String subject = "[Cursus] Email verification";
         String content = """
                 <div>
                   Dear %s,<br>
-                  If you want to comfirm OTP, please
-                  <a href="http://localhost:8080/verifyAccount?email=%s&otp=%s" target="_blank"> Click here</a>
+                  If you want to verify your email, please
+                  <a href="http://localhost:8080/verify-account?email=%s&otp=%s" target="_blank"> Click here</a>
                   <br><br>
                               <div style="border-top:1px solid #eaeaea; padding-top:10px;">
                                 Best Regards,<br>
-                                Cursus<br>
+                                Cursus team<br>
                               </div>
                 </div>
                 """.formatted(email, email, otp);
@@ -40,20 +40,20 @@ public class EmailUtil {
         sendEmail(email, subject, content);
     }
 
-    public void sendPasswordResetEmail(String email, String resetLink) throws MessagingException {
+    public void sendPasswordResetEmail(String email, String otp) throws MessagingException {
         String subject = "Reset Password";
         String content = """
                 <div>
                   Dear %s,<br>
                   If you want to reset password, please
-                  <a href="%s" target="_blank"> click here</a>
+                  <a href="http://localhost:8080/verify-account?email=%s&otp=%s" target="_blank"> Click here</a>
                     <br><br>
                               <div style="border-top:1px solid #eaeaea; padding-top:10px;">
                                 Best Regards,<br>
-                                Cursus<br>
+                                Cursus team<br>
                               </div>
                 </div>
-                """.formatted(email, resetLink);
+                """.formatted(email, email, otp);
 
         sendEmail(email, subject, content);
     }

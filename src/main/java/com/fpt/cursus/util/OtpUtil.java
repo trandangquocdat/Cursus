@@ -1,10 +1,7 @@
 package com.fpt.cursus.util;
 
-import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-
 import java.util.Random;
 
 @Component
@@ -14,11 +11,11 @@ public class OtpUtil {
     public String generateOtp() {
         Random random = new Random();
         int randomNumber = random.nextInt(999999);
-        String output = Integer.toString(randomNumber);
+        StringBuilder output = new StringBuilder(Integer.toString(randomNumber));
         while (output.length() < 6) {
-            output = "0" + output;
+            output.insert(0, "0");
         }
-        return output;
+        return output.toString();
     }
 
 

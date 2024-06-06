@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.kafka.annotation.EnableKafka;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
 @OpenAPIDefinition(info = @Info(title = "Cursus API", version = "1.0",
@@ -21,7 +22,7 @@ import org.springframework.kafka.annotation.EnableKafka;
                 @Extension(name = "securityLevel", properties = @ExtensionProperty(name = "internal", value = "high"))
         }))
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
-@EnableKafka
+@EnableAsync
 public class CursusApplication {
 
     public static void main(String[] args) {

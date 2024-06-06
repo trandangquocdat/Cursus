@@ -27,16 +27,16 @@ public class Filter extends OncePerRequestFilter {
     @Qualifier("handlerExceptionResolver")
     private HandlerExceptionResolver resolver;
     @Autowired
-    TokenHandler tokenHandler;
+    private TokenHandler tokenHandler;
     @Autowired
-    AccountRepo accountRepo;
+    private AccountRepo accountRepo;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = getToken(request);
         String uri = request.getRequestURI();
         if (uri.contains("login") || uri.contains("register") || uri.contains("swagger-ui") || uri.contains("v3")
-                || uri.contains("verify-account") || uri.contains("regenerate-otp") ) {
+                || uri.contains("verify-account") || uri.contains("generate-refresh-token") || uri.contains("refresh-access-token") ) {
             filterChain.doFilter(request, response);
         }else{
             if(token == null){
@@ -46,10 +46,7 @@ public class Filter extends OncePerRequestFilter {
             String username;
             try{
                 username = tokenHandler.getInfoByToken(token);
-            }catch (SignatureException e){
-                resolver.resolveException(request, response, null, new AuthException(e.getMessage()));
-                return;
-            }catch (ExpiredJwtException e){
+            }catch (SignatureException | ExpiredJwtException e){
                 resolver.resolveException(request, response, null, new AuthException(e.getMessage()));
                 return;
             }
@@ -63,8 +60,7 @@ public class Filter extends OncePerRequestFilter {
 
     public String getToken(HttpServletRequest request){
         try{
-            String token = request.getHeader("Authorization").split(" ")[1];
-            return token;
+            return request.getHeader("Authorization").split(" ")[1];
         }catch(Exception e){
             return null;
         }

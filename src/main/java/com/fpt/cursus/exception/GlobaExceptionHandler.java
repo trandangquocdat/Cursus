@@ -3,8 +3,8 @@ package com.fpt.cursus.exception;
 import com.fpt.cursus.dto.ApiRes;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
+import com.fpt.cursus.util.ApiResUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,40 +13,26 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @ControllerAdvice
 public class GlobaExceptionHandler {
-
+    @Autowired
+    private ApiResUtil apiResUtil;
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiRes> handleRuntimeException(Exception exception) {
-        ApiRes apiRes = new ApiRes();
-        apiRes.setStatus(false);
-        apiRes.setMessage(ErrorCode.UNCATEGORIZED_ERROR.getMessage());
-        apiRes.setCode(ErrorCode.UNCATEGORIZED_ERROR.getCode());
+    public ResponseEntity<?> handleRuntimeException(Exception exception) {
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, ErrorCode.UNCATEGORIZED_ERROR.getCode(), ErrorCode.UNCATEGORIZED_ERROR.getMessage(), null);
         return ResponseEntity.status(ErrorCode.UNCATEGORIZED_ERROR.getCode()).body(apiRes);
     }
     @ExceptionHandler(AppException.class)
-    public ResponseEntity<ApiRes> handleAppException(AppException exception) {
+    public ResponseEntity<?> handleAppException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
-        ApiRes apiRes = new ApiRes();
-        apiRes.setStatus(false);
-        apiRes.setMessage(errorCode.getMessage());
-        apiRes.setCode(errorCode.getCode());
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, errorCode.getCode(), errorCode.getMessage(), null);
         return ResponseEntity.status(exception.getErrorCode().getCode()).body(apiRes);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiRes> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
-        ApiRes apiRes = new ApiRes();
-        apiRes.setStatus(false);
-        apiRes.setCode(HttpStatus.BAD_REQUEST.value());
-
+    public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
         String exceptionMessage = exception.getMessage();
-        String field = null;
         String detailMessage = null;
-
         if (exceptionMessage != null) {
             int detailStart = exceptionMessage.indexOf("Detail:") + 8;
             int detailEnd = exceptionMessage.indexOf("]", detailStart);
@@ -54,25 +40,22 @@ public class GlobaExceptionHandler {
                 detailMessage = exceptionMessage.substring(detailStart, detailEnd);
             }
         }
-
-        apiRes.setMessage( detailMessage);
-
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), detailMessage, null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiRes> handleValidation(MethodArgumentNotValidException exception) {
-        ApiRes apiRes = new ApiRes();
-        apiRes.setStatus(false);
+    public ResponseEntity<?> handleValidation(MethodArgumentNotValidException exception) {
 
+        String message = null;
         FieldError fieldError = exception.getBindingResult().getFieldError();
         if (fieldError != null) {
-            apiRes.setMessage(infoFieldError(fieldError));
+            message = infoFieldError(fieldError);
         } else {
-            apiRes.setMessage("Not defined error");
+            message = "Not defined error";
         }
 
-        apiRes.setCode(HttpStatus.BAD_REQUEST.value());
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), message, null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
 

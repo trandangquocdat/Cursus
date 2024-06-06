@@ -3,6 +3,7 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.dto.ApiRes;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.util.AccountUtil;
+import com.fpt.cursus.util.ApiResUtil;
 import com.fpt.cursus.util.TokenHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,23 +18,19 @@ public class TokenController {
     private TokenHandler tokenHandler;
     @Autowired
     private AccountUtil accountUtil;
-    @GetMapping("/refresh-token")
-    public ApiRes<String> getRefreshToken() {
+    @Autowired
+    private ApiResUtil apiResUtil;
+
+    @GetMapping("/generate-refresh-token")
+    public ApiRes<?> getRefreshToken() {
         Account account = accountUtil.getCurrentAccount();
-        ApiRes<String> apiRes = new ApiRes<>();
-        apiRes.setCode(HttpStatus.OK.value());
-        apiRes.setStatus(true);
-        apiRes.setResult(tokenHandler.generateRefreshToken(account));
-        apiRes.setMessage("Get refresh token successfully");
-        return apiRes;
+        String message = "Get refresh token successfully";
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), message, tokenHandler.generateRefreshToken(account));
     }
-    @PutMapping("/refresh-token")
-    public ApiRes<String> refreshToken(@RequestParam String refreshToken) {
-        ApiRes<String> apiRes = new ApiRes<>();
-        apiRes.setCode(HttpStatus.OK.value());
-        apiRes.setStatus(true);
-        apiRes.setResult(tokenHandler.refreshAccessToken(refreshToken));
-        apiRes.setMessage("Refresh token successfully");
-        return apiRes;
+
+    @PutMapping("/refresh-access-token")
+    public ApiRes<?> refreshToken(@RequestParam String refreshToken) {
+        String message = "Refresh token successfully";
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), message, tokenHandler.refreshAccessToken(refreshToken));
     }
 }

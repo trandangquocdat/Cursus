@@ -2,14 +2,17 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.*;
 import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.service.OtpService;
 import com.fpt.cursus.service.UserService;
+import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @CrossOrigin("*")
@@ -17,47 +20,53 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private OtpService otpService;
+    @Autowired
+    private ApiResUtil apiResUtil;
 
     @PostMapping("/register")
-    public ApiRes<Account> register(@RequestBody @Valid RegisterReqDto account) {
-        ApiRes<Account> apiRes = new ApiRes<>();
+    public ApiRes<?>  register(@RequestBody @Valid RegisterReqDto account) {
         Account newAccount = userService.register(account);
-        apiRes.setCode(HttpStatus.CREATED.value());
-        apiRes.setStatus(true);
-        apiRes.setMessage("Register successfully. Please check your email to verify your account");
-        apiRes.setResult(newAccount);
-        return apiRes;
+        String otp = otpService.generateOtp();
+        otpService.sendOtpEmail(account.getEmail(),otp);
+        otpService.saveOtp(account.getEmail(),otp);
+        String successMessage = "Register successfully. Please check your email to verify your account.";
+        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,newAccount);
     }
 
     @PostMapping("/login")
-    public ApiRes<LoginResDto> login(@RequestBody @Valid LoginReqDto account) {
-        ApiRes<LoginResDto> apiRes = new ApiRes<>();
+    public ApiRes<?>  login(@RequestBody @Valid LoginReqDto account) {
         LoginResDto newAccount = userService.login(account);
-        apiRes.setCode(HttpStatus.OK.value());
-        apiRes.setStatus(true);
-        apiRes.setResult(newAccount);
-        apiRes.setMessage("Login successfully");
-        return apiRes;
+        String successMessage = "Login successfully.";
+        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,newAccount);
     }
 
     @PatchMapping("/verify-account")
-    public ApiRes<?> verifyAccount(@RequestParam String email,
-                                                @RequestParam String otp) {
-        return userService.verifyAccount(email, otp);
+    public ApiRes<?>  verifyAccount(@RequestParam String email, @RequestParam String otp) {
+        userService.verifyAccount(email, otp);
+        String successMessage = "Verify account successfully. You can now login with your email and password.";
+        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
     }
     @PutMapping("/regenerate-otp")
-    public ApiRes<?> regenerateOtp(@RequestParam String email) {
-        return userService.regenerateOtp(email);
+    public ApiRes<?>  regenerateOtp(@RequestParam String email) {
+        userService.regenerateOtp(email);
+        String successMessage = "Regenerate OTP successfully. Please check your email to verify your account.";
+        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
     }
-    @DeleteMapping("/delete-account") //
+    @DeleteMapping("/delete-account")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ApiRes<?> deleteAccount(@RequestParam String username) {
-        return userService.deleteAccount(username);
+        userService.deleteAccount(username);
+        String successMessage = "Delete account successfully.";
+        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
     }
 
     @PatchMapping("/change-password")
-    public ApiRes<?> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
-        return userService.changePassword(changePasswordDto);
+    public ApiRes<?>  changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
+        userService.changePassword(changePasswordDto);
+        String successMessage = "Change password successfully.";
+        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
     }
 
 }

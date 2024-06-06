@@ -2,6 +2,8 @@ package com.fpt.cursus.exception;
 
 import com.fpt.cursus.dto.ApiRes;
 import com.fpt.cursus.exception.exceptions.AuthException;
+import com.fpt.cursus.util.ApiResUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -11,30 +13,23 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class AuthExceptionHandler {
+    @Autowired
+    private ApiResUtil apiResUtil;
     @ExceptionHandler(AuthException.class)
-    public ResponseEntity<ApiRes> duplicate(AuthException exception) {
-        ApiRes apiRes = new ApiRes();
-        apiRes.setStatus(false);
-        apiRes.setMessage(exception.getMessage());
-        apiRes.setCode(HttpStatus.UNAUTHORIZED.value());
+    public ResponseEntity<?> duplicate(AuthException exception) {
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.UNAUTHORIZED.value(), exception.getMessage(),null );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 
     @ExceptionHandler(InternalAuthenticationServiceException.class)
-    public ResponseEntity<ApiRes> handleException(InternalAuthenticationServiceException exception) {
-        ApiRes apiRes = new ApiRes();
-        apiRes.setStatus(false);
-        apiRes.setMessage(exception.getMessage());
-        apiRes.setCode(HttpStatus.UNAUTHORIZED.value());
+    public ResponseEntity<?> handleException(InternalAuthenticationServiceException exception) {
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.UNAUTHORIZED.value(), exception.getMessage(),null );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiRes> handleException(AccessDeniedException exception) {
-        ApiRes apiRes = new ApiRes();
-        apiRes.setStatus(false);
-        apiRes.setMessage("Access denied");
-        apiRes.setCode(HttpStatus.UNAUTHORIZED.value());
+    public ResponseEntity<?> handleException(AccessDeniedException exception) {
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.UNAUTHORIZED.value(), "Access denied",null );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 

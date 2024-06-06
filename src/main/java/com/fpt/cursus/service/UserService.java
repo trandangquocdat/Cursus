@@ -8,10 +8,11 @@ import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
 import com.fpt.cursus.repository.OtpRepo;
-import com.fpt.cursus.service.kafka.EmailProducer;
 import com.fpt.cursus.util.*;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class UserService {
@@ -41,17 +43,15 @@ public class UserService {
     @Autowired
     private EmailUtil emailUtil;
     @Autowired
-    private EmailProducer emailProducer;
-    @Autowired
     private Regex regex;
+    @Autowired
+    private OtpService otpService;
+
 
     public Account register(RegisterReqDto registerReqDTO) {
         if (!regex.isPhoneValid(registerReqDTO.getPhone())) {
             throw new AppException(ErrorCode.PHONE_NOT_VALID);
         }
-        String otp = otpUtil.generateOtp();
-//        otpProducer.sendOtpEmail(registerReqDTO.getEmail(), otp);
-        emailProducer.sendOtpEmail("service-topic", registerReqDTO.getEmail(), otp);
         Account account = new Account();
         account.setUsername(registerReqDTO.getUsername());
         account.setPassword(passwordEncoder.encode(registerReqDTO.getPassword()));
@@ -62,6 +62,8 @@ public class UserService {
         account.setStatus(UserStatus.INACTIVE);
         return accountRepo.save(account);
     }
+
+
 
     public LoginResDto login(LoginReqDto loginReqDto) {
         try {
@@ -81,23 +83,16 @@ public class UserService {
         }
     }
 
-    public ApiRes<?> verifyAccount(String email, String otp) {
+    public void verifyAccount(String email, String otp) {
 
         Account account = accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         Otp userOtp = otpRepo.findMailByEmail(email);
-
         if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (2 * 60)) {
             if (userOtp.getOtp().equals(otp)) {
                 account.setStatus(UserStatus.ACTIVE);
                 accountRepo.save(account);
                 LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
-                otpRepo.deleteOldOtps(email,expiryTime);
-                var apiRes = new ApiRes<>();
-                apiRes.setCode(HttpStatus.OK.value());
-                apiRes.setStatus(true);
-                apiRes.setMessage("Verified account successfully");
-
-                return apiRes;
+                otpRepo.deleteOldOtps(email, expiryTime);
             } else {
                 throw new AppException(ErrorCode.OTP_INVALID);
             }
@@ -106,38 +101,28 @@ public class UserService {
         }
     }
 
-        public ApiRes<?> regenerateOtp(String email) {
-            LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
-            otpRepo.deleteOldOtps(email,expiryTime);
-            String otp = otpUtil.generateOtp();
-            try {
-                emailProducer.sendOtpEmail("service-topic", email, otp);
-                var apiRes = new ApiRes<>();
-                apiRes.setCode(HttpStatus.OK.value());
-                apiRes.setStatus(true);
-                apiRes.setMessage("Regenerate otp successfully");
-                return apiRes;
-            } catch (RuntimeException e) {
-                throw new RuntimeException("Please try again later");
-            }
+    public void regenerateOtp(String email) {
+        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
+        otpRepo.deleteOldOtps(email, expiryTime);
+        String otp = String.valueOf(otpService.generateOtp());
+        try {
+            emailUtil.sendOtpEmail(email, otp);
+            otpService.saveOtp(email, otp);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.EMAIL_CAN_NOT_SEND);
         }
+    }
 
-    public ApiRes<?> deleteAccount(String username) {
+    public void deleteAccount(String username) {
         Account account = accountRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Account not found with email: " + username));
         account.setStatus(UserStatus.DELETED);
         accountRepo.save(account);
-        //
-        var apiRes = new ApiRes<>();
-        apiRes.setStatus(true);
-        apiRes.setCode(HttpStatus.OK.value());
-        apiRes.setMessage("Delete account successfully");
-        return apiRes;
     }
 
-    public ApiRes<?> changePassword(ChangePasswordDto changePasswordDto) {
+    public void changePassword(ChangePasswordDto changePasswordDto) {
         Account account = accountUtil.getCurrentAccount();
         if (account != null) {
-            if (!passwordEncoder.matches(changePasswordDto.getOldPassword(), account.getPassword())) {
+            if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), account.getPassword())) {
                 throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);
             }
 
@@ -153,32 +138,18 @@ public class UserService {
             // Update password
             account.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
             accountRepo.save(account);
-
-            var apiRes = new ApiRes<>();
-            apiRes.setStatus(true);
-            apiRes.setCode(HttpStatus.OK.value());
-            apiRes.setMessage("Change password successfully");
-            return apiRes;
         }
         throw new AppException(ErrorCode.USER_NOT_FOUND);
     }
 
-    public ApiRes<?> resetPassword(String email, String otp) {
-
+    public void resetPassword(String email, String otp) {
         Account account = accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         Otp userOtp = otpRepo.findMailByEmail(email);
-        emailProducer.sendOtpEmail("service-topic-fp", email, otp);
         if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (2 * 60)) {
             if (userOtp.getOtp().equals(otp)) {
-
+                otpService.sendResetPasswordEmail(email, otp);
                 LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
-                otpRepo.deleteOldOtps(email,expiryTime);
-                var apiRes = new ApiRes<>();
-                apiRes.setCode(HttpStatus.OK.value());
-                apiRes.setStatus(true);
-                apiRes.setMessage("Verified account successfully");
-
-                return apiRes;
+                otpRepo.deleteOldOtps(email, expiryTime);
             } else {
                 throw new AppException(ErrorCode.OTP_INVALID);
             }
@@ -186,6 +157,5 @@ public class UserService {
             throw new AppException(ErrorCode.OTP_EXPIRED);
         }
     }
-
 
 }
