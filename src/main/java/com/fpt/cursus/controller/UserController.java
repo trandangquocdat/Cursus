@@ -68,5 +68,18 @@ public class UserController {
         String successMessage = "Change password successfully.";
         return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
     }
+    @GetMapping("/forgot-password")
+    public ApiRes<?>  forgotPassword(@RequestParam String email) {
+        userService.forgotPassword(email);
+        String successMessage = "Please check your email to reset your password.";
+        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
+    }
+
+    @PutMapping("/reset-password")
+    public ApiRes<?>  resetPassword(@RequestParam String email, @RequestParam String otp, @RequestBody @Valid ResetPasswordDto resetPasswordDto) {
+        userService.resetPassword(email,otp,resetPasswordDto);
+        String successMessage = "Reset password successfully. Please login with your new password.";
+        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
+    }
 
 }
