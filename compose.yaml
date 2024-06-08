@@ -1,6 +1,6 @@
 services:
   server:
-    image: nhkritdat/cursus-server
+    image: d872003/cursus-server
     build:
       context: .
     ports:
