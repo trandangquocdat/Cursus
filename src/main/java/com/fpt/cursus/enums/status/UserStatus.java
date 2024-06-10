@@ -1,4 +1,4 @@
-package com.fpt.cursus.enums;
+package com.fpt.cursus.enums.status;
 
 public enum UserStatus {
     INACTIVE,

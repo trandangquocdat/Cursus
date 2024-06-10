@@ -1,4 +1,4 @@
-package com.fpt.cursus.dto;
+package com.fpt.cursus.dto.request;
 
 import com.fpt.cursus.enums.Role;
 import jakarta.validation.constraints.Email;

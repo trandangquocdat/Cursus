@@ -1,4 +1,4 @@
-package com.fpt.cursus.dto;
+package com.fpt.cursus.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
@@ -27,6 +26,27 @@ public class CursusApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(CursusApplication.class, args);
+//        Account account = new Account();
+//        account.setUsername("testUser");
+//        account.setPassword("password");
+//        account.setFullName("Test User");
+//        account.setEmail("test@example.com");
+//        account.setPhone("0123456789");
+//        account.setRole(Role.STUDENT);
+//        account.setStatus(UserStatus.ACTIVE);
+//        List<EnrollCourseDto> enrolledCourses = new ArrayList<>();
+//        EnrollCourseDto course1 = new EnrollCourseDto();
+//        course1.setCourseName("Course 1");
+//        EnrollCourseDto course2 = new EnrollCourseDto();
+//        course2.setCourseName("Course 2");
+//        enrolledCourses.add(course1);
+//        enrolledCourses.add(course2);
+//        account.setEnrolledCourse(enrolledCourses);
+//        System.out.println("Enrolled Courses:");
+//        account.getEnrolledCourse().forEach(course -> {
+//                    System.out.println("Course Name: " + course.getCourseName());
+//                }
+//        );
     }
 
 }

@@ -1,4 +1,4 @@
-package com.fpt.cursus.exception;
+package com.fpt.cursus.exception.handler;
 
 import com.fpt.cursus.exception.exceptions.AuthException;
 import jakarta.servlet.ServletException;

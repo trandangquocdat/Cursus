@@ -1,4 +1,4 @@
-package com.fpt.cursus.dto;
+package com.fpt.cursus.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
