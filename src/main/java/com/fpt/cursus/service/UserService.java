@@ -1,16 +1,23 @@
 // File: src/main/java/com/fpt/cursus/service/UserService.java
 package com.fpt.cursus.service;
 
-import com.fpt.cursus.dto.*;
+import com.fpt.cursus.dto.request.ChangePasswordDto;
+import com.fpt.cursus.dto.request.LoginReqDto;
+import com.fpt.cursus.dto.request.RegisterReqDto;
+import com.fpt.cursus.dto.request.ResetPasswordDto;
+import com.fpt.cursus.dto.EnrollCourseDto;
+import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Otp;
-import com.fpt.cursus.enums.UserStatus;
+import com.fpt.cursus.enums.status.UserStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
 import com.fpt.cursus.repository.OtpRepo;
 import com.fpt.cursus.util.*;
-import jakarta.mail.MessagingException;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,6 +28,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -53,6 +62,9 @@ public class UserService {
     @Autowired
     private OtpService otpService;
 
+    @Autowired
+    private MapperUtil mapperUtil;
+
     public Account register(RegisterReqDto registerReqDTO) {
         if (!regex.isPhoneValid(registerReqDTO.getPhone())) {
             throw new AppException(ErrorCode.PHONE_NOT_VALID);
@@ -65,7 +77,17 @@ public class UserService {
         account.setFullName(registerReqDTO.getFullName());
         account.setRole(registerReqDTO.getRole());
         account.setPhone(registerReqDTO.getPhone());
-        account.setStatus(UserStatus.INACTIVE);
+        account.setStatus(UserStatus.ACTIVE);
+        List<EnrollCourseDto> enrolledCourses = new ArrayList<>();
+        EnrollCourseDto course1 = new EnrollCourseDto();
+        course1.setCourseName("Course 1");
+        EnrollCourseDto course2 = new EnrollCourseDto();
+        course2.setCourseName("Course 2");
+        enrolledCourses.add(course1);
+        enrolledCourses.add(course2);
+        MapperUtil mapperUtil = new MapperUtil();
+        String enrolledCourseJson = mapperUtil.serializeCourseList(enrolledCourses);
+        account.setEnrolledCourseJson(enrolledCourseJson);
 
         return accountRepo.save(account);
     }
@@ -91,7 +113,22 @@ public class UserService {
             throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);
         }
     }
-
+    public LoginResDto loginGoogle(String token) {
+        try {
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
+            String email = decodedToken.getEmail();
+            Account account = accountRepo.findAccountByEmail(email);
+            LoginResDto loginResponseDTO = new LoginResDto();
+            loginResponseDTO.setToken(tokenHandler.generateToken(account));
+            loginResponseDTO.setUsername(account.getUsername());
+            loginResponseDTO.setRefreshToken(tokenHandler.generateRefreshToken(account));
+            return loginResponseDTO;
+        } catch (FirebaseAuthException e) {
+            e.printStackTrace();
+            System.out.println(e);
+        }
+        return null;
+    }
     public void verifyAccount(String email, String otp) {
         Account account = accountRepo.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));

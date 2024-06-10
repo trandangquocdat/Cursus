@@ -1,10 +1,7 @@
 package com.fpt.cursus.util;
 
-import com.fpt.cursus.dto.ApiRes;
-import org.springframework.scheduling.annotation.Async;
+import com.fpt.cursus.dto.response.ApiRes;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.CompletableFuture;
 
 @Component
 public class ApiResUtil {

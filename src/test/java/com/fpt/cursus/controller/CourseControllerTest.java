@@ -1,6 +1,6 @@
 //package com.fpt.cursus.controller;
 //
-//import com.fpt.cursus.dto.ApiRes;
+//import com.fpt.cursus.dto.response.ApiRes;
 //import com.fpt.cursus.dto.CourseReqDto;
 //import com.fpt.cursus.dto.CourseResDto;
 //import com.fpt.cursus.service.CourseService;

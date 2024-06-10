@@ -1,6 +1,6 @@
 package com.fpt.cursus.controller;
 
-import com.fpt.cursus.dto.ApiRes;
+import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.util.AccountUtil;
 import com.fpt.cursus.util.ApiResUtil;

@@ -1,6 +1,8 @@
 package com.fpt.cursus.controller;
 
-import com.fpt.cursus.dto.*;
+import com.fpt.cursus.dto.request.*;
+import com.fpt.cursus.dto.response.ApiRes;
+import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.service.OtpService;
 import com.fpt.cursus.service.UserService;
@@ -11,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @CrossOrigin("*")
@@ -26,7 +26,7 @@ public class UserController {
     private ApiResUtil apiResUtil;
 
     @PostMapping("/register")
-    public ApiRes<?>  register(@RequestBody @Valid RegisterReqDto account) {
+    public ApiRes<?> register(@RequestBody @Valid RegisterReqDto account) {
         Account newAccount = userService.register(account);
         String otp = otpService.generateOtp();
         otpService.sendOtpEmail(account.getEmail(),otp);
@@ -38,6 +38,13 @@ public class UserController {
     @PostMapping("/login")
     public ApiRes<?>  login(@RequestBody @Valid LoginReqDto account) {
         LoginResDto newAccount = userService.login(account);
+        String successMessage = "Login successfully.";
+        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,newAccount);
+    }
+
+    @PostMapping("/login-google-firebase")
+    public ApiRes<?>  loginGoogle(@RequestParam LoginGoogleReq loginGoogleReq) {
+        LoginResDto newAccount = userService.loginGoogle(loginGoogleReq.getToken());
         String successMessage = "Login successfully.";
         return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,newAccount);
     }

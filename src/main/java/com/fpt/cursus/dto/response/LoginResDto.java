@@ -1,4 +1,4 @@
-package com.fpt.cursus.dto;
+package com.fpt.cursus.dto.response;
 
 import com.fpt.cursus.enums.Role;
 import lombok.Data;

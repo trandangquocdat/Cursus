@@ -1,6 +1,6 @@
-package com.fpt.cursus.exception;
+package com.fpt.cursus.exception.handler;
 
-import com.fpt.cursus.dto.ApiRes;
+import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.exception.exceptions.AuthException;
 import com.fpt.cursus.util.ApiResUtil;
 import org.springframework.beans.factory.annotation.Autowired;
