@@ -1,5 +1,6 @@
 package com.fpt.cursus.controller;
 
+import com.fpt.cursus.dto.EnrollCourseDto;
 import com.fpt.cursus.dto.request.*;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.dto.response.LoginResDto;
@@ -11,8 +12,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin("*")
@@ -88,5 +92,17 @@ public class UserController {
         String successMessage = "Reset password successfully. Please login with your new password.";
         return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
     }
+
+    @GetMapping({"/{username}/enrolled_course"})
+    @PreAuthorize("hasAuthority('STUDENT')")
+    public ResponseEntity<?> getEnrolledCourses(@PathVariable String username) {
+        try {
+            return userService.getEnrolledCoursesByUsername(username);
+        } catch (RuntimeException var3) {
+            RuntimeException e = var3;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 
 }

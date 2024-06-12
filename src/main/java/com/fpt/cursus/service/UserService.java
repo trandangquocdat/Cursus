@@ -8,21 +8,27 @@ import com.fpt.cursus.dto.request.ResetPasswordDto;
 import com.fpt.cursus.dto.EnrollCourseDto;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Otp;
 import com.fpt.cursus.enums.status.UserStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
+import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.repository.OtpRepo;
 import com.fpt.cursus.util.*;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +36,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -37,6 +44,9 @@ public class UserService {
 
     @Autowired
     private AccountRepo accountRepo;
+
+    @Autowired
+    private CourseRepo courseRepo;
 
     @Autowired
     private OtpRepo otpRepo;
@@ -113,6 +123,7 @@ public class UserService {
             throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);
         }
     }
+
     public LoginResDto loginGoogle(String token) {
         try {
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
@@ -129,6 +140,7 @@ public class UserService {
         }
         return null;
     }
+
     public void verifyAccount(String email, String otp) {
         Account account = accountRepo.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -147,8 +159,8 @@ public class UserService {
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
         otpRepo.deleteOldOtps(email, expiryTime);
         String otp = String.valueOf(otpService.generateOtp());
-            otpService.sendOtpEmail(email, otp);
-            otpService.saveOtp(email, otp);
+        otpService.sendOtpEmail(email, otp);
+        otpService.saveOtp(email, otp);
     }
 
     public void deleteAccount(String username) {
@@ -182,7 +194,7 @@ public class UserService {
     }
 
     public void resetPassword(String email, String otp, ResetPasswordDto resetPasswordDto) {
-        if(!resetPasswordDto.getPassword().equals(resetPasswordDto.getConfirmPassword())) {
+        if (!resetPasswordDto.getPassword().equals(resetPasswordDto.getConfirmPassword())) {
             throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
         }
         Account account = accountRepo.findByEmail(email)
@@ -197,6 +209,7 @@ public class UserService {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
     }
+
     public void forgotPassword(String email) {
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
         otpRepo.deleteOldOtps(email, expiryTime);
@@ -212,4 +225,36 @@ public class UserService {
             throw new AppException(ErrorCode.OTP_EXPIRED);
         }
     }
+
+    public ResponseEntity<?> getEnrolledCoursesByUsername(String username) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            Account account_check = (Account) authentication.getPrincipal();
+            if (!account_check.getUsername().equals(username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User don't have permission to perform this action");
+            }else{
+                Account account = (Account) this.accountRepo.findByUsername(username).orElseThrow(() -> {
+                    return new RuntimeException("Account not found");
+                });
+                if (account.getEnrolledCourseJson() == null || account.getEnrolledCourseJson().isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User has not enrolled in any courses");
+                } else {
+                    List<EnrollCourseDto> enrolledCourses = mapperUtil.deserializeCourseList(account.getEnrolledCourseJson(), EnrollCourseDto.class);
+                    List<String> courseNames = enrolledCourses.stream().map(EnrollCourseDto::getCourseName).collect(Collectors.toList());
+                    List<Course> courses = courseRepo.findByNameIn(courseNames);
+                    List<EnrollCourseDto> courseResponse = courses.stream().map(course -> new EnrollCourseDto(
+                            course.getName(),
+                            course.getCategory().toString(),
+                            course.getPrice(),
+                            course.getRating()
+                    )).collect(Collectors.toList());
+                    return ResponseEntity.ok(courseResponse);
+                }
+            }
+        }else{
+                throw new RuntimeException("User not authenticated");
+        }
+
+    }
 }
+
