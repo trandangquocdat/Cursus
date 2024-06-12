@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface CourseRepo extends JpaRepository<Course, Long> {
     List<Course> findAll();
-
+    boolean existsByName(String name);
     Course findCourseById(Long id);
 
 }
