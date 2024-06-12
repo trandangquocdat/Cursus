@@ -49,4 +49,10 @@ public class CourseController {
         String successMessage = "Get course successfully!";
         return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.findAllCourseWithPaginationAndSort(sortBy, offset, pageSize));
     }
+
+    @GetMapping("/find-course-by-category")
+    public ApiRes<?> findCourseByCategory(@RequestParam String category) {
+        String successMessage = "Get course by category successfully!";
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.findCourseByCategory(category));
+    }
 }

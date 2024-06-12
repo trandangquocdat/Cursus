@@ -2,6 +2,7 @@ package com.fpt.cursus.service;
 
 import com.fpt.cursus.dto.request.CreateCouseDto;
 import com.fpt.cursus.entity.Course;
+import com.fpt.cursus.enums.Category;
 import com.fpt.cursus.enums.status.CourseStatus;
 import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.util.AccountUtil;
@@ -19,7 +20,7 @@ public class CourseService {
     private CourseRepo courseRepo;
     @Autowired
     private AccountUtil accountUtil;
-
+    
     public Course createCourse(CreateCouseDto createCouseDto) {
         Date now = new Date();
         Course course = new Course();
@@ -62,5 +63,9 @@ public class CourseService {
     }
     public List<Course> findAllCourseWithPaginationAndSort(String sortBy, int offset, int pageSize) {
         return courseRepo.findAll(PageRequest.of(offset, pageSize).withSort(Sort.by(sortBy))).getContent();
+    }
+
+    public List<Course> findCourseByCategory(String category) {
+        return courseRepo.findCourseByCategory(Category.getCategory(category));
     }
 }
