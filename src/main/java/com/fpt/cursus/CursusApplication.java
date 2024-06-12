@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @OpenAPIDefinition(info = @Info(title = "Cursus API", version = "1.0",
@@ -22,6 +23,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
         }))
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 @EnableAsync
+@EnableScheduling
 public class CursusApplication {
 
     public static void main(String[] args) {

@@ -20,7 +20,6 @@ public class Feedback {
     private Date createdDate;
     @Enumerated(EnumType.STRING)
     private FeedbackType type;
-
     @ManyToOne
     @JsonIgnore
     @JoinColumn(name = "course_id")

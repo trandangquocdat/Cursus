@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @PostMapping("/login-google-firebase")
-    public ApiRes<?>  loginGoogle(@RequestParam LoginGoogleReq loginGoogleReq) {
+    public ApiRes<?>  loginGoogle(@RequestBody LoginGoogleReq loginGoogleReq) {
         LoginResDto newAccount = userService.loginGoogle(loginGoogleReq.getToken());
         String successMessage = "Login successfully.";
         return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,newAccount);
