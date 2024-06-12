@@ -28,6 +28,11 @@ public enum ErrorCode {
     //OTP error - 85X
     OTP_INVALID(850,"Wrong OTP"),
     OTP_EXPIRED(851, "OTP expired"),
+
+
+    //Course error- 90x
+    COURSE_NOT_FOUND(900, "Course not found"),
+    COURSE_EXISTS(901, "Course already exists"),
     ;
 
 

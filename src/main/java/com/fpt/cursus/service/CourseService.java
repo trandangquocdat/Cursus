@@ -1,8 +1,11 @@
 package com.fpt.cursus.service;
 
 import com.fpt.cursus.dto.request.CreateCouseDto;
+import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.status.CourseStatus;
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,9 @@ public class CourseService {
     private AccountUtil accountUtil;
 
     public Course createCourse(CreateCouseDto createCouseDto) {
+        if (courseRepo.existsByName(createCouseDto.getName())) {
+            throw new  AppException(ErrorCode.COURSE_EXISTS);
+        }
         Date now = new Date();
         Course course = new Course();
         course.setName(createCouseDto.getName());
@@ -30,19 +36,32 @@ public class CourseService {
         course.setCategory(createCouseDto.getCategory());
         course.setCreatedDate(now);
         course.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
+        course.setVersion(1);
         course.setStatus(CourseStatus.DRAFT);
         return courseRepo.save(course);
     }
 
     public void deleteCourseById(Long id) {
         Course course = courseRepo.findCourseById(id);
-        course.setStatus(CourseStatus.DELETED);
-        courseRepo.save(course);
+        if(course != null) {
+            Date date = new Date();
+            course.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
+            course.setUpdatedDate(date);
+            course.setStatus(CourseStatus.DELETED);
+            courseRepo.save(course);
+        }else {
+            throw new AppException(ErrorCode.COURSE_NOT_FOUND);
+        }
+
     }
 
     public Course updateCourse(Long id, CreateCouseDto createCouseDto) {
         Course existingCourse = courseRepo.findCourseById(id);
-        if (existingCourse != null) {
+
+        if (existingCourse != null && existingCourse.getStatus() !=  CourseStatus.DELETED) {
+            if (courseRepo.existsByName(createCouseDto.getName())) {
+                throw new  AppException(ErrorCode.COURSE_EXISTS);
+            }
             Date date = new Date();
             existingCourse.setName(createCouseDto.getName());
             existingCourse.setPrice(createCouseDto.getPrice());
@@ -54,7 +73,9 @@ public class CourseService {
             existingCourse.setUpdatedDate(date);
             return courseRepo.save(existingCourse);
         }
-        return null;
+        else {
+            throw new AppException(ErrorCode.COURSE_NOT_FOUND);
+        }
     }
 
     public List<Course> findAllCourseWithPagination(int offset, int pageSize) {

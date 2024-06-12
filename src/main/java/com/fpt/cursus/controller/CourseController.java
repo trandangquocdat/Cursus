@@ -20,11 +20,13 @@ public class CourseController {
     private ApiResUtil apiResUtil;
 
     @PostMapping("/create-course")
+    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ApiRes<?> createCourse(@RequestBody CreateCouseDto createCouseDto) {
         String successMessage = "Create course successfully!";
         return apiResUtil.returnApiRes(true, HttpStatus.CREATED.value(), successMessage, courseService.createCourse(createCouseDto));
     }
     @PutMapping("/update-course")
+    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ApiRes<?> updateCourse(@RequestParam Long id, @RequestBody CreateCouseDto createCouseDto) {
         String successMessage = "Update course successfully!";
         return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.updateCourse(id, createCouseDto));
