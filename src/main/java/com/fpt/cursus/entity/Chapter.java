@@ -17,7 +17,6 @@ public class Chapter {
     private long id;
 
     private String name;
-
     private String description;
     private Date createdDate;
     private Date updatedDate;

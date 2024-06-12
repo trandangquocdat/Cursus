@@ -14,6 +14,6 @@ public class Otp {
     private Long id;
     private String email;
     private String otp;
-    private String type;
+    private Boolean valid = true;
     private LocalDateTime otpGeneratedTime;
 }

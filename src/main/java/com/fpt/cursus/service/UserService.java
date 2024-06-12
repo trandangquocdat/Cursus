@@ -77,17 +77,17 @@ public class UserService {
         account.setFullName(registerReqDTO.getFullName());
         account.setRole(registerReqDTO.getRole());
         account.setPhone(registerReqDTO.getPhone());
-        account.setStatus(UserStatus.ACTIVE);
-        List<EnrollCourseDto> enrolledCourses = new ArrayList<>();
-        EnrollCourseDto course1 = new EnrollCourseDto();
-        course1.setCourseName("Course 1");
-        EnrollCourseDto course2 = new EnrollCourseDto();
-        course2.setCourseName("Course 2");
-        enrolledCourses.add(course1);
-        enrolledCourses.add(course2);
-        MapperUtil mapperUtil = new MapperUtil();
-        String enrolledCourseJson = mapperUtil.serializeCourseList(enrolledCourses);
-        account.setEnrolledCourseJson(enrolledCourseJson);
+        account.setStatus(UserStatus.INACTIVE);
+//        List<EnrollCourseDto> enrolledCourses = new ArrayList<>();
+//        EnrollCourseDto course1 = new EnrollCourseDto();
+//        course1.setCourseName("Course 1");
+//        EnrollCourseDto course2 = new EnrollCourseDto();
+//        course2.setCourseName("Course 2");
+//        enrolledCourses.add(course1);
+//        enrolledCourses.add(course2);
+//        MapperUtil mapperUtil = new MapperUtil();
+//        String enrolledCourseJson = mapperUtil.serializeCourseList(enrolledCourses);
+//        account.setEnrolledCourseJson(enrolledCourseJson);
 
         return accountRepo.save(account);
     }
@@ -130,14 +130,13 @@ public class UserService {
         return null;
     }
     public void verifyAccount(String email, String otp) {
-        Account account = accountRepo.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        Otp userOtp = otpRepo.findMailByEmail(email);
+        Otp userOtp = otpRepo.findOtpByEmailAndValid(email, true);
         if (validateOtp(userOtp, otp)) {
+            Account account = accountRepo.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
             account.setStatus(UserStatus.ACTIVE);
+            otpRepo.updateOldOtps(email);
             accountRepo.save(account);
-            LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
-            otpRepo.deleteOldOtps(email, expiryTime);
         } else {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
@@ -145,8 +144,8 @@ public class UserService {
 
     public void regenerateOtp(String email) {
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
-        otpRepo.deleteOldOtps(email, expiryTime);
-        String otp = String.valueOf(otpService.generateOtp());
+        otpRepo.updateOldOtps(email);
+        String otp = otpService.generateOtp();
             otpService.sendOtpEmail(email, otp);
             otpService.saveOtp(email, otp);
     }
@@ -187,26 +186,24 @@ public class UserService {
         }
         Account account = accountRepo.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        Otp userOtp = otpRepo.findMailByEmail(email);
+        Otp userOtp = otpRepo.findOtpByEmailAndValid(email,true);
         if (validateOtp(userOtp, otp)) {
             account.setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
+            otpRepo.updateOldOtps(email);
             accountRepo.save(account);
-            LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
-            otpRepo.deleteOldOtps(email, expiryTime);
         } else {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
     }
     public void forgotPassword(String email) {
         LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
-        otpRepo.deleteOldOtps(email, expiryTime);
         String otp = otpService.generateOtp();
         otpService.sendResetPasswordEmail(email, otp);
         otpService.saveOtp(email, otp);
     }
 
     private boolean validateOtp(Otp userOtp, String otp) {
-        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (2 * 60)) {
+        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (20)) {
             return userOtp.getOtp().equals(otp);
         } else {
             throw new AppException(ErrorCode.OTP_EXPIRED);
