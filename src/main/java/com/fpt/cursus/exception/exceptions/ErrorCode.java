@@ -11,6 +11,8 @@ public enum ErrorCode {
     UNCATEGORIZED_ERROR(666, "Uncategorized error"),
     USER_NOT_FOUND(600, "User not found"),
     USER_EXISTS(601, "User already exists"),
+    USER_UNAUTHORIZED (602, "User doesn't have permission to perform this action "),
+    USER_ENROLLED_EMPTY (603, "User hasn't enrolled in any courses "),
 
     //Password error - 7xx
     PASSWORD_NOT_CORRECT(700,"Password is incorrect"),
