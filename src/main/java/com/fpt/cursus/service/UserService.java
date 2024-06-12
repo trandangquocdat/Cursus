@@ -226,33 +226,27 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<?> getEnrolledCoursesByUsername(String username) {
+    public List<Course> getEnrolledCoursesByUsername(String username) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
             Account account_check = (Account) authentication.getPrincipal();
             if (!account_check.getUsername().equals(username)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User don't have permission to perform this action");
+               throw new AppException(ErrorCode.USER_UNAUTHORIZED);
             }else{
                 Account account = (Account) this.accountRepo.findByUsername(username).orElseThrow(() -> {
-                    return new RuntimeException("Account not found");
+                    throw new AppException(ErrorCode.USER_NOT_FOUND);
                 });
                 if (account.getEnrolledCourseJson() == null || account.getEnrolledCourseJson().isEmpty()) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User has not enrolled in any courses");
+                    throw new AppException(ErrorCode.USER_ENROLLED_EMPTY);
                 } else {
                     List<EnrollCourseDto> enrolledCourses = mapperUtil.deserializeCourseList(account.getEnrolledCourseJson(), EnrollCourseDto.class);
                     List<String> courseNames = enrolledCourses.stream().map(EnrollCourseDto::getCourseName).collect(Collectors.toList());
                     List<Course> courses = courseRepo.findByNameIn(courseNames);
-                    List<EnrollCourseDto> courseResponse = courses.stream().map(course -> new EnrollCourseDto(
-                            course.getName(),
-                            course.getCategory().toString(),
-                            course.getPrice(),
-                            course.getRating()
-                    )).collect(Collectors.toList());
-                    return ResponseEntity.ok(courseResponse);
+                    return courses;
                 }
             }
         }else{
-                throw new RuntimeException("User not authenticated");
+                throw new AppException(ErrorCode.UNCATEGORIZED_ERROR);
         }
 
     }

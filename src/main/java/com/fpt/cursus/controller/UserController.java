@@ -5,6 +5,7 @@ import com.fpt.cursus.dto.request.*;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.service.OtpService;
 import com.fpt.cursus.service.UserService;
 import com.fpt.cursus.util.ApiResUtil;
@@ -95,14 +96,12 @@ public class UserController {
 
     @GetMapping({"/{username}/enrolled_course"})
     @PreAuthorize("hasAuthority('STUDENT')")
-    public ResponseEntity<?> getEnrolledCourses(@PathVariable String username) {
-        try {
-            return userService.getEnrolledCoursesByUsername(username);
-        } catch (RuntimeException var3) {
-            RuntimeException e = var3;
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    public ApiRes<?> getEnrolledCourses(@PathVariable String username) {
+            List<Course>  enrolledCourse = userService.getEnrolledCoursesByUsername(username);
+            String successMessage = "Get enrolled courses successfully.";
+            return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, enrolledCourse);
         }
     }
 
 
-}
+
