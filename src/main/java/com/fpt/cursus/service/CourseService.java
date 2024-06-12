@@ -3,8 +3,6 @@ package com.fpt.cursus.service;
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.status.CourseStatus;
-import com.fpt.cursus.exception.exceptions.AppException;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +34,6 @@ public class CourseService {
         course.setCategory(createCourseDto.getCategory());
         course.setCreatedDate(now);
         course.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
-        course.setVersion(1);
         course.setStatus(CourseStatus.DRAFT);
         return courseRepo.save(course);
     }
