@@ -3,36 +3,27 @@ package com.fpt.cursus.dto.request;
 import com.fpt.cursus.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
-import org.hibernate.validator.constraints.UniqueElements;
 
 @Data
 @Builder
 public class RegisterReqDto {
-    @NotEmpty(message = "Please input username")
-    @NotBlank (message = "Please don't leave BLANK in username")
+    @Size(min = 4, max = 18, message = "USERNAME_SIZE_INVALID")
+    @NotBlank(message = "USERNAME_NULL")
+    @Pattern(regexp = "^[^\\s]+$", message = "USERNAME_CONTAINS_WHITESPACE")
     private String username;
-
-    @NotEmpty(message = "Please input password")
-    @NotBlank (message = "Please don't leave BLANK in password")
+    @Size(min = 6, max = 18, message = "PASSWORD_INVALID_SIZE")
+    @NotBlank(message = "PASSWORD_NULL")
+    @Pattern(regexp = "^[^\\s]+$", message = "PASSWORD_CONTAINS_WHITESPACE")
     private String password;
-
-    @NotEmpty(message = "Please input email")
-    @NotBlank(message = "Please don't leave BLANK in email")
-    @Email(message = "Please input valid email")
+    @Email(message = "EMAIL_INVALID")
     private String email;
-
-    @NotEmpty (message = "Please input fullname")
-    @Size(max = 200, message = "Fullname must be less than 200 characters")
+    @Size(max = 200, message = "FULLNAME_INVALID_SIZE")
     private String fullName;
-
-    @NotEmpty(message = "Please input phone")
-    @NotBlank(message = "Please don't leave BLANK in phone")
-
+    @NotBlank(message = "PHONE_NULL")
     private String phone;
-
     private Role role;
 }

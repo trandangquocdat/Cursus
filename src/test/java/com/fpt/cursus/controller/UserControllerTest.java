@@ -65,10 +65,12 @@ public class UserControllerTest {
                         .post("/register")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
+                //THEN
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(true))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(200))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Register successfully. Please check your email to verify your account."))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(
+                        "Register successfully. Please check your email to verify your account."))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result.id").value(1))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result.username").value("test1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result.fullName").value("test1"))
@@ -77,7 +79,68 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result.role").value("STUDENT"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result.status").value("INACTIVE")
                 );
-        //THEN
+
+
+    }
+    @Test
+    void register_emptyUsername_fail() throws Exception {
+        request.setUsername(null);
+        ObjectMapper mapper = new ObjectMapper();
+        String content = mapper.writeValueAsString(request);
+        Mockito.when(userService.register(Mockito.any())).thenReturn(response);
+        //WHEN
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/register")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(content))
+                //THEN
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(false))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(612))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(
+                        "Username can not be null")
+                );
+
+    }
+    @Test
+    void register_whiteSpaceUsername_fail() throws Exception {
+        request.setUsername("dat tran dang");
+        ObjectMapper mapper = new ObjectMapper();
+        String content = mapper.writeValueAsString(request);
+        Mockito.when(userService.register(Mockito.any())).thenReturn(response);
+        //WHEN
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/register")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(content))
+                //THEN
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(false))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(613))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(
+                        "Username contains whitespace")
+                );
+
+    }
+
+    @Test
+    void register_invalidUsernameLength_fail() throws Exception {
+        request.setUsername("d");
+        ObjectMapper mapper = new ObjectMapper();
+        String content = mapper.writeValueAsString(request);
+        Mockito.when(userService.register(Mockito.any())).thenReturn(response);
+        //WHEN
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post("/register")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(content))
+                //THEN
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(false))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(611))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(
+                        "Username must be between 4 and 18 characters")
+                );
 
     }
 }

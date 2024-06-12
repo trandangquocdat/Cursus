@@ -1,6 +1,6 @@
 package com.fpt.cursus.controller;
 
-import com.fpt.cursus.dto.request.CreateCouseDto;
+import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.ApiResUtil;
@@ -20,14 +20,16 @@ public class CourseController {
     private ApiResUtil apiResUtil;
 
     @PostMapping("/create-course")
-    public ApiRes<?> createCourse(@RequestBody CreateCouseDto createCouseDto) {
+    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
+    public ApiRes<?> createCourse(@RequestBody CreateCourseDto createCourseDto) {
         String successMessage = "Create course successfully!";
-        return apiResUtil.returnApiRes(true, HttpStatus.CREATED.value(), successMessage, courseService.createCourse(createCouseDto));
+        return apiResUtil.returnApiRes(true, HttpStatus.CREATED.value(), successMessage, courseService.createCourse(createCourseDto));
     }
     @PutMapping("/update-course")
-    public ApiRes<?> updateCourse(@RequestParam Long id, @RequestBody CreateCouseDto createCouseDto) {
+    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
+    public ApiRes<?> updateCourse(@RequestParam Long id, @RequestBody CreateCourseDto createCourseDto) {
         String successMessage = "Update course successfully!";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.updateCourse(id, createCouseDto));
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.updateCourse(id, createCourseDto));
     }
 
     @DeleteMapping("/delete-course")
