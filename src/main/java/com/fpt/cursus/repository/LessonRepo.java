@@ -1,13 +1,11 @@
 package com.fpt.cursus.repository;
 
-import com.fpt.cursus.entity.Chapter;
+import com.fpt.cursus.entity.Lesson;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ChapterRepo extends JpaRepository<Chapter, Long> {
+public interface LessonRepo extends JpaRepository<Lesson, Long> {
 
-    Chapter findChapterById(Long id);
-
-
+    Lesson findLessonById(Long id);
 }

@@ -47,22 +47,13 @@ public class GlobaExceptionHandler {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidation(MethodArgumentNotValidException exception) {
 
-        String message = null;
-        FieldError fieldError = exception.getBindingResult().getFieldError();
-        if (fieldError != null) {
-            message = infoFieldError(fieldError);
-        } else {
-            message = "Not defined error";
-        }
-
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), message, null);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
+       String enumKey = exception.getFieldError().getDefaultMessage();
+       ErrorCode errorCode = ErrorCode.valueOf(enumKey);
+       String message = errorCode.getMessage();
+       ApiRes<?> apiRes = apiResUtil.returnApiRes(false, errorCode.getCode(), message, null);
+       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
 
-    private String infoFieldError(FieldError fieldError) {
-        String fieldName = fieldError.getField();
-        String defaultMessage = fieldError.getDefaultMessage();
-        return String.format("Field '%s' %s", fieldName, defaultMessage);
-    }
+
 
 }

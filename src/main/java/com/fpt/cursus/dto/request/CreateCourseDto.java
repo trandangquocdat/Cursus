@@ -7,14 +7,14 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class CreateCouseDto {
-    @NotEmpty(message = "Please input course name")
-    @Size(max = 200, message = "Course name must be less than 200 characters")
+public class CreateCourseDto {
+    @NotBlank(message = "COURSE_NAME_NULL")
+    @Size(max = 200, message = "COURSE_SIZE_INVALID")
     private String name;
     private String description;
     private String pictureLink;
-    @NotEmpty(message = "Please input price of course")
+    @NotBlank(message = "COURSE_PRICE_NULL")
     private double price;
-    @NotEmpty(message = "Please select category of course")
+    @NotBlank(message = "COURSE_CATEGORY_NULL")
     private Category category;
 }
