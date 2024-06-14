@@ -226,6 +226,8 @@ public class UserService {
         }
     }
 
+
+    //Detailed Information
     public List<Course> getEnrolledCoursesByUsername(String username) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
@@ -248,7 +250,37 @@ public class UserService {
         }else{
                 throw new AppException(ErrorCode.UNCATEGORIZED_ERROR);
         }
-
     }
+
+    //Only Name of course
+//    public List<?> getEnrolledCoursesByUsernameNotDetailed(String username) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+//            Account account_check = (Account) authentication.getPrincipal();
+//            if (!account_check.getUsername().equals(username)) {
+//                throw new AppException(ErrorCode.USER_UNAUTHORIZED);
+//            }else{
+//                Account account = (Account) this.accountRepo.findByUsername(username).orElseThrow(() -> {
+//                    throw new AppException(ErrorCode.USER_NOT_FOUND);
+//                });
+//                if (account.getEnrolledCourseJson() == null || account.getEnrolledCourseJson().isEmpty()) {
+//                    throw new AppException(ErrorCode.USER_ENROLLED_EMPTY);
+//                } else {
+//                    List<EnrollCourseDto> enrolledCourses = mapperUtil.deserializeCourseList(account.getEnrolledCourseJson(), EnrollCourseDto.class);
+//                    List<String> courseNames = enrolledCourses.stream().map(EnrollCourseDto::getCourseName).collect(Collectors.toList());
+//                    List<Course> courses = courseRepo.findByNameIn(courseNames);
+//                   List<EnrollCourseDto> courseResponse = courses.stream().map(course -> new EnrollCourseDto(
+//                           course.getName(),
+//                           course.getCategory().toString(),
+//                           course.getPrice(),
+//                           course.getRating()
+//                   )).collect(Collectors.toList());
+//                   return courseResponse;
+//                }
+//            }
+//        }else{
+//            throw new AppException(ErrorCode.UNCATEGORIZED_ERROR);
+//        }
+//    }
 }
 

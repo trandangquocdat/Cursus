@@ -98,8 +98,10 @@ public class UserController {
     @PreAuthorize("hasAuthority('STUDENT')")
     public ApiRes<?> getEnrolledCourses(@PathVariable String username) {
             List<Course>  enrolledCourse = userService.getEnrolledCoursesByUsername(username);
+            //List<EnrollCourseDto> enrolledCourseNotDetailed = userService.getEnrolledCoursesByUsernameNotDetailed(username);
             String successMessage = "Get enrolled courses successfully.";
             return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, enrolledCourse);
+            //return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, enrolledCourseNotDetailed);
         }
     }
 
