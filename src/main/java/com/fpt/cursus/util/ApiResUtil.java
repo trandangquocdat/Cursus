@@ -11,6 +11,6 @@ public class ApiResUtil {
         apiRes.setCode(code);
         apiRes.setMessage(message);
         apiRes.setResult(data);
-        return apiRes;
+        return  apiRes;
     }
 }

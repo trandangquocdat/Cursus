@@ -1,6 +1,5 @@
 package com.fpt.cursus.entity;
 
-import com.fpt.cursus.dto.WishListCourseDto;
 import com.fpt.cursus.enums.status.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -25,6 +24,7 @@ public class Orders {
     @Column(columnDefinition = "TEXT")
     private String orderCourseJson;
     @Transient
-    private List<WishListCourseDto> orderCourse;
+    private List<Long> orderCourse;
+
 
 }

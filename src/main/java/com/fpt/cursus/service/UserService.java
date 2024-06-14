@@ -5,7 +5,6 @@ import com.fpt.cursus.dto.request.ChangePasswordDto;
 import com.fpt.cursus.dto.request.LoginReqDto;
 import com.fpt.cursus.dto.request.RegisterReqDto;
 import com.fpt.cursus.dto.request.ResetPasswordDto;
-import com.fpt.cursus.dto.EnrollCourseDto;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Otp;
@@ -28,8 +27,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Service
@@ -54,22 +51,17 @@ public class UserService {
     private AccountUtil accountUtil;
 
     @Autowired
-    private EmailUtil emailUtil;
-
-    @Autowired
     private Regex regex;
 
     @Autowired
     private OtpService otpService;
 
-    @Autowired
-    private MapperUtil mapperUtil;
+
 
     public Account register(RegisterReqDto registerReqDTO) {
         if (!regex.isPhoneValid(registerReqDTO.getPhone())) {
             throw new AppException(ErrorCode.PHONE_NOT_VALID);
         }
-
         Account account = new Account();
         account.setUsername(registerReqDTO.getUsername());
         account.setPassword(passwordEncoder.encode(registerReqDTO.getPassword()));
@@ -78,17 +70,6 @@ public class UserService {
         account.setRole(registerReqDTO.getRole());
         account.setPhone(registerReqDTO.getPhone());
         account.setStatus(UserStatus.INACTIVE);
-//        List<EnrollCourseDto> enrolledCourses = new ArrayList<>();
-//        EnrollCourseDto course1 = new EnrollCourseDto();
-//        course1.setCourseName("Course 1");
-//        EnrollCourseDto course2 = new EnrollCourseDto();
-//        course2.setCourseName("Course 2");
-//        enrolledCourses.add(course1);
-//        enrolledCourses.add(course2);
-//        MapperUtil mapperUtil = new MapperUtil();
-//        String enrolledCourseJson = mapperUtil.serializeCourseList(enrolledCourses);
-//        account.setEnrolledCourseJson(enrolledCourseJson);
-
         return accountRepo.save(account);
     }
 
@@ -143,7 +124,6 @@ public class UserService {
     }
 
     public void regenerateOtp(String email) {
-        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
         otpRepo.updateOldOtps(email);
         String otp = otpService.generateOtp();
             otpService.sendOtpEmail(email, otp);
@@ -196,7 +176,6 @@ public class UserService {
         }
     }
     public void forgotPassword(String email) {
-        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(2);
         String otp = otpService.generateOtp();
         otpService.sendResetPasswordEmail(email, otp);
         otpService.saveOtp(email, otp);
@@ -209,4 +188,5 @@ public class UserService {
             throw new AppException(ErrorCode.OTP_EXPIRED);
         }
     }
+
 }
