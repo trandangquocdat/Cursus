@@ -29,9 +29,8 @@ public class LessonController {
 
     @PutMapping("/lesson/{lessonId}")
     public ApiRes<?> updateChapter(@PathVariable Long lessonId, @RequestBody @Valid CreateLessonDto request) {
-        lessonService.updateLesson(lessonId, request);
         String successMessage = "Update chapter successfully!";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,null);
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,lessonService.updateLesson(lessonId, request));
     }
 
     @DeleteMapping("/lesson/{lessonId}")

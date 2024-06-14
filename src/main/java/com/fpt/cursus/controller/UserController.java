@@ -12,11 +12,13 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
+@Validated
 public class UserController {
     @Autowired
     private UserService userService;
@@ -26,7 +28,7 @@ public class UserController {
     private ApiResUtil apiResUtil;
 
     @PostMapping("/register")
-    public ApiRes<?> register(@RequestBody @Valid RegisterReqDto account) {
+    public ApiRes<?> register(@Valid @RequestBody RegisterReqDto account) {
         Account newAccount = userService.register(account);
         String otp = otpService.generateOtp();
         otpService.sendOtpEmail(account.getEmail(),otp);

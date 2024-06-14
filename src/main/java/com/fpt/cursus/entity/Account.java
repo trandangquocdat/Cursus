@@ -1,8 +1,6 @@
 package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fpt.cursus.dto.EnrollCourseDto;
-import com.fpt.cursus.dto.WishListCourseDto;
 import com.fpt.cursus.enums.Gender;
 import com.fpt.cursus.enums.status.UserStatus;
 import com.fpt.cursus.enums.Role;
@@ -52,12 +50,12 @@ public class Account implements UserDetails {
     @Column(columnDefinition = "TEXT")
     private String enrolledCourseJson;
     @Transient
-    private List<EnrollCourseDto> enrolledCourse;
+    private List<Long> enrolledCourse;
 
     @Column(columnDefinition = "TEXT")
     private String wishListCourseJson;
     @Transient
-    private List<WishListCourseDto> wishListCourse;
+    private List<Long> wishListCourse;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

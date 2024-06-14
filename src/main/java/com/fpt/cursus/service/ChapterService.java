@@ -8,7 +8,6 @@ import com.fpt.cursus.enums.status.ChapterStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.ChapterRepo;
-import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,8 +18,6 @@ import java.util.Date;
 public class ChapterService {
     @Autowired
     private ChapterRepo chapterRepo;
-    @Autowired
-    private CourseRepo courseRepo;
     @Autowired
     private CourseService courseService;
     @Autowired

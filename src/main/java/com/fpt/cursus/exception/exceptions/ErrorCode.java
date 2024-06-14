@@ -57,7 +57,12 @@ public enum ErrorCode {
     LESSON_VIDEO_NULL(722, "Price of lesson can not be null"),
     LESSON_CHAPTER_ID_NULL(723, "Category of lesson can not be null"),
     LESSON_NOT_FOUND(724, "Lesson not found"),
-
+    //Order error - 73x
+    ORDER_NOT_FOUND(730, "Order not found"),
+    ORDER_FAIL(731, "Order fail"),
+    ORDER_URL_ENCODE_FAIL(732, "Url order encode fail"),
+    ORDER_GENERATE_HMAC_FAIL(733, "Generate hmac fail"),
+    ORDER_CART_NULL(734, "Cart can not be null"),
     ;
 
     ErrorCode(int code, String message) {

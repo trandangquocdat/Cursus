@@ -3,10 +3,14 @@ package com.fpt.cursus.service;
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.status.CourseStatus;
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -82,12 +86,13 @@ public class CourseService {
         return course;
     }
 
-    public List<Course> findAllCourseWithPagination(int offset, int pageSize) {
-        return courseRepo.findAll(PageRequest.of(offset, pageSize)).getContent();
+    public Page<Course> findAllCourseWithPagination(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return courseRepo.findAll(pageable);
     }
 
-    public List<Course> findAllCourseWithPaginationAndSort(String sortBy, int offset, int pageSize) {
-        return courseRepo.findAll(PageRequest.of(offset, pageSize).withSort(Sort.by(sortBy))).getContent();
+    public Page<Course> findAllCourseWithPaginationAndSort(String sortBy, int offset, int pageSize) {
+        return courseRepo.findAll(PageRequest.of(offset, pageSize).withSort(Sort.by(sortBy)));
     }
 }
 
