@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class ChapterService {
@@ -64,5 +65,10 @@ public class ChapterService {
         }
         return chapter;
     }
-
+    public List<Chapter> findAll(){
+        return chapterRepo.findAll();
+    }
+    public List<Chapter> findAllByCourseId(Long id){
+        return chapterRepo.findAllByCourseId(id);
+    }
 }

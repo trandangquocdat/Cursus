@@ -8,6 +8,7 @@ import com.fpt.cursus.dto.request.ResetPasswordDto;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Otp;
+import com.fpt.cursus.enums.Role;
 import com.fpt.cursus.enums.status.UserStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
@@ -68,6 +69,9 @@ public class UserService {
         account.setEmail(registerReqDTO.getEmail());
         account.setFullName(registerReqDTO.getFullName());
         account.setRole(registerReqDTO.getRole());
+        if(registerReqDTO.getRole().equals(Role.INSTRUCTOR)){
+//            sendCVInstructor(account.getId());
+        }
         account.setPhone(registerReqDTO.getPhone());
         account.setStatus(UserStatus.INACTIVE);
         return accountRepo.save(account);
@@ -122,7 +126,12 @@ public class UserService {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
     }
+    public void sendCVInstructor(){
 
+    }
+    public void verifyInstructor(Long id) {
+
+    }
     public void regenerateOtp(String email) {
         otpRepo.updateOldOtps(email);
         String otp = otpService.generateOtp();
