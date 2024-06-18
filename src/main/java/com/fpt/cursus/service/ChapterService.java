@@ -24,8 +24,8 @@ public class ChapterService {
     @Autowired
     private AccountUtil accountUtil;
 
-    public Chapter createChapter(CreateChapterRequest request) {
-        Course course = courseService.findCourseById(request.getCourseId());
+    public Chapter createChapter(Long courseId,CreateChapterRequest request) {
+        Course course = courseService.findCourseById(courseId);
         Account account = accountUtil.getCurrentAccount();
         Date date = new Date();
         Chapter chapter = new Chapter();

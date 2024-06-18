@@ -22,8 +22,8 @@ public class LessonService {
     @Autowired
     private AccountUtil accountUtil;
 
-    public Lesson createLesson(CreateLessonDto request) {
-        Chapter chapter = chapterService.findChapterById(request.getChapterId());
+    public Lesson createLesson(Long chapterId, CreateLessonDto request) {
+        Chapter chapter = chapterService.findChapterById(chapterId);
         Account account = accountUtil.getCurrentAccount();
         Date date = new Date();
         Lesson lesson = new Lesson();

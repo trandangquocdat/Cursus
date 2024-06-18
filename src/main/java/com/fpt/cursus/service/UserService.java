@@ -68,11 +68,15 @@ public class UserService {
         account.setPassword(passwordEncoder.encode(registerReqDTO.getPassword()));
         account.setEmail(registerReqDTO.getEmail());
         account.setFullName(registerReqDTO.getFullName());
-        account.setRole(registerReqDTO.getRole());
-        if(registerReqDTO.getRole().equals(Role.INSTRUCTOR)){
-//            sendCVInstructor(account.getId());
+        if (registerReqDTO.getRole().equals(Role.INSTRUCTOR)) {
+            account.setRole(Role.PRE_INSTRUCTOR);
+        }else {
+            account.setRole(registerReqDTO.getRole());
         }
         account.setPhone(registerReqDTO.getPhone());
+        account.setGender(registerReqDTO.getGender());
+        account.setCvLink(registerReqDTO.getCvLink());
+        account.setAvatar(registerReqDTO.getAvatar());
         account.setStatus(UserStatus.INACTIVE);
         return accountRepo.save(account);
     }
@@ -126,11 +130,11 @@ public class UserService {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
     }
-    public void sendCVInstructor(){
-
-    }
-    public void verifyInstructor(Long id) {
-
+    public void verifyInstructorById(Long id) {
+        Account account = accountRepo.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        account.setRole(Role.INSTRUCTOR);
+        accountRepo.save(account);
     }
     public void regenerateOtp(String email) {
         otpRepo.updateOldOtps(email);

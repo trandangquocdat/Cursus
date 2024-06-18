@@ -10,6 +10,4 @@ public class CreateChapterRequest {
     @Size(max = 200, message = "CHAPTER_SIZE_INVALID")
     private String name;
     private String description;
-    @NotBlank(message = "CHAPTER_COURSE_ID_NULL")
-    private Long courseId;
 }

@@ -63,13 +63,7 @@ public class UserController {
         String successMessage = "Regenerate OTP successfully. Please check your email to verify your account.";
         return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
     }
-    @DeleteMapping("/auth/delete-account")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ApiRes<?> deleteAccount(@RequestParam String username) {
-        userService.deleteAccount(username);
-        String successMessage = "Delete account successfully.";
-        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
-    }
+
 
     @PatchMapping("/auth/change-password")
     public ApiRes<?>  changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {

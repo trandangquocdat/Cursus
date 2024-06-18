@@ -20,10 +20,10 @@ public class ChapterController {
     private ApiResUtil apiResUtil;
 
     @PostMapping("/chapter/create")
-    public ApiRes<?> createChapter(@RequestBody @Valid CreateChapterRequest request) {
+    public ApiRes<?> createChapter(@RequestParam Long courseId,@RequestBody @Valid CreateChapterRequest request) {
         String successMessage = "Create chapter successfully";
         return apiResUtil.returnApiRes(true, HttpStatus.CREATED.value(), successMessage,
-                chapterService.createChapter(request));
+                chapterService.createChapter(courseId,request));
     }
     @DeleteMapping("/chapter/delete/{chapterId}")
     public ApiRes<?> deleteChapter(@PathVariable Long chapterId) {

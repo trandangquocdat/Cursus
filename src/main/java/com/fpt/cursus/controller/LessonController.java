@@ -21,10 +21,10 @@ public class LessonController {
     private LessonService lessonService;
 
     @PostMapping("/lesson/create")
-    public ApiRes<?> createChapter(@RequestBody @Valid CreateLessonDto request) {
+    public ApiRes<?> createChapter(@RequestParam Long chapterId,@RequestBody @Valid CreateLessonDto request) {
         String successMessage = "Create chapter successfully!";
         return apiResUtil.returnApiRes(true, HttpStatus.CREATED.value(), successMessage,
-                lessonService.createLesson(request));
+                lessonService.createLesson(chapterId,request));
     }
 
     @PutMapping("/lesson/update/{lessonId}")

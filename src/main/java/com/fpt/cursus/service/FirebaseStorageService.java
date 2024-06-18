@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.core.io.ResourceLoader;
 import com.google.cloud.storage.Blob;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.UUID;
 
 @Service
 public class FirebaseStorageService {
@@ -31,25 +31,22 @@ public class FirebaseStorageService {
     }
 
     public String uploadFile(MultipartFile file) throws IOException {
-        // Create a unique filename for the uploaded file
         String fileName = generateUniqueFileName(file.getOriginalFilename());
-
-        // Create BlobId, which has the path of the file in storage
         BlobId blobId = BlobId.of(bucketName, fileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
-
-        // Upload file to Firebase Storage
         try (InputStream inputStream = file.getInputStream()) {
             storage.create(blobInfo, inputStream);
-            return fileName;
+            return generateDownloadUrl(fileName);
         } catch (StorageException e) {
             throw new IOException("Failed to upload file to Firebase Storage.", e);
         }
     }
-
+    private String generateDownloadUrl(String fileName) {
+        return String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media", bucketName, fileName);
+    }
     private String generateUniqueFileName(String originalFileName) {
-        // Generate a unique filename here, if needed
-        return originalFileName;  // You can customize this logic to generate a unique filename
+        String uniqueId = UUID.randomUUID().toString();
+        return uniqueId + "_" + originalFileName;
     }
 
     public Resource downloadFileAsResource(String bucketName, String fileName) throws IOException {
