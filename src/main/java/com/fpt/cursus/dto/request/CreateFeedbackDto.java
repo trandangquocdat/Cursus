@@ -1,9 +1,7 @@
 package com.fpt.cursus.dto.request;
 
-import com.fpt.cursus.enums.FeedbackType;
+import com.fpt.cursus.enums.type.FeedbackType;
 import lombok.Data;
-
-import java.util.Date;
 
 @Data
 public class CreateFeedbackDto {

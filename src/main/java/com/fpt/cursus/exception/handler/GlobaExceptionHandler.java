@@ -14,6 +14,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.io.IOException;
+
 @ControllerAdvice
 public class GlobaExceptionHandler {
     @Autowired
@@ -53,7 +55,7 @@ public class GlobaExceptionHandler {
        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, errorCode.getCode(), message, null);
        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
-    @ExceptionHandler(value = FirebaseAuthException.class)
+    @ExceptionHandler({FirebaseAuthException.class, IOException.class})
     public ResponseEntity<?> handleFirebaseAuthException(FirebaseAuthException exception) {
         String message = exception.getMessage();
         ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), message, null);

@@ -49,13 +49,13 @@ public class ChapterService {
         chapterRepo.save(chapter);
     }
 
-    public Chapter updateChapter(Long id, CreateChapterRequest request) {
+    public void updateChapter(Long id, CreateChapterRequest request) {
         Chapter chapter = this.findChapterById(id);
         chapter.setName(request.getName());
         chapter.setDescription(request.getDescription());
         chapter.setUpdatedDate(new Date());
         chapter.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
-        return chapterRepo.save(chapter);
+        chapterRepo.save(chapter);
     }
 
     public Chapter findChapterById(Long id) {
@@ -69,6 +69,10 @@ public class ChapterService {
         return chapterRepo.findAll();
     }
     public List<Chapter> findAllByCourseId(Long id){
-        return chapterRepo.findAllByCourseId(id);
+        List<Chapter> chapters = chapterRepo.findAllByCourseId(id);
+        if (chapters == null) {
+            throw new AppException(ErrorCode.CHAPTER_NOT_FOUND);
+        }
+        return chapters;
     }
 }

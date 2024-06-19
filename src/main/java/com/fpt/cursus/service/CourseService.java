@@ -3,7 +3,7 @@ package com.fpt.cursus.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fpt.cursus.dto.StudiedCourse;
+import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
@@ -139,7 +139,7 @@ public class CourseService {
             account.setStudiedCourseJson(mapper.writeValueAsString(account.getStudiedCourse()));
             accountRepo.save(account);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
         }
     }
 
@@ -154,17 +154,21 @@ public class CourseService {
             account.setStudiedCourse(mapper.readValue(account.getStudiedCourseJson(), new TypeReference<>() {
             }));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.PROCESS_CALCULATE_PERCENT_FAIL);
         }
         for (StudiedCourse studiedCourse : account.getStudiedCourse()) {
             if (studiedCourse.getId() == id) {
                 float totalLesson = getTotalLesson(id);
+                if (totalLesson == 0) {
+                    return 0;
+                }
                 return (double) studiedCourse.getLessonIds().size() / totalLesson;
             }
         }
         return 0;
 
     }
+
     private int getTotalLesson(Long id) {
         Course course = courseRepo.findCourseById(id);
         if (course == null) {
@@ -176,13 +180,36 @@ public class CourseService {
         }
         return totalLesson;
     }
+
     public Page<Course> findAllCourseWithPagination(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return courseRepo.findAll(pageable);
+        return courseRepo.findAllByStatus(CourseStatus.PUBLISHED, pageable);
     }
 
     public Page<Course> findAllCourseWithPaginationAndSort(String sortBy, int offset, int pageSize) {
-        return courseRepo.findAll(PageRequest.of(offset, pageSize).withSort(Sort.by(sortBy)));
+        return courseRepo.findAllByStatus(CourseStatus.PUBLISHED,
+                PageRequest.of(offset, pageSize).withSort(Sort.by(sortBy)));
+    }
+
+    public List<Course> getEnrolledCourses() {
+        Account account = accountUtil.getCurrentAccount();
+        if (account == null) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+        if (account.getEnrolledCourseJson() == null || account.getEnrolledCourseJson().isEmpty()) {
+            throw new AppException(ErrorCode.USER_ENROLLED_EMPTY);
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        List<Long> enrolledCoursesId = null;
+        try {
+            enrolledCoursesId = mapper.readValue(account.getEnrolledCourseJson(), new TypeReference<>() {
+
+            });
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.COURSE_NOT_FOUND);
+        }
+        return courseRepo.findByIdIn(enrolledCoursesId);
+
     }
 
 }

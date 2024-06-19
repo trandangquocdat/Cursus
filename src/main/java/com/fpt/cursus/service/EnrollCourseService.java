@@ -25,20 +25,19 @@ public class EnrollCourseService {
     public void enrollCourseAfterPay(List<Long> ids) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         Account account = accountUtil.getCurrentAccount();
-        // Deserialize currently enrolled course IDs from JSON to List<Long>
-        List<Long> enrolledCourse = mapper.readValue(account.getEnrolledCourseJson(), new TypeReference<>() {
-        });
-        // Use a Set to avoid duplicates
-        Set<Long> enrolledCourseSet = new HashSet<>(enrolledCourse);
-        // Add new course IDs to the Set (ensuring no duplicates)
-        enrolledCourseSet.addAll(ids);
-        // Convert Set back to List (if order matters, use ArrayList instead of HashSet)
-        enrolledCourse = new ArrayList<>(enrolledCourseSet);
-        // Update the Account object with the updated enrolled course list
-        account.setEnrolledCourse(enrolledCourse);
-        // Convert the updated list to JSON
-        account.setEnrolledCourseJson(mapper.writeValueAsString(enrolledCourse));
-        // Save the updated Account object
+
+        if(account.getEnrolledCourseJson() != null) {
+            List<Long> enrolledCourse = mapper.readValue(account.getEnrolledCourseJson(), new TypeReference<>() {
+            });
+            Set<Long> enrolledCourseSet = new HashSet<>(enrolledCourse);
+            enrolledCourseSet.addAll(ids);
+            enrolledCourse = new ArrayList<>(enrolledCourseSet);
+            account.setEnrolledCourse(enrolledCourse);
+            account.setEnrolledCourseJson(mapper.writeValueAsString(enrolledCourse));
+        }else {
+            account.setEnrolledCourse(ids);
+            account.setEnrolledCourseJson(mapper.writeValueAsString(ids));
+        }
         accountRepo.save(account);
     }
 

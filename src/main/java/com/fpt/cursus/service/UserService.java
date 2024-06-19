@@ -1,33 +1,44 @@
 // File: src/main/java/com/fpt/cursus/service/UserService.java
 package com.fpt.cursus.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fpt.cursus.dto.object.EnrollCourseDto;
 import com.fpt.cursus.dto.request.ChangePasswordDto;
 import com.fpt.cursus.dto.request.LoginReqDto;
 import com.fpt.cursus.dto.request.RegisterReqDto;
 import com.fpt.cursus.dto.request.ResetPasswordDto;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Otp;
-import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.type.Role;
 import com.fpt.cursus.enums.status.UserStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
+import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.repository.OtpRepo;
 import com.fpt.cursus.util.*;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -35,6 +46,9 @@ public class UserService {
 
     @Autowired
     private AccountRepo accountRepo;
+
+    @Autowired
+    private CourseRepo courseRepo;
 
     @Autowired
     private OtpRepo otpRepo;
@@ -58,7 +72,6 @@ public class UserService {
     private OtpService otpService;
 
 
-
     public Account register(RegisterReqDto registerReqDTO) {
         if (!regex.isPhoneValid(registerReqDTO.getPhone())) {
             throw new AppException(ErrorCode.PHONE_NOT_VALID);
@@ -70,7 +83,7 @@ public class UserService {
         account.setFullName(registerReqDTO.getFullName());
         if (registerReqDTO.getRole().equals(Role.INSTRUCTOR)) {
             account.setRole(Role.PRE_INSTRUCTOR);
-        }else {
+        } else {
             account.setRole(registerReqDTO.getRole());
         }
         account.setPhone(registerReqDTO.getPhone());
@@ -79,13 +92,12 @@ public class UserService {
         account.setAvatar(registerReqDTO.getAvatar());
         account.setStatus(UserStatus.INACTIVE);
         return accountRepo.save(account);
+        //
     }
 
     public LoginResDto login(LoginReqDto loginReqDto) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginReqDto.getUsername(), loginReqDto.getPassword())
-            );
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginReqDto.getUsername(), loginReqDto.getPassword()));
 
             Account account = (Account) authentication.getPrincipal();
 
@@ -102,6 +114,7 @@ public class UserService {
             throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);
         }
     }
+
     public LoginResDto loginGoogle(String token) {
         try {
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
@@ -118,11 +131,11 @@ public class UserService {
         }
         return null;
     }
+
     public void verifyAccount(String email, String otp) {
         Otp userOtp = otpRepo.findOtpByEmailAndValid(email, true);
         if (validateOtp(userOtp, otp)) {
-            Account account = accountRepo.findByEmail(email)
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+            Account account = accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
             account.setStatus(UserStatus.ACTIVE);
             otpRepo.updateOldOtps(email);
             accountRepo.save(account);
@@ -130,22 +143,22 @@ public class UserService {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
     }
+
     public void verifyInstructorById(Long id) {
-        Account account = accountRepo.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         account.setRole(Role.INSTRUCTOR);
         accountRepo.save(account);
     }
+
     public void regenerateOtp(String email) {
         otpRepo.updateOldOtps(email);
         String otp = otpService.generateOtp();
-            otpService.sendOtpEmail(email, otp);
-            otpService.saveOtp(email, otp);
+        otpService.sendOtpEmail(email, otp);
+        otpService.saveOtp(email, otp);
     }
 
     public void deleteAccount(String username) {
-        Account account = accountRepo.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Account account = accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         account.setStatus(UserStatus.DELETED);
         accountRepo.save(account);
@@ -174,12 +187,11 @@ public class UserService {
     }
 
     public void resetPassword(String email, String otp, ResetPasswordDto resetPasswordDto) {
-        if(!resetPasswordDto.getPassword().equals(resetPasswordDto.getConfirmPassword())) {
+        if (!resetPasswordDto.getPassword().equals(resetPasswordDto.getConfirmPassword())) {
             throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
         }
-        Account account = accountRepo.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        Otp userOtp = otpRepo.findOtpByEmailAndValid(email,true);
+        Account account = accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Otp userOtp = otpRepo.findOtpByEmailAndValid(email, true);
         if (validateOtp(userOtp, otp)) {
             account.setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
             otpRepo.updateOldOtps(email);
@@ -188,6 +200,7 @@ public class UserService {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
     }
+
     public void forgotPassword(String email) {
         String otp = otpService.generateOtp();
         otpService.sendResetPasswordEmail(email, otp);
@@ -203,3 +216,4 @@ public class UserService {
     }
 
 }
+

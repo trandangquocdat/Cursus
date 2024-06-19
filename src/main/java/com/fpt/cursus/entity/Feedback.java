@@ -1,7 +1,7 @@
 package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fpt.cursus.enums.FeedbackType;
+import com.fpt.cursus.enums.type.FeedbackType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

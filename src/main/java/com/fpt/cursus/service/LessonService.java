@@ -5,6 +5,8 @@ import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Chapter;
 import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.enums.status.LessonStatus;
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.LessonRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +58,11 @@ public class LessonService {
     }
 
     public List<Lesson> findAllByChapterId(Long id) {
-        return lessonRepo.findAllByChapterId(id);
+        List<Lesson> lessons = lessonRepo.findAllByChapterId(id);
+        if (lessons == null) {
+            throw new AppException(ErrorCode.LESSON_NOT_FOUND);
+        }
+        return lessons;
     }
     public List<Lesson> findAll() {
         return lessonRepo.findAll();

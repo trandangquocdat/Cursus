@@ -1,5 +1,7 @@
 package com.fpt.cursus.service;
 
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,9 +27,13 @@ public class FirebaseStorageService {
 
 
     @PostConstruct
-    private void initializeStorage() throws IOException {
-        storage = StorageOptions.newBuilder().setCredentials(GoogleCredentials.fromStream(
-                new ClassPathResource(credentialsFilePath).getInputStream())).build().getService();
+    private void initializeStorage() {
+        try {
+            storage = StorageOptions.newBuilder().setCredentials(GoogleCredentials.fromStream(
+                    new ClassPathResource(credentialsFilePath).getInputStream())).build().getService();
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.STORAGE_INITIALIZE_FAIL);
+        }
     }
 
     public String uploadFile(MultipartFile file) throws IOException {
@@ -38,33 +44,36 @@ public class FirebaseStorageService {
             storage.create(blobInfo, inputStream);
             return generateDownloadUrl(fileName);
         } catch (StorageException e) {
-            throw new IOException("Failed to upload file to Firebase Storage.", e);
+            throw new IOException(e);
         }
     }
+
     private String generateDownloadUrl(String fileName) {
         return String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media", bucketName, fileName);
     }
+
     private String generateUniqueFileName(String originalFileName) {
         String uniqueId = UUID.randomUUID().toString();
         return uniqueId + "_" + originalFileName;
     }
 
-    public Resource downloadFileAsResource(String bucketName, String fileName) throws IOException {
+    public Resource downloadFileAsResource(String bucketName, String fileName) {
         Blob blob = storage.get(bucketName, fileName);
         if (blob != null) {
             byte[] content = blob.getContent();
             // Create a ByteArrayResource to wrap the byte[] content
             return new ByteArrayResource(content);
         } else {
-            throw new IOException("File not found: " + fileName);
+            throw new AppException(ErrorCode.FILE_NOT_FOUND);
         }
     }
-    public byte[] downloadFileAsBytes(String bucketName, String fileName) throws IOException {
+
+    public byte[] downloadFileAsBytes(String bucketName, String fileName) {
         Blob blob = storage.get(bucketName, fileName);
         if (blob != null) {
             return blob.getContent();
         } else {
-            throw new IOException("File not found: " + fileName);
+            throw new AppException(ErrorCode.FILE_NOT_FOUND);
         }
     }
 

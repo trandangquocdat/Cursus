@@ -2,8 +2,9 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
 import com.fpt.cursus.dto.response.ApiRes;
+import com.fpt.cursus.enums.type.FeedbackType;
 import com.fpt.cursus.util.ApiResUtil;
-import com.fpt.cursus.util.FeedbackService;
+import com.fpt.cursus.service.FeedbackService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,7 +44,20 @@ public class FeedbackController {
     @GetMapping("/feedback/{courseId}")
     public ApiRes<?> getFeedbackByCourseId(@PathVariable Long courseId) {
         String successMessage = "Get feedback successfully";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, feedbackService.getFeedbackByCourseId(courseId));
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,
+                feedbackService.getFeedbackByCourseId(courseId));
+    }
+    @GetMapping("/feedback/review")
+    public ApiRes<?> getReviewFeedback() {
+        String successMessage = "Get review successfully";
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,
+                feedbackService.getFeedbackByType(FeedbackType.REVIEW));
+    }
+    @GetMapping("/feedback/report")
+    public ApiRes<?> getReportFeedback() {
+        String successMessage = "Get report successfully";
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,
+                feedbackService.getFeedbackByType(FeedbackType.REPORT));
     }
 
 }
