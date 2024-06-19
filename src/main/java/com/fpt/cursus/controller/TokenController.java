@@ -5,14 +5,14 @@ import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.util.AccountUtil;
 import com.fpt.cursus.util.ApiResUtil;
 import com.fpt.cursus.util.TokenHandler;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin("*")
+@SecurityRequirement(name = "api")
 public class TokenController {
     @Autowired
     private TokenHandler tokenHandler;
@@ -21,16 +21,16 @@ public class TokenController {
     @Autowired
     private ApiResUtil apiResUtil;
 
-    @GetMapping("/generate-refresh-token")
+    @GetMapping("/token/generate-refresh-token")
     public ApiRes<?> getRefreshToken() {
         Account account = accountUtil.getCurrentAccount();
-        String message = "Get refresh token successfully";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), message, tokenHandler.generateRefreshToken(account));
+        String successMessage = "Get refresh token successfully";
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, tokenHandler.generateRefreshToken(account));
     }
 
-    @PutMapping("/refresh-access-token")
+    @PutMapping("/token/refresh-access-token")
     public ApiRes<?> refreshToken(@RequestParam String refreshToken) {
-        String message = "Refresh token successfully";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), message, tokenHandler.refreshAccessToken(refreshToken));
+        String successMessage = "Refresh token successfully";
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, tokenHandler.refreshAccessToken(refreshToken));
     }
 }

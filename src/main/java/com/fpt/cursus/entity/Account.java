@@ -1,15 +1,13 @@
 package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fpt.cursus.dto.EnrollCourseDto;
-import com.fpt.cursus.dto.WishListCourseDto;
-import com.fpt.cursus.enums.Gender;
+import com.fpt.cursus.dto.object.StudiedCourse;
+import com.fpt.cursus.enums.type.Gender;
 import com.fpt.cursus.enums.status.UserStatus;
-import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.type.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +20,9 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Account implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,6 +43,7 @@ public class Account implements UserDetails {
     private Role role;
     @Enumerated(EnumType.STRING)
     private UserStatus status = UserStatus.INACTIVE;
+    private String cvLink;
 
     private Date createdDate;
     private Date updatedDate;
@@ -50,12 +52,17 @@ public class Account implements UserDetails {
     @Column(columnDefinition = "TEXT")
     private String enrolledCourseJson;
     @Transient
-    private List<EnrollCourseDto> enrolledCourse;
+    private List<Long> enrolledCourse;
 
     @Column(columnDefinition = "TEXT")
     private String wishListCourseJson;
     @Transient
-    private List<WishListCourseDto> wishListCourse;
+    private List<Long> wishListCourse;
+
+    @Column(columnDefinition = "TEXT")
+    private String studiedCourseJson;
+    @Transient
+    private List<StudiedCourse> studiedCourse;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -9,6 +9,7 @@ import com.fpt.cursus.util.OtpUtil;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -54,5 +55,11 @@ public class OtpService {
         } catch (MessagingException e) {
             throw new AppException(ErrorCode.EMAIL_CAN_NOT_SEND);
         }
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?") // Lập lịch chạy mỗi ngày vào nửa đêm
+    public void deleteOldOtps() {
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+        otpRepo.deleteInvalidOrExpiredOtps(thirtyDaysAgo);
     }
 }

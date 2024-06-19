@@ -1,6 +1,5 @@
 package com.fpt.cursus.config;
 
-
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -13,6 +12,7 @@ import java.io.IOException;
 
 @Configuration
 public class FirebaseConfig {
+
     @Value("${fcm.credentials.file.path}")
     private String credentialsFilePath;
 
@@ -21,7 +21,10 @@ public class FirebaseConfig {
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(new ClassPathResource(credentialsFilePath).getInputStream()))
                 .build();
-        return FirebaseApp.initializeApp(options);
+        if (FirebaseApp.getApps().isEmpty()) {
+            return FirebaseApp.initializeApp(options);
+        } else {
+            return FirebaseApp.getInstance();
+        }
     }
-
 }

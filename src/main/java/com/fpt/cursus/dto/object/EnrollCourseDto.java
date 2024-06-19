@@ -1,4 +1,4 @@
-package com.fpt.cursus.dto;
+package com.fpt.cursus.dto.object;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,7 +21,4 @@ public class EnrollCourseDto {
     private double price;
     private float rating;
 
-    public EnrollCourseDto() {
-
-    }
 }

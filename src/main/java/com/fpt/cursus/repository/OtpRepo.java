@@ -14,14 +14,19 @@ import java.util.Optional;
 public interface OtpRepo extends JpaRepository<Otp, Long> {
 
     Optional<Otp> findByEmail(String email);
-    Otp findMailByEmail(String email);
 
-    Otp findByEmailAndType(String email, String type);
+    Optional<Otp> findByEmailAndValidTrue(String email);
+    Otp findOtpByEmailAndValid(String email, Boolean valid);
+    Otp findMailByEmail(String email);
 
     @Transactional
     @Modifying
-    @Query("DELETE FROM Otp WHERE email = :email OR otpGeneratedTime > :time")
-    void deleteOldOtps(@Param("email") String email, @Param("time") LocalDateTime time);
+    @Query("DELETE FROM Otp o WHERE o.valid = false OR o.otpGeneratedTime < :time")
+    void deleteInvalidOrExpiredOtps(@Param("time") LocalDateTime time);
 
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE Otp SET valid = false WHERE email = :email AND valid = true")
+    void updateOldOtps(@Param("email") String email);
 }
