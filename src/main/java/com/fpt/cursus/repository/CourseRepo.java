@@ -12,4 +12,5 @@ public interface CourseRepo extends JpaRepository<Course, Long> {
 
     Course findCourseById(Long id);
 
+    boolean existsByName(String name);
 }

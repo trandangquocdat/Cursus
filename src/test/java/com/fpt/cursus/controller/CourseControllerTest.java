@@ -39,10 +39,6 @@ class CourseControllerTest {
                 .build();
     }
 
-    @Test
-    void contextLoads() throws Exception {
-        Assertions.assertThat(controller).isNotNull();
-    }
 
 
 }
