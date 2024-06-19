@@ -1,5 +1,7 @@
 package com.fpt.cursus.controller;
 
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.FirebaseStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -24,22 +26,20 @@ public class FileUploadController {
     }
 
     @PostMapping("/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
-        return storageService.uploadFile(file);
+    public String uploadFile(@RequestParam("file") MultipartFile file) {
+        try {
+            return storageService.uploadFile(file);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
     }
     @GetMapping("/download/{fileName}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {
         String bucketName = "cursus-b6cde.appspot.com"; // Replace with your Firebase Storage bucket name
-        try {
-            Resource content = storageService.downloadFileAsResource(bucketName, fileName);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", fileName);
-
-            return new ResponseEntity<>(content, headers, HttpStatus.OK);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+        Resource content = storageService.downloadFileAsResource(bucketName, fileName);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", fileName);
+        return new ResponseEntity<>(content, headers, HttpStatus.OK);
     }
 }

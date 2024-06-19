@@ -8,7 +8,7 @@ import com.fpt.cursus.dto.request.ResetPasswordDto;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Otp;
-import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.type.Role;
 import com.fpt.cursus.enums.status.UserStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;

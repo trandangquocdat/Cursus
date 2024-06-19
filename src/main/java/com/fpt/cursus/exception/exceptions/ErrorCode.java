@@ -63,6 +63,15 @@ public enum ErrorCode {
     ORDER_URL_ENCODE_FAIL(732, "Url order encode fail"),
     ORDER_GENERATE_HMAC_FAIL(733, "Generate hmac fail"),
     ORDER_CART_NULL(734, "Cart can not be null"),
+    //File error - 74x
+    STORAGE_INITIALIZE_FAIL(740, "Storage initialize fail"),
+    FILE_NOT_FOUND(741, "File not found"),
+    FILE_DOWNLOAD_FAIL(742, "File download fail"),
+    FILE_UPLOAD_FAIL(743, "File upload fail"),
+    //
+    PROCESS_CALCULATE_PERCENT_FAIL(750, "Calculate percent fail"),
+    PROCESS_ADD_STUDIED_COURSE_FAIL(751, "Add studied course fail"),
+
     ;
 
     ErrorCode(int code, String message) {

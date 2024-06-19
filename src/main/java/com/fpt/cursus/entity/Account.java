@@ -1,10 +1,10 @@
 package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fpt.cursus.dto.StudiedCourse;
-import com.fpt.cursus.enums.Gender;
+import com.fpt.cursus.dto.object.StudiedCourse;
+import com.fpt.cursus.enums.type.Gender;
 import com.fpt.cursus.enums.status.UserStatus;
-import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.type.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;

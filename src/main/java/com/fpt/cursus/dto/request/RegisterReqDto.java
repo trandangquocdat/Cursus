@@ -1,15 +1,12 @@
 package com.fpt.cursus.dto.request;
 
-import com.fpt.cursus.enums.Gender;
-import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.type.Gender;
+import com.fpt.cursus.enums.type.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.checkerframework.common.value.qual.MatchesRegex;
 
 @Data
 @Builder
