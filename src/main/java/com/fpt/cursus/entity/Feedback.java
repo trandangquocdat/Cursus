@@ -18,6 +18,7 @@ public class Feedback {
     private String content;
     private String createdBy;
     private Date createdDate;
+    private Date updatedDate;
     @Enumerated(EnumType.STRING)
     private FeedbackType type;
     @ManyToOne

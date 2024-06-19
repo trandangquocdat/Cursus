@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class LessonService {
@@ -21,8 +22,8 @@ public class LessonService {
     @Autowired
     private AccountUtil accountUtil;
 
-    public Lesson createLesson(CreateLessonDto request) {
-        Chapter chapter = chapterService.findChapterById(request.getChapterId());
+    public Lesson createLesson(Long chapterId, CreateLessonDto request) {
+        Chapter chapter = chapterService.findChapterById(chapterId);
         Account account = accountUtil.getCurrentAccount();
         Date date = new Date();
         Lesson lesson = new Lesson();
@@ -54,5 +55,11 @@ public class LessonService {
         return lessonRepo.save(lesson);
     }
 
+    public List<Lesson> findAllByChapterId(Long id) {
+        return lessonRepo.findAllByChapterId(id);
+    }
+    public List<Lesson> findAll() {
+        return lessonRepo.findAll();
+    }
 
 }

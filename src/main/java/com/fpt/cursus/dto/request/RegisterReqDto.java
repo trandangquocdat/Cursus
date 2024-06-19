@@ -1,5 +1,6 @@
 package com.fpt.cursus.dto.request;
 
+import com.fpt.cursus.enums.Gender;
 import com.fpt.cursus.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -25,5 +26,8 @@ public class RegisterReqDto {
     private String fullName;
     @NotBlank(message = "PHONE_NULL")
     private String phone;
+    private String avatar;
+    private Gender gender;
+    private String cvLink;
     private Role role;
 }

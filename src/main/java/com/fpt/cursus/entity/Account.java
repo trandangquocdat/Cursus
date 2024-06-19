@@ -1,6 +1,7 @@
 package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fpt.cursus.dto.StudiedCourse;
 import com.fpt.cursus.enums.Gender;
 import com.fpt.cursus.enums.status.UserStatus;
 import com.fpt.cursus.enums.Role;
@@ -42,6 +43,7 @@ public class Account implements UserDetails {
     private Role role;
     @Enumerated(EnumType.STRING)
     private UserStatus status = UserStatus.INACTIVE;
+    private String cvLink;
 
     private Date createdDate;
     private Date updatedDate;
@@ -56,6 +58,11 @@ public class Account implements UserDetails {
     private String wishListCourseJson;
     @Transient
     private List<Long> wishListCourse;
+
+    @Column(columnDefinition = "TEXT")
+    private String studiedCourseJson;
+    @Transient
+    private List<StudiedCourse> studiedCourse;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

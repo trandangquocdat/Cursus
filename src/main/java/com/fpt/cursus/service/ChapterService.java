@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class ChapterService {
@@ -23,8 +24,8 @@ public class ChapterService {
     @Autowired
     private AccountUtil accountUtil;
 
-    public Chapter createChapter(CreateChapterRequest request) {
-        Course course = courseService.findCourseById(request.getCourseId());
+    public Chapter createChapter(Long courseId,CreateChapterRequest request) {
+        Course course = courseService.findCourseById(courseId);
         Account account = accountUtil.getCurrentAccount();
         Date date = new Date();
         Chapter chapter = new Chapter();
@@ -64,5 +65,10 @@ public class ChapterService {
         }
         return chapter;
     }
-
+    public List<Chapter> findAll(){
+        return chapterRepo.findAll();
+    }
+    public List<Chapter> findAllByCourseId(Long id){
+        return chapterRepo.findAllByCourseId(id);
+    }
 }
