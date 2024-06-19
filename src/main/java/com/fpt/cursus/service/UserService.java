@@ -79,6 +79,7 @@ public class UserService {
         account.setAvatar(registerReqDTO.getAvatar());
         account.setStatus(UserStatus.INACTIVE);
         return accountRepo.save(account);
+        //
     }
 
     public LoginResDto login(LoginReqDto loginReqDto) {
