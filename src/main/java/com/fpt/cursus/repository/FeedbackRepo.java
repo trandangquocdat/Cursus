@@ -13,5 +13,6 @@ public interface FeedbackRepo extends JpaRepository<Feedback, Long> {
     Feedback findFeedbackById(Long id);
 
     List<Feedback> findFeedbackByCourseId(Long id);
+
     List<Feedback> findFeedbackByType(FeedbackType type);
 }

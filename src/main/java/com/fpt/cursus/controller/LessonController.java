@@ -21,31 +21,32 @@ public class LessonController {
     private LessonService lessonService;
 
     @PostMapping("/lesson/create")
-    public ApiRes<?> createChapter(@RequestParam Long chapterId,@RequestBody @Valid CreateLessonDto request) {
+    public ApiRes<?> createChapter(@RequestParam Long chapterId, @RequestBody @Valid CreateLessonDto request) {
         String successMessage = "Create chapter successfully!";
         return apiResUtil.returnApiRes(true, HttpStatus.CREATED.value(), successMessage,
-                lessonService.createLesson(chapterId,request));
+                lessonService.createLesson(chapterId, request));
     }
 
     @PutMapping("/lesson/update/{lessonId}")
     public ApiRes<?> updateChapter(@PathVariable Long lessonId, @RequestBody @Valid CreateLessonDto request) {
         String successMessage = "Update chapter successfully!";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,lessonService.updateLesson(lessonId, request));
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, lessonService.updateLesson(lessonId, request));
     }
 
     @DeleteMapping("/lesson/delete/{lessonId}")
     public ApiRes<?> deleteChapter(@PathVariable Long lessonId) {
         lessonService.deleteLessonById(lessonId);
         String successMessage = "Delete chapter successfully!";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,null);
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, null);
     }
 
     @GetMapping("/lesson/get-all")
     public ApiRes<?> findAll() {
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), null,lessonService.findAll());
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), null, lessonService.findAll());
     }
+
     @GetMapping("/lesson/get-by-chapter/{chapterId}")
     public ApiRes<?> findById(@PathVariable Long chapterId) {
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), null,lessonService.findAllByChapterId(chapterId));
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), null, lessonService.findAllByChapterId(chapterId));
     }
 }

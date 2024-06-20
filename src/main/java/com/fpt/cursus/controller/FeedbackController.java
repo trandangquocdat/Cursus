@@ -47,12 +47,14 @@ public class FeedbackController {
         return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,
                 feedbackService.getFeedbackByCourseId(courseId));
     }
+
     @GetMapping("/feedback/review")
     public ApiRes<?> getReviewFeedback() {
         String successMessage = "Get review successfully";
         return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,
                 feedbackService.getFeedbackByType(FeedbackType.REVIEW));
     }
+
     @GetMapping("/feedback/report")
     public ApiRes<?> getReportFeedback() {
         String successMessage = "Get report successfully";

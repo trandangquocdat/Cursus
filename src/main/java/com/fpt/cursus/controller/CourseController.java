@@ -30,6 +30,7 @@ public class CourseController {
         String successMessage = "Create course successfully!";
         return apiResUtil.returnApiRes(true, HttpStatus.CREATED.value(), successMessage, courseService.createCourse(createCourseDto));
     }
+
     @PutMapping("/course/update")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ApiRes<?> updateCourse(@RequestParam Long id, @RequestBody CreateCourseDto createCourseDto) {
@@ -41,8 +42,9 @@ public class CourseController {
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ApiRes<?> viewDraftCourse() {
         String successMessage = "View draft course successfully.";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(),successMessage,courseService.findCourseByStatus(CourseStatus.DRAFT));
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.findCourseByStatus(CourseStatus.DRAFT));
     }
+
     @DeleteMapping("/course/delete")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ApiRes<?> deleteCourse(@RequestParam Long id) {
@@ -62,6 +64,7 @@ public class CourseController {
         String successMessage = "Get course successfully!";
         return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.findAllCourseWithPaginationAndSort(sortBy, offset, pageSize));
     }
+
     @GetMapping({"/enrolled_course"})
     public ApiRes<?> getEnrolledCourses() {
         List<Course> enrolledCourse = courseService.getEnrolledCourses();

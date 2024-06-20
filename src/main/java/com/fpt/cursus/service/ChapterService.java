@@ -24,7 +24,7 @@ public class ChapterService {
     @Autowired
     private AccountUtil accountUtil;
 
-    public Chapter createChapter(Long courseId,CreateChapterRequest request) {
+    public Chapter createChapter(Long courseId, CreateChapterRequest request) {
         Course course = courseService.findCourseById(courseId);
         Account account = accountUtil.getCurrentAccount();
         Date date = new Date();
@@ -65,10 +65,12 @@ public class ChapterService {
         }
         return chapter;
     }
-    public List<Chapter> findAll(){
+
+    public List<Chapter> findAll() {
         return chapterRepo.findAll();
     }
-    public List<Chapter> findAllByCourseId(Long id){
+
+    public List<Chapter> findAllByCourseId(Long id) {
         List<Chapter> chapters = chapterRepo.findAllByCourseId(id);
         if (chapters == null) {
             throw new AppException(ErrorCode.CHAPTER_NOT_FOUND);

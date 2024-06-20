@@ -41,6 +41,7 @@ public class TokenHandler {
 
         return token;
     }
+
     public String generateRefreshToken(Account account) {
         Date now = new Date();
         Date expirationDate = new Date(now.getTime() + REFRESH_TOKEN_EXPIRATION);
@@ -68,6 +69,7 @@ public class TokenHandler {
             throw new RuntimeException("Invalid refresh token");
         }
     }
+
     // validate token
     // get info from token (decode)
     public String getInfoByToken(String token) throws ExpiredJwtException, MalformedJwtException {

@@ -42,11 +42,13 @@ public class Account implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private UserStatus status = UserStatus.INACTIVE;
     private String cvLink;
 
     private Date createdDate;
     private Date updatedDate;
+    private String createdBy;
     private String updatedBy;
 
     @Column(columnDefinition = "TEXT")
@@ -70,6 +72,7 @@ public class Account implements UserDetails {
         authorities.add(new SimpleGrantedAuthority(this.role.toString()));
         return authorities;
     }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

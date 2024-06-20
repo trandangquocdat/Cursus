@@ -64,6 +64,7 @@ public class LessonService {
         }
         return lessons;
     }
+
     public List<Lesson> findAll() {
         return lessonRepo.findAll();
     }

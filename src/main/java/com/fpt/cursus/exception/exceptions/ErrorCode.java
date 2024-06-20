@@ -10,8 +10,8 @@ public enum ErrorCode {
     UNCATEGORIZED_ERROR(999, "Uncategorized error"),
     USER_NOT_FOUND(600, "User not found"),
     USER_EXISTS(601, "User already exists"),
-    USER_UNAUTHORIZED (602, "User doesn't have permission to perform this action "),
-    USER_ENROLLED_EMPTY (603, "User hasn't enrolled in any courses "),
+    USER_UNAUTHORIZED(602, "User doesn't have permission to perform this action "),
+    USER_ENROLLED_EMPTY(603, "User hasn't enrolled in any courses "),
 
     //Register error - 61x
     USERNAME_EXISTS(610, "Username already exists"),
@@ -23,7 +23,7 @@ public enum ErrorCode {
     FULLNAME_NULL(621, "Fullname can not be null"),
     FULLNAME_INVALID_SIZE(622, "Fullname must be less than 200 characters"),
     //Password error - 63x
-    PASSWORD_NOT_CORRECT(630,"Password is incorrect"),
+    PASSWORD_NOT_CORRECT(630, "Password is incorrect"),
     PASSWORD_NOT_MATCH(631, "Password does not match"),
     PASSWORD_IS_SAME_CURRENT(632, "Password is same as current password"),
     PASSWORD_SIZE_INVALID(633, "Password must be between 4 and 18 characters"),
@@ -39,7 +39,7 @@ public enum ErrorCode {
     EMAIL_EXISTS(654, "Email already exists"),
     EMAIL_CAN_NOT_SEND(655, "Email can not send"),
     //OTP error - 66X
-    OTP_INVALID(660,"Wrong OTP"),
+    OTP_INVALID(660, "Wrong OTP"),
     OTP_EXPIRED(661, "OTP expired"),
     //Course error - 70x
     COURSE_NOT_FOUND(700, "Course not found"),
@@ -81,6 +81,7 @@ public enum ErrorCode {
         this.message = message;
 
     }
+
     private int code;
     private String message;
 

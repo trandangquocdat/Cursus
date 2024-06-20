@@ -10,6 +10,8 @@ import java.util.List;
 public interface ChapterRepo extends JpaRepository<Chapter, Long> {
 
     Chapter findChapterById(Long id);
+
     List<Chapter> findAllByCourseId(Long id);
+
     List<Chapter> findAll();
 }

@@ -21,7 +21,7 @@ public class FeedbackService {
     @Autowired
     private CourseRepo courseRepo;
 
-    public Feedback createFeedback(Long courseId,CreateFeedbackDto feedbackDto) {
+    public Feedback createFeedback(Long courseId, CreateFeedbackDto feedbackDto) {
         Feedback feedback = new Feedback();
         feedback.setContent(feedbackDto.getContent());
         feedback.setCreatedDate(new Date());
@@ -29,19 +29,23 @@ public class FeedbackService {
         feedback.setCourse(courseRepo.findCourseById(courseId));
         return feedbackRepo.save(feedback);
     }
+
     public void deleteFeedbackById(long id) {
         feedbackRepo.deleteById(id);
     }
+
     public Feedback updateFeedbackById(long id, CreateFeedbackDto feedbackDto) {
         Feedback feedback = feedbackRepo.findFeedbackById(id);
         feedback.setContent(feedbackDto.getContent());
         feedback.setUpdatedDate(new Date());
         return feedbackRepo.save(feedback);
     }
+
     public List<Feedback> getFeedbackByCourseId(long id) {
 
         return feedbackRepo.findFeedbackByCourseId(id);
     }
+
     public List<Feedback> getFeedbackByType(FeedbackType type) {
         return feedbackRepo.findFeedbackByType(type);
     }

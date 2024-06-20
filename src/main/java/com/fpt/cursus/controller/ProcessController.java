@@ -19,6 +19,7 @@ public class ProcessController {
     private ApiResUtil apiResUtil;
     @Autowired
     private CourseService courseService;
+
     @PutMapping("/process")
     public ApiRes<?> addStudiedLesson(@RequestParam Long courserId, @RequestParam Long lessonId) {
         courseService.addStudiedLesson(courserId, lessonId);
@@ -29,7 +30,7 @@ public class ProcessController {
     @PutMapping("/process/percent-done")
     public ApiRes<?> percentDoneCourse(@RequestParam Long courseId) {
         String successMessage = "Calculate percent done successfully";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,  courseService.percentDoneCourse(courseId));
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.percentDoneCourse(courseId));
     }
 
 }

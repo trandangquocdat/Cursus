@@ -9,6 +9,7 @@ import com.fpt.cursus.util.AccountUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,7 +27,7 @@ public class EnrollCourseService {
         ObjectMapper mapper = new ObjectMapper();
         Account account = accountUtil.getCurrentAccount();
 
-        if(account.getEnrolledCourseJson() != null) {
+        if (account.getEnrolledCourseJson() != null) {
             List<Long> enrolledCourse = mapper.readValue(account.getEnrolledCourseJson(), new TypeReference<>() {
             });
             Set<Long> enrolledCourseSet = new HashSet<>(enrolledCourse);
@@ -34,7 +35,7 @@ public class EnrollCourseService {
             enrolledCourse = new ArrayList<>(enrolledCourseSet);
             account.setEnrolledCourse(enrolledCourse);
             account.setEnrolledCourseJson(mapper.writeValueAsString(enrolledCourse));
-        }else {
+        } else {
             account.setEnrolledCourse(ids);
             account.setEnrolledCourseJson(mapper.writeValueAsString(ids));
         }

@@ -58,8 +58,8 @@ public class UserControllerTest {
     }
 
     @Test
-    //
-    void register_validRequest_success()  {
+        //
+    void register_validRequest_success() {
         //GIVEN
         ObjectMapper mapper = new ObjectMapper();
         String content = null;
@@ -94,6 +94,7 @@ public class UserControllerTest {
 
 
     }
+
     @Test
     void register_emptyUsername_fail() throws Exception {
         request.setUsername(null);
@@ -114,6 +115,7 @@ public class UserControllerTest {
                 );
 
     }
+
     @Test
     void register_whiteSpaceUsername_fail() throws Exception {
         request.setUsername("dat tran dang");

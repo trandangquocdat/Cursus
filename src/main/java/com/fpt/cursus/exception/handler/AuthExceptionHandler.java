@@ -15,21 +15,22 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class AuthExceptionHandler {
     @Autowired
     private ApiResUtil apiResUtil;
+
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<?> duplicate(AuthException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.UNAUTHORIZED.value(), exception.getMessage(),null );
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.UNAUTHORIZED.value(), exception.getMessage(), null);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 
     @ExceptionHandler(InternalAuthenticationServiceException.class)
     public ResponseEntity<?> handleException(InternalAuthenticationServiceException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.UNAUTHORIZED.value(), exception.getMessage(),null );
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.UNAUTHORIZED.value(), exception.getMessage(), null);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> handleException(AccessDeniedException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.UNAUTHORIZED.value(), "Access denied",null );
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.UNAUTHORIZED.value(), "Access denied", null);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 
