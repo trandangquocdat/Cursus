@@ -19,23 +19,38 @@ public class ChapterController {
     @Autowired
     private ApiResUtil apiResUtil;
 
-    @PostMapping("/chapter")
-    public ApiRes<?> createChapter(@RequestBody @Valid CreateChapterRequest request) {
+    @PostMapping("/chapter/create")
+    public ApiRes<?> createChapter(@RequestParam Long courseId,@RequestBody @Valid CreateChapterRequest request) {
         String successMessage = "Create chapter successfully";
         return apiResUtil.returnApiRes(true, HttpStatus.CREATED.value(), successMessage,
-                chapterService.createChapter(request));
+                chapterService.createChapter(courseId,request));
     }
-    @DeleteMapping("/chapter/{chapterId}")
+    @DeleteMapping("/chapter/delete/{chapterId}")
     public ApiRes<?> deleteChapter(@PathVariable Long chapterId) {
         chapterService.deleteChapterById(chapterId);
         String successMessage = "Delete chapter successfully";
         return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,null);
     }
-    @PutMapping("/chapter/{chapterId}")
+    @PutMapping("/chapter/update/{chapterId}")
     public ApiRes<?> updateChapter(@PathVariable Long chapterId, @RequestBody @Valid CreateChapterRequest request) {
         chapterService.updateChapter(chapterId, request);
         String successMessage = "Update chapter successfully";
         return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage,null);
+    }
+
+    @GetMapping("/chapter/get-by-id/{chapterId}")
+    public ApiRes<?> findChapterById(@PathVariable Long chapterId) {
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), null,chapterService.findChapterById(chapterId));
+    }
+
+    @GetMapping("/chapter/get-all")
+    public ApiRes<?> findAll() {
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), null,chapterService.findAll());
+    }
+
+    @GetMapping("/chapter/get-by-course-id/{courseId}")
+    public ApiRes<?> findAllByCourseId(@PathVariable Long courseId) {
+        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), null,chapterService.findAllByCourseId(courseId));
     }
 
 }

@@ -1,6 +1,5 @@
 package com.fpt.cursus.exception.exceptions;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 
@@ -11,6 +10,9 @@ public enum ErrorCode {
     UNCATEGORIZED_ERROR(999, "Uncategorized error"),
     USER_NOT_FOUND(600, "User not found"),
     USER_EXISTS(601, "User already exists"),
+    USER_UNAUTHORIZED (602, "User doesn't have permission to perform this action "),
+    USER_ENROLLED_EMPTY (603, "User hasn't enrolled in any courses "),
+
     //Register error - 61x
     USERNAME_EXISTS(610, "Username already exists"),
     USERNAME_SIZE_INVALID(611, "Username must be between 4 and 18 characters"),
@@ -57,12 +59,27 @@ public enum ErrorCode {
     LESSON_VIDEO_NULL(722, "Price of lesson can not be null"),
     LESSON_CHAPTER_ID_NULL(723, "Category of lesson can not be null"),
     LESSON_NOT_FOUND(724, "Lesson not found"),
+    //Order error - 73x
+    ORDER_NOT_FOUND(730, "Order not found"),
+    ORDER_FAIL(731, "Order fail"),
+    ORDER_URL_ENCODE_FAIL(732, "Url order encode fail"),
+    ORDER_GENERATE_HMAC_FAIL(733, "Generate hmac fail"),
+    ORDER_CART_NULL(734, "Cart can not be null"),
+    //File error - 74x
+    STORAGE_INITIALIZE_FAIL(740, "Storage initialize fail"),
+    FILE_NOT_FOUND(741, "File not found"),
+    FILE_DOWNLOAD_FAIL(742, "File download fail"),
+    FILE_UPLOAD_FAIL(743, "File upload fail"),
+    //
+    PROCESS_CALCULATE_PERCENT_FAIL(750, "Calculate percent fail"),
+    PROCESS_ADD_STUDIED_COURSE_FAIL(751, "Add studied course fail"),
 
     ;
 
     ErrorCode(int code, String message) {
         this.code = code;
         this.message = message;
+
     }
     private int code;
     private String message;

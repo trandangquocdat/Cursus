@@ -8,26 +8,24 @@ import com.fpt.cursus.enums.status.ChapterStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.ChapterRepo;
-import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class ChapterService {
     @Autowired
     private ChapterRepo chapterRepo;
     @Autowired
-    private CourseRepo courseRepo;
-    @Autowired
     private CourseService courseService;
     @Autowired
     private AccountUtil accountUtil;
 
-    public Chapter createChapter(CreateChapterRequest request) {
-        Course course = courseService.findCourseById(request.getCourseId());
+    public Chapter createChapter(Long courseId,CreateChapterRequest request) {
+        Course course = courseService.findCourseById(courseId);
         Account account = accountUtil.getCurrentAccount();
         Date date = new Date();
         Chapter chapter = new Chapter();
@@ -51,13 +49,13 @@ public class ChapterService {
         chapterRepo.save(chapter);
     }
 
-    public Chapter updateChapter(Long id, CreateChapterRequest request) {
+    public void updateChapter(Long id, CreateChapterRequest request) {
         Chapter chapter = this.findChapterById(id);
         chapter.setName(request.getName());
         chapter.setDescription(request.getDescription());
         chapter.setUpdatedDate(new Date());
         chapter.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
-        return chapterRepo.save(chapter);
+        chapterRepo.save(chapter);
     }
 
     public Chapter findChapterById(Long id) {
@@ -67,5 +65,14 @@ public class ChapterService {
         }
         return chapter;
     }
-
+    public List<Chapter> findAll(){
+        return chapterRepo.findAll();
+    }
+    public List<Chapter> findAllByCourseId(Long id){
+        List<Chapter> chapters = chapterRepo.findAllByCourseId(id);
+        if (chapters == null) {
+            throw new AppException(ErrorCode.CHAPTER_NOT_FOUND);
+        }
+        return chapters;
+    }
 }

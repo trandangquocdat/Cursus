@@ -1,9 +1,9 @@
 package com.fpt.cursus.dto.request;
 
-import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.type.Gender;
+import com.fpt.cursus.enums.type.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -13,11 +13,9 @@ import lombok.Data;
 public class RegisterReqDto {
     @Size(min = 4, max = 18, message = "USERNAME_SIZE_INVALID")
     @NotBlank(message = "USERNAME_NULL")
-    @Pattern(regexp = "^[^\\s]+$", message = "USERNAME_CONTAINS_WHITESPACE")
     private String username;
     @Size(min = 6, max = 18, message = "PASSWORD_INVALID_SIZE")
     @NotBlank(message = "PASSWORD_NULL")
-    @Pattern(regexp = "^[^\\s]+$", message = "PASSWORD_CONTAINS_WHITESPACE")
     private String password;
     @Email(message = "EMAIL_INVALID")
     private String email;
@@ -25,5 +23,8 @@ public class RegisterReqDto {
     private String fullName;
     @NotBlank(message = "PHONE_NULL")
     private String phone;
+    private String avatar;
+    private Gender gender;
+    private String cvLink;
     private Role role;
 }

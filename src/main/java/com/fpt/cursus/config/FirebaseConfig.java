@@ -18,14 +18,13 @@ public class FirebaseConfig {
 
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
-        // Check if a FirebaseApp instance already exists
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(new ClassPathResource(credentialsFilePath).getInputStream()))
+                .build();
         if (FirebaseApp.getApps().isEmpty()) {
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(new ClassPathResource(credentialsFilePath).getInputStream()))
-                    .build();
             return FirebaseApp.initializeApp(options);
         } else {
-            return FirebaseApp.getInstance(); // Return the existing instance
+            return FirebaseApp.getInstance();
         }
     }
 }
