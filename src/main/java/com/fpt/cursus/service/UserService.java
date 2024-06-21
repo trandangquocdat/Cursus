@@ -14,7 +14,10 @@ import com.fpt.cursus.util.*;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -84,14 +87,29 @@ public class UserService {
             if (!account.getStatus().equals(UserStatus.ACTIVE)) {
                 throw new AppException(ErrorCode.EMAIL_UNAUTHENTICATED);
             }
-
             LoginResDto loginResDto = new LoginResDto();
-            loginResDto.setToken(tokenHandler.generateToken(account));
+            loginResDto.setToken(tokenHandler.generateAccessToken(account));
             loginResDto.setRefreshToken(tokenHandler.generateRefreshToken(account));
             return loginResDto;
         } catch (BadCredentialsException e) {
             throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);
         }
+    }
+    public LoginResDto refreshToken(HttpServletRequest request) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new AppException(ErrorCode.REFRESH_TOKEN_NOT_VALID);
+        }
+        String token = authHeader.substring(7);
+        String username = tokenHandler.getInfoByToken(token);
+        Account account = accountRepo.findAccountByUsername(username);
+        if(account == null) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+        LoginResDto loginResDto = new LoginResDto();
+        loginResDto.setToken(tokenHandler.generateAccessToken(account));
+        loginResDto.setRefreshToken(tokenHandler.generateRefreshToken(account));
+        return loginResDto;
     }
 
     public LoginResDto loginGoogle(String token) {
@@ -100,7 +118,7 @@ public class UserService {
             String email = decodedToken.getEmail();
             Account account = accountRepo.findAccountByEmail(email);
             LoginResDto loginResponseDTO = new LoginResDto();
-            loginResponseDTO.setToken(tokenHandler.generateToken(account));
+            loginResponseDTO.setToken(tokenHandler.generateAccessToken(account));
             loginResponseDTO.setRefreshToken(tokenHandler.generateRefreshToken(account));
             return loginResponseDTO;
         } catch (FirebaseAuthException e) {

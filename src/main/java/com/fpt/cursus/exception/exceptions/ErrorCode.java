@@ -13,6 +13,7 @@ public enum ErrorCode {
     USER_UNAUTHORIZED (602, "User doesn't have permission to perform this action "),
     USER_ENROLLED_EMPTY (603, "User hasn't enrolled in any courses "),
     USER_ROLE_CAN_NOT_SELECTED(604, "This role can not be selected"),
+    REFRESH_TOKEN_NOT_VALID(605, "Refresh token not valid"),
 
     //Register error - 61x
     USERNAME_EXISTS(610, "Username already exists"),
