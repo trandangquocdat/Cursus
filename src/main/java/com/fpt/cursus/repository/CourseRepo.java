@@ -18,8 +18,12 @@ public interface CourseRepo extends JpaRepository<Course, Long> {
 
     Page<Course> findAll(Pageable pageable);
 
-    @Query("SELECT c FROM Course c WHERE c.status = :status")
-    Page<Course> findAllByStatus(@Param("status") CourseStatus status, Pageable pageable);
+    @Query(value = "SELECT * FROM Course c WHERE c.status = :status",
+            countQuery = "SELECT count(*) FROM Course c WHERE c.status = :status",
+            nativeQuery = true)
+    Page<Course> findAllByStatus(@Param("status") String status, Pageable pageable);
+
+    List<Course> findAllByStatus(CourseStatus status);
 
     List<Course> findByIdIn(List<Long> id);
 

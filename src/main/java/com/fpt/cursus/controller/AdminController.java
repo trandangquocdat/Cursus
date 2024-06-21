@@ -27,14 +27,19 @@ public class AdminController {
     public ApiRes<?> verifyAccount(@RequestParam long id) {
         userService.verifyInstructorById(id);
         String successMessage = "Verify instructor successfully.";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(),successMessage,null);
+        return apiResUtil.returnApiRes(null, null,successMessage,null);
     }
     @PatchMapping("/admin/verify-course")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ApiRes<?> verifyCourse(@RequestParam long id) {
         courseService.verifyCourseById(id);
         String successMessage = "Verify course successfully.";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(),successMessage,null);
+        return apiResUtil.returnApiRes(null, null,successMessage,null);
+    }
+    @GetMapping("/admin/get-verifying-instructor")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ApiRes<?> getVerifyingInstructor() {
+        return apiResUtil.returnApiRes(null, null,null,userService.getVerifyingInstructor());
     }
 
     @DeleteMapping("/auth/delete-account")
@@ -42,6 +47,6 @@ public class AdminController {
     public ApiRes<?> deleteAccount(@RequestParam String username) {
         userService.deleteAccount(username);
         String successMessage = "Delete account successfully.";
-        return apiResUtil.returnApiRes(true,HttpStatus.OK.value(),successMessage,null);
+        return apiResUtil.returnApiRes(null,null,successMessage,null);
     }
 }

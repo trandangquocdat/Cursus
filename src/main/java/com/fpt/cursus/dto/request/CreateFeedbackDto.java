@@ -7,6 +7,6 @@ import lombok.Data;
 public class CreateFeedbackDto {
 
     private String content;
-    private FeedbackType type;
-    private Long courseId;
+    private float rating;
+
 }

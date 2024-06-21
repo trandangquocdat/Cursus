@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -42,14 +43,14 @@ public class Filter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }else{
             if(token == null){
-                resolver.resolveException(request, response, null, new AuthException("Empty Token"));
+                resolver.resolveException(request, response, null, new AuthException("Empty Token", HttpStatus.UNAUTHORIZED.value()));
                 return;
             }
             String username;
             try{
                 username = tokenHandler.getInfoByToken(token);
             }catch (SignatureException | ExpiredJwtException e){
-                resolver.resolveException(request, response, null, new AuthException(e.getMessage()));
+                resolver.resolveException(request, response, null, new AuthException(e.getMessage(), HttpStatus.UNAUTHORIZED.value()));
                 return;
             }
             Account account = accountRepo.findAccountByUsername(username);

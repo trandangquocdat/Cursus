@@ -24,13 +24,11 @@ public class TokenController {
     @GetMapping("/token/generate-refresh-token")
     public ApiRes<?> getRefreshToken() {
         Account account = accountUtil.getCurrentAccount();
-        String successMessage = "Get refresh token successfully";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, tokenHandler.generateRefreshToken(account));
+        return apiResUtil.returnApiRes(null, null, null, tokenHandler.generateRefreshToken(account));
     }
 
     @PutMapping("/token/refresh-access-token")
     public ApiRes<?> refreshToken(@RequestParam String refreshToken) {
-        String successMessage = "Refresh token successfully";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, tokenHandler.refreshAccessToken(refreshToken));
+        return apiResUtil.returnApiRes(null, null, null, tokenHandler.refreshAccessToken(refreshToken));
     }
 }
