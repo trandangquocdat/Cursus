@@ -1,7 +1,7 @@
 package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fpt.cursus.enums.FeedbackType;
+import com.fpt.cursus.enums.type.FeedbackType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,9 +15,11 @@ public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    private float rating;
     private String content;
     private String createdBy;
     private Date createdDate;
+    private Date updatedDate;
     @Enumerated(EnumType.STRING)
     private FeedbackType type;
     @ManyToOne

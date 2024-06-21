@@ -1,14 +1,23 @@
 package com.fpt.cursus.controller;
 
-import com.fpt.cursus.dto.request.CreateCouseDto;
+import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.dto.response.ApiRes;
+import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.entity.Course;
+import com.fpt.cursus.enums.status.CourseStatus;
+import com.fpt.cursus.enums.type.Category;
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin("*")
@@ -19,40 +28,53 @@ public class CourseController {
     @Autowired
     private ApiResUtil apiResUtil;
 
-    @PostMapping("/create-course")
-    public ApiRes<?> createCourse(@RequestBody CreateCouseDto createCouseDto) {
-        String successMessage = "Create course successfully!";
-        return apiResUtil.returnApiRes(true, HttpStatus.CREATED.value(), successMessage, courseService.createCourse(createCouseDto));
+    @PostMapping("/couse/create")
+    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
+    public ApiRes<?> createCourse(@RequestBody CreateCourseDto createCourseDto) {
+        return apiResUtil.returnApiRes(null, null, null,
+                courseService.createCourse(createCourseDto));
     }
-    @PutMapping("/update-course")
-    public ApiRes<?> updateCourse(@RequestParam Long id, @RequestBody CreateCouseDto createCouseDto) {
+    @PutMapping("/course/update")
+    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
+    public ApiRes<?> updateCourse(@RequestParam Long id, @RequestBody CreateCourseDto createCourseDto) {
+        courseService.updateCourse(id, createCourseDto);
         String successMessage = "Update course successfully!";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.updateCourse(id, createCouseDto));
+        return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
 
-    @DeleteMapping("/delete-course")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/course/get-draft-course")
+    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
+    public ApiRes<?> viewDraftCourse() {
+        return apiResUtil.returnApiRes(null, null,null,
+                courseService.findCourseByStatus(CourseStatus.DRAFT));
+    }
+    @DeleteMapping("/course/delete")
+    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ApiRes<?> deleteCourse(@RequestParam Long id) {
         String successMessage = "Delete course successfully!";
         courseService.deleteCourseById(id);
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, null);
+        return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
 
-    @GetMapping("/find-all-course-pagination")
-    public ApiRes<?> findAllCourse(@RequestParam int offset, @RequestParam int pageSize) {
-        String successMessage = "Get course successfully!";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.findAllCourseWithPagination(offset, pageSize));
+    @GetMapping("/course/get-all-course")
+    public ApiRes<?> findAllCourse(@RequestParam(required = false) String sortBy,
+                                   @RequestParam(defaultValue = "1", required = false) int offset,
+                                   @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return apiResUtil.returnApiRes(null, null, null,
+                courseService.getAllCourse(sortBy, offset, pageSize));
+    }
+    @GetMapping("/course/get-enrolled_course")
+    public ApiRes<?> getEnrolledCourses() {
+        List<Course> enrolledCourse = courseService.getEnrolledCourses();
+        return apiResUtil.returnApiRes(null, null, null, enrolledCourse);
+
     }
 
-    @GetMapping("/find-all-course-pagination-sort")
-    public ApiRes<?> findAllCourse(@RequestParam String sortBy, @RequestParam int offset, @RequestParam int pageSize) {
-        String successMessage = "Get course successfully!";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.findAllCourseWithPaginationAndSort(sortBy, offset, pageSize));
+    @GetMapping("/course/get-by-category")
+    public ApiRes<?> getCourseByCategory(@RequestParam(defaultValue = "ALL" ) Category category) {
+
+        return apiResUtil.returnApiRes(null, null, null,
+                courseService.findCourseByCategory(category));
     }
 
-    @GetMapping("/find-course-by-category")
-    public ApiRes<?> findCourseByCategory(@RequestParam String category) {
-        String successMessage = "Get course by category successfully!";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.findCourseByCategory(category));
-    }
 }

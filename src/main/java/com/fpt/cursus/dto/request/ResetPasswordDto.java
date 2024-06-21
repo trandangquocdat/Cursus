@@ -1,15 +1,13 @@
 package com.fpt.cursus.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
 public class ResetPasswordDto {
-    @NotEmpty(message = "Please input password")
-    @NotBlank(message = "Please don't leave BLANK in password")
+    @NotBlank(message = "PASSWORD_NULL")
     private String password;
-    @NotEmpty(message = "Please input confirm new password")
-    @NotBlank (message = "Please don't leave BLANK in confirm new password")
+    @NotBlank(message = "PASSWORD_NULL")
     private String confirmPassword;
 }
