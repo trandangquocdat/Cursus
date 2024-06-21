@@ -26,15 +26,15 @@ public class LessonController {
                 lessonService.createLesson(chapterId,request));
     }
 
-    @PutMapping("/lesson/update/{lessonId}")
-    public ApiRes<?> updateChapter(@PathVariable Long lessonId, @RequestBody @Valid CreateLessonDto request) {
+    @PutMapping("/lesson/update")
+    public ApiRes<?> updateChapter(@RequestParam Long lessonId, @RequestBody @Valid CreateLessonDto request) {
         lessonService.updateLesson(lessonId, request);
         String successMessage = "Update chapter successfully!";
         return apiResUtil.returnApiRes(null, null, successMessage,null);
     }
 
-    @DeleteMapping("/lesson/delete/{lessonId}")
-    public ApiRes<?> deleteChapter(@PathVariable Long lessonId) {
+    @DeleteMapping("/lesson/delete")
+    public ApiRes<?> deleteChapter(@RequestParam Long lessonId) {
         lessonService.deleteLessonById(lessonId);
         String successMessage = "Delete chapter successfully!";
         return apiResUtil.returnApiRes(null, null, successMessage,null);
@@ -44,8 +44,8 @@ public class LessonController {
     public ApiRes<?> findAll() {
         return apiResUtil.returnApiRes(null, null, null,lessonService.findAll());
     }
-    @GetMapping("/lesson/get-by-chapter/{chapterId}")
-    public ApiRes<?> findById(@PathVariable Long chapterId) {
+    @GetMapping("/lesson/get-by-chapter")
+    public ApiRes<?> findById(@RequestParam  Long chapterId) {
         return apiResUtil.returnApiRes(null, null, null,lessonService.findAllByChapterId(chapterId));
     }
 }
