@@ -41,7 +41,6 @@ public class UserControllerTest {
                 .gender(Gender.MALE)
                 .fullName("test1")
                 .phone("0972340212")
-                .role(Role.STUDENT)
                 .build();
 
         response = Account.builder()

@@ -1,5 +1,7 @@
 package com.fpt.cursus.config;
 
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -48,7 +50,7 @@ public class SecurityConfig {
     @Bean
 
     public UserDetailsService userDetailsService() {
-        return username -> accountRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Account not found"));
+        return username -> accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Bean

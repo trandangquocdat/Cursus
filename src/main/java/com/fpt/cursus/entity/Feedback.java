@@ -15,6 +15,7 @@ public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    private float rating;
     private String content;
     private String createdBy;
     private Date createdDate;

@@ -7,17 +7,20 @@ import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
+import com.fpt.cursus.entity.Feedback;
 import com.fpt.cursus.enums.status.CourseStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
 import com.fpt.cursus.repository.CourseRepo;
+import com.fpt.cursus.repository.FeedbackRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,10 +35,15 @@ public class CourseService {
     private AccountUtil accountUtil;
     @Autowired
     private AccountRepo accountRepo;
+    @Autowired
+    private FeedbackRepo feedbackRepo;
 
     public Course createCourse(CreateCourseDto createCourseDto) {
         if (courseRepo.existsByName(createCourseDto.getName())) {
             throw new AppException(ErrorCode.COURSE_EXISTS);
+        }
+        if (createCourseDto.getPrice() < 5000) {
+            throw new AppException(ErrorCode.COURSE_PRICE_INVALID);
         }
         Date now = new Date();
         Course course = new Course();
@@ -64,12 +72,14 @@ public class CourseService {
 
     }
 
-    public Course updateCourse(Long id, CreateCourseDto createCourseDto) {
+    public void updateCourse(Long id, CreateCourseDto createCourseDto) {
         Course existingCourse = courseRepo.findCourseById(id);
-
         if (existingCourse != null && existingCourse.getStatus() != CourseStatus.DELETED) {
             if (courseRepo.existsByName(createCourseDto.getName())) {
                 throw new AppException(ErrorCode.COURSE_EXISTS);
+            }
+            if (createCourseDto.getPrice() < 5000) {
+                throw new AppException(ErrorCode.COURSE_PRICE_INVALID);
             }
             Date date = new Date();
             existingCourse.setName(createCourseDto.getName());
@@ -79,8 +89,9 @@ public class CourseService {
             existingCourse.setCategory(createCourseDto.getCategory());
             existingCourse.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
             existingCourse.setStatus(CourseStatus.DRAFT);
+            existingCourse.setVersion((float) (existingCourse.getVersion() + 0.1));
             existingCourse.setUpdatedDate(date);
-            return courseRepo.save(existingCourse);
+            courseRepo.save(existingCourse);
         } else {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
         }
@@ -95,7 +106,7 @@ public class CourseService {
         courseRepo.save(course);
     }
 
-    public Course findCourseById(Long id) {
+        public Course findCourseById(Long id) {
         Course course = courseRepo.findCourseById(id);
         if (course == null) {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
@@ -181,13 +192,11 @@ public class CourseService {
         return totalLesson;
     }
 
-    public Page<Course> findAllCourseWithPagination(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return courseRepo.findAllByStatus(CourseStatus.PUBLISHED, pageable);
-    }
-
-    public Page<Course> findAllCourseWithPaginationAndSort(String sortBy, int offset, int pageSize) {
-        return courseRepo.findAllByStatus(CourseStatus.PUBLISHED,
+    public Page<Course> getAllCourse(String sortBy, int offset, int pageSize) {
+        if (sortBy == null) {
+            return courseRepo.findAllByStatus("PUBLISHED", PageRequest.of(offset-1, pageSize));
+        }
+        return courseRepo.findAllByStatus("PUBLISHED",
                 PageRequest.of(offset, pageSize).withSort(Sort.by(sortBy)));
     }
 
@@ -209,7 +218,19 @@ public class CourseService {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
         }
         return courseRepo.findByIdIn(enrolledCoursesId);
+    }
 
+    @Async
+    public void ratingCourse(long courseId,float rating) {
+        List<Feedback> feedbacks = feedbackRepo.findFeedbackByCourseId(courseId);
+        float sum = 0;
+        for (Feedback feedback : feedbacks) {
+            sum += feedback.getRating();
+        }
+        sum += rating;
+        Course course = courseRepo.findCourseById(courseId);
+        course.setRating((float) (Math.round(sum / (feedbacks.size() + 1)* 10.0)/10.0)) ;
+        courseRepo.save(course);
     }
 
 }

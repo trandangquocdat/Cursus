@@ -5,12 +5,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ApiResUtil {
-    public ApiRes<?> returnApiRes(boolean status, int code, String message, Object data) {
+    public ApiRes<?> returnApiRes(Boolean status, Integer code, String message, Object data) {
         var apiRes = new ApiRes<>();
         apiRes.setStatus(status);
         apiRes.setCode(code);
         apiRes.setMessage(message);
-        apiRes.setResult(data);
-        return apiRes;
+        apiRes.setData(data);
+        return  apiRes;
     }
 }

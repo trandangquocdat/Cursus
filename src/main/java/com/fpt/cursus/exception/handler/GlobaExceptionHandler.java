@@ -45,7 +45,7 @@ public class GlobaExceptionHandler {
                 detailMessage = exceptionMessage.substring(detailStart, detailEnd);
             }
         }
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), detailMessage, null);
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), exceptionMessage, null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
 

@@ -10,8 +10,9 @@ public enum ErrorCode {
     UNCATEGORIZED_ERROR(999, "Uncategorized error"),
     USER_NOT_FOUND(600, "User not found"),
     USER_EXISTS(601, "User already exists"),
-    USER_UNAUTHORIZED(602, "User doesn't have permission to perform this action "),
-    USER_ENROLLED_EMPTY(603, "User hasn't enrolled in any courses "),
+    USER_UNAUTHORIZED (602, "User doesn't have permission to perform this action "),
+    USER_ENROLLED_EMPTY (603, "User hasn't enrolled in any courses "),
+    USER_ROLE_CAN_NOT_SELECTED(604, "This role can not be selected"),
 
     //Register error - 61x
     USERNAME_EXISTS(610, "Username already exists"),
@@ -47,6 +48,7 @@ public enum ErrorCode {
     COURSE_PRICE_NULL(702, "Price of course can not be null"),
     COURSE_CATEGORY_NULL(703, "Category of course can not be null"),
     COURSE_EXISTS(704, "Course already exists"),
+    COURSE_PRICE_INVALID(705, "Price of course must be greater than 5.000 VND"),
 
     //chapter error - 71x
     CHAPTER_NAME_NULL(710, "Chapter name can not be null"),
@@ -73,7 +75,9 @@ public enum ErrorCode {
     //
     PROCESS_CALCULATE_PERCENT_FAIL(750, "Calculate percent fail"),
     PROCESS_ADD_STUDIED_COURSE_FAIL(751, "Add studied course fail"),
-
+    //
+    FEEDBACK_NOT_FOUND(760, "Feedback not found"),
+    FEEDBACK_INVALID_RATING(761, "Invalid rating"),
     ;
 
     ErrorCode(int code, String message) {

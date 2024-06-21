@@ -45,7 +45,7 @@ public class Account implements UserDetails {
     @Builder.Default
     private UserStatus status = UserStatus.INACTIVE;
     private String cvLink;
-
+    private boolean instructorVerified = false;
     private Date createdDate;
     private Date updatedDate;
     private String createdBy;

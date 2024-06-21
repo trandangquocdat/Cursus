@@ -24,13 +24,12 @@ public class ProcessController {
     public ApiRes<?> addStudiedLesson(@RequestParam Long courserId, @RequestParam Long lessonId) {
         courseService.addStudiedLesson(courserId, lessonId);
         String successMessage = "Add studied lesson successfully";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, null);
+        return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
 
     @PutMapping("/process/percent-done")
     public ApiRes<?> percentDoneCourse(@RequestParam Long courseId) {
-        String successMessage = "Calculate percent done successfully";
-        return apiResUtil.returnApiRes(true, HttpStatus.OK.value(), successMessage, courseService.percentDoneCourse(courseId));
+        return apiResUtil.returnApiRes(null, null, null,  courseService.percentDoneCourse(courseId));
     }
 
 }
