@@ -6,8 +6,8 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiRes <T>{
-    private boolean status;
-    private int code;
+    private Boolean status;
+    private Integer code;
     private String message;
-    private T result;
+    private T data;
 }

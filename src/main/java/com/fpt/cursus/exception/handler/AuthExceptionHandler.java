@@ -29,7 +29,7 @@ public class AuthExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> handleException(AccessDeniedException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.UNAUTHORIZED.value(), "Access denied",null );
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.FORBIDDEN.value(), "Forbidden",null );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 

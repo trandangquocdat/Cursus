@@ -1,44 +1,33 @@
-// File: src/main/java/com/fpt/cursus/service/UserService.java
 package com.fpt.cursus.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fpt.cursus.dto.object.EnrollCourseDto;
 import com.fpt.cursus.dto.request.ChangePasswordDto;
 import com.fpt.cursus.dto.request.LoginReqDto;
 import com.fpt.cursus.dto.request.RegisterReqDto;
 import com.fpt.cursus.dto.request.ResetPasswordDto;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Otp;
 import com.fpt.cursus.enums.type.Role;
 import com.fpt.cursus.enums.status.UserStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
-import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.repository.OtpRepo;
 import com.fpt.cursus.util.*;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -46,9 +35,6 @@ public class UserService {
 
     @Autowired
     private AccountRepo accountRepo;
-
-    @Autowired
-    private CourseRepo courseRepo;
 
     @Autowired
     private OtpRepo otpRepo;
@@ -76,19 +62,16 @@ public class UserService {
         if (!regex.isPhoneValid(registerReqDTO.getPhone())) {
             throw new AppException(ErrorCode.PHONE_NOT_VALID);
         }
+
         Account account = new Account();
         account.setUsername(registerReqDTO.getUsername());
         account.setPassword(passwordEncoder.encode(registerReqDTO.getPassword()));
         account.setEmail(registerReqDTO.getEmail());
         account.setFullName(registerReqDTO.getFullName());
-        if (registerReqDTO.getRole().equals(Role.INSTRUCTOR)) {
-            account.setRole(Role.PRE_INSTRUCTOR);
-        } else {
-            account.setRole(registerReqDTO.getRole());
-        }
+        account.setRole(Role.STUDENT);
         account.setPhone(registerReqDTO.getPhone());
         account.setGender(registerReqDTO.getGender());
-        account.setCvLink(registerReqDTO.getCvLink());
+        //verify cv
         account.setAvatar(registerReqDTO.getAvatar());
         account.setStatus(UserStatus.INACTIVE);
         return accountRepo.save(account);
@@ -108,7 +91,6 @@ public class UserService {
             LoginResDto loginResDto = new LoginResDto();
             loginResDto.setToken(tokenHandler.generateToken(account));
             loginResDto.setRefreshToken(tokenHandler.generateRefreshToken(account));
-            loginResDto.setUsername(account.getUsername());
             return loginResDto;
         } catch (BadCredentialsException e) {
             throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);
@@ -122,7 +104,6 @@ public class UserService {
             Account account = accountRepo.findAccountByEmail(email);
             LoginResDto loginResponseDTO = new LoginResDto();
             loginResponseDTO.setToken(tokenHandler.generateToken(account));
-            loginResponseDTO.setUsername(account.getUsername());
             loginResponseDTO.setRefreshToken(tokenHandler.generateRefreshToken(account));
             return loginResponseDTO;
         } catch (FirebaseAuthException e) {
@@ -149,7 +130,15 @@ public class UserService {
         account.setRole(Role.INSTRUCTOR);
         accountRepo.save(account);
     }
-
+    public void sendVerifyInstructor(Long id,String cvLink) {
+        Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        account.setCvLink(cvLink);
+        account.setInstructorVerified(true);
+        accountRepo.save(account);
+    }
+    public List<Account> getVerifyingInstructor() {
+        return accountRepo.findAccountByInstructorVerified(true);
+    }
     public void regenerateOtp(String email) {
         otpRepo.updateOldOtps(email);
         String otp = otpService.generateOtp();

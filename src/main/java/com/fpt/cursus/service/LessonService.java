@@ -48,13 +48,13 @@ public class LessonService {
         lessonRepo.save(lesson);
     }
 
-    public Lesson updateLesson(Long id, CreateLessonDto request) {
+    public void updateLesson(Long id, CreateLessonDto request) {
         Lesson lesson = this.findLessonById(id);
         lesson.setName(request.getName());
         lesson.setDescription(request.getDescription());
         lesson.setUpdatedDate(new Date());
         lesson.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
-        return lessonRepo.save(lesson);
+        lessonRepo.save(lesson);
     }
 
     public List<Lesson> findAllByChapterId(Long id) {

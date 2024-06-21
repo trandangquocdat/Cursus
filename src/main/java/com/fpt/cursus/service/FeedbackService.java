@@ -1,14 +1,19 @@
 package com.fpt.cursus.service;
 
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
+import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Feedback;
 import com.fpt.cursus.enums.type.FeedbackType;
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.repository.FeedbackRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
@@ -20,30 +25,54 @@ public class FeedbackService {
     private AccountUtil accountUtil;
     @Autowired
     private CourseRepo courseRepo;
+    @Autowired
+    private CourseService courseService;
 
-    public Feedback createFeedback(Long courseId,CreateFeedbackDto feedbackDto) {
+//    @Resource
+//    private ratingService
+    public Feedback createFeedback(Long courseId,FeedbackType type,CreateFeedbackDto feedbackDto) {
         Feedback feedback = new Feedback();
         feedback.setContent(feedbackDto.getContent());
+        feedback.setRating(feedbackDto.getRating());
         feedback.setCreatedDate(new Date());
         feedback.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
         feedback.setCourse(courseRepo.findCourseById(courseId));
+        feedback.setType(type);
+        if(type == FeedbackType.REVIEW) {
+            courseService.ratingCourse(courseId, feedbackDto.getRating());
+        }
         return feedbackRepo.save(feedback);
     }
     public void deleteFeedbackById(long id) {
         feedbackRepo.deleteById(id);
     }
-    public Feedback updateFeedbackById(long id, CreateFeedbackDto feedbackDto) {
+    public void updateFeedbackById(long id, CreateFeedbackDto feedbackDto) {
         Feedback feedback = feedbackRepo.findFeedbackById(id);
         feedback.setContent(feedbackDto.getContent());
         feedback.setUpdatedDate(new Date());
-        return feedbackRepo.save(feedback);
+        feedbackRepo.save(feedback);
     }
-    public List<Feedback> getFeedbackByCourseId(long id) {
 
-        return feedbackRepo.findFeedbackByCourseId(id);
+    public List<Feedback> getFeedbackByCourseId(long id) {
+        List<Feedback> feedbacks = feedbackRepo.findFeedbackByCourseId(id);
+        if(feedbacks == null){
+            throw new AppException(ErrorCode.FEEDBACK_NOT_FOUND);
+        }
+        return feedbacks;
     }
     public List<Feedback> getFeedbackByType(FeedbackType type) {
-        return feedbackRepo.findFeedbackByType(type);
+        List<Feedback> feedbacks = feedbackRepo.findFeedbackByType(type);
+        if(feedbacks == null){
+            throw new AppException(ErrorCode.FEEDBACK_NOT_FOUND);
+        }
+        return feedbacks;
+    }
+    public List<Feedback> getFeedbackByCourseIdAndType(long id, FeedbackType type) {
+        List<Feedback> feedbacks = feedbackRepo.findFeedbackByCourseIdAndType(id, type);
+        if(feedbacks == null){
+            throw new AppException(ErrorCode.FEEDBACK_NOT_FOUND);
+        }
+        return feedbacks;
     }
 
 }

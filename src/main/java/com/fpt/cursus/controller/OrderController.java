@@ -18,13 +18,12 @@ public class OrderController {
 
     @PostMapping("/order/create-url")
     public ApiRes<?> createUrl(@RequestBody PaymentDto request)  {
-        String successMessage = "Order success";
-        return apiResUtil.returnApiRes(true, 200, successMessage, orderService.createUrl(request));
+        return apiResUtil.returnApiRes(null, null, null, orderService.createUrl(request));
     }
     @PutMapping("/order/update-status")
     public ApiRes<?> orderSuccess(@RequestParam Long id) {
         orderService.orderSuccess(id);
         String successMessage = "Order success";
-        return apiResUtil.returnApiRes(true, 200, successMessage, null);
+        return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
 }
