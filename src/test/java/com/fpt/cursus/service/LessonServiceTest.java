@@ -212,7 +212,7 @@ class LessonServiceTest {
     }
 
     @Test
-    void testFindAllNotFound()    {
+    void testFindAllNotFound() {
         when(lessonRepo.findAll()).thenReturn(new ArrayList<>());
         assertEquals(0, lessonService.findAll().size());
     }

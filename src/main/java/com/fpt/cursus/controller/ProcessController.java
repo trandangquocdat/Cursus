@@ -29,7 +29,7 @@ public class ProcessController {
 
     @PutMapping("/process/percent-done")
     public ApiRes<?> percentDoneCourse(@RequestParam Long courseId) {
-        return apiResUtil.returnApiRes(null, null, null,  courseService.percentDoneCourse(courseId));
+        return apiResUtil.returnApiRes(null, null, null, courseService.percentDoneCourse(courseId));
     }
 
 }

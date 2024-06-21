@@ -41,15 +41,15 @@ public class Filter extends OncePerRequestFilter {
                 || uri.contains("reset-password") || uri.contains("forgot-password")
                 || uri.contains("regenerate-otp")) {
             filterChain.doFilter(request, response);
-        }else{
-            if(token == null){
+        } else {
+            if (token == null) {
                 resolver.resolveException(request, response, null, new AuthException("Empty Token", HttpStatus.UNAUTHORIZED.value()));
                 return;
             }
             String username;
-            try{
+            try {
                 username = tokenHandler.getInfoByToken(token);
-            }catch (SignatureException | ExpiredJwtException e){
+            } catch (SignatureException | ExpiredJwtException e) {
                 resolver.resolveException(request, response, null, new AuthException(e.getMessage(), HttpStatus.UNAUTHORIZED.value()));
                 return;
             }

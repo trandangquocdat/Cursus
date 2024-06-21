@@ -28,7 +28,7 @@ public class FeedbackService {
     @Autowired
     private CourseService courseService;
 
-    public Feedback createFeedback(Long courseId,CreateFeedbackDto feedbackDto) {
+    public Feedback createFeedback(Long courseId, CreateFeedbackDto feedbackDto) {
         Feedback feedback = new Feedback();
         feedback.setContent(feedbackDto.getContent());
         feedback.setCreatedDate(new Date());
@@ -36,9 +36,11 @@ public class FeedbackService {
         feedback.setCourse(courseRepo.findCourseById(courseId));
         return feedbackRepo.save(feedback);
     }
+
     public void deleteFeedbackById(long id) {
         feedbackRepo.deleteById(id);
     }
+
     public void updateFeedbackById(long id, CreateFeedbackDto feedbackDto) {
         Feedback feedback = feedbackRepo.findFeedbackById(id);
         feedback.setContent(feedbackDto.getContent());
@@ -48,7 +50,7 @@ public class FeedbackService {
 
     public List<Feedback> getFeedbackByCourseId(long id) {
         List<Feedback> feedbacks = feedbackRepo.findFeedbackByCourseId(id);
-        if(feedbacks == null){
+        if (feedbacks == null) {
             throw new AppException(ErrorCode.FEEDBACK_NOT_FOUND);
         }
         return feedbacks;
@@ -56,14 +58,15 @@ public class FeedbackService {
 
     public List<Feedback> getFeedbackByType(FeedbackType type) {
         List<Feedback> feedbacks = feedbackRepo.findFeedbackByType(type);
-        if(feedbacks == null){
+        if (feedbacks == null) {
             throw new AppException(ErrorCode.FEEDBACK_NOT_FOUND);
         }
         return feedbacks;
     }
+
     public List<Feedback> getFeedbackByCourseIdAndType(long id, FeedbackType type) {
         List<Feedback> feedbacks = feedbackRepo.findFeedbackByCourseIdAndType(id, type);
-        if(feedbacks == null){
+        if (feedbacks == null) {
             throw new AppException(ErrorCode.FEEDBACK_NOT_FOUND);
         }
         return feedbacks;

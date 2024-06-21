@@ -106,7 +106,7 @@ public class CourseService {
         courseRepo.save(course);
     }
 
-        public Course findCourseById(Long id) {
+    public Course findCourseById(Long id) {
         Course course = courseRepo.findCourseById(id);
         if (course == null) {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
@@ -194,7 +194,7 @@ public class CourseService {
 
     public Page<Course> getAllCourse(String sortBy, int offset, int pageSize) {
         if (sortBy == null) {
-            return courseRepo.findAllByStatus("PUBLISHED", PageRequest.of(offset-1, pageSize));
+            return courseRepo.findAllByStatus("PUBLISHED", PageRequest.of(offset - 1, pageSize));
         }
         return courseRepo.findAllByStatus("PUBLISHED",
                 PageRequest.of(offset, pageSize).withSort(Sort.by(sortBy)));
@@ -221,7 +221,7 @@ public class CourseService {
     }
 
     @Async
-    public void ratingCourse(long courseId,float rating) {
+    public void ratingCourse(long courseId, float rating) {
         List<Feedback> feedbacks = feedbackRepo.findFeedbackByCourseId(courseId);
         float sum = 0;
         for (Feedback feedback : feedbacks) {
@@ -229,7 +229,7 @@ public class CourseService {
         }
         sum += rating;
         Course course = courseRepo.findCourseById(courseId);
-        course.setRating((float) (Math.round(sum / (feedbacks.size() + 1)* 10.0)/10.0)) ;
+        course.setRating((float) (Math.round(sum / (feedbacks.size() + 1) * 10.0) / 10.0));
         courseRepo.save(course);
     }
 

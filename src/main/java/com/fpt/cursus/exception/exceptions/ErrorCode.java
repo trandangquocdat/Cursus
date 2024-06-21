@@ -10,8 +10,8 @@ public enum ErrorCode {
     UNCATEGORIZED_ERROR(999, "Uncategorized error"),
     USER_NOT_FOUND(600, "User not found"),
     USER_EXISTS(601, "User already exists"),
-    USER_UNAUTHORIZED (602, "User doesn't have permission to perform this action "),
-    USER_ENROLLED_EMPTY (603, "User hasn't enrolled in any courses "),
+    USER_UNAUTHORIZED(602, "User doesn't have permission to perform this action "),
+    USER_ENROLLED_EMPTY(603, "User hasn't enrolled in any courses "),
     USER_ROLE_CAN_NOT_SELECTED(604, "This role can not be selected"),
 
     //Register error - 61x

@@ -59,8 +59,8 @@ public class UserController {
     }
 
     @PatchMapping("/auth/send-verify-instructor")
-    public ApiRes<?> verifyInstructor(@RequestParam long id,@RequestBody @Valid CvLinkDto cvLink) {
-        userService.sendVerifyInstructor(id,cvLink);
+    public ApiRes<?> verifyInstructor(@RequestParam long id, @RequestBody @Valid CvLinkDto cvLink) {
+        userService.sendVerifyInstructor(id, cvLink);
         String successMessage = "Verify instructor successfully. You can now login with your email and password.";
         return apiResUtil.returnApiRes(null, null, successMessage, null);
     }

@@ -25,13 +25,13 @@ public class FeedbackController {
     private FeedbackService feedbackService;
 
     @PostMapping("/feedback/")
-    public ApiRes<?> createFeedback(@RequestParam Long courseId, @RequestParam FeedbackType type, @RequestBody CreateFeedbackDto feedbackDto) {
+    public ApiRes<?> createFeedback(@RequestParam Long courseId, @RequestBody CreateFeedbackDto feedbackDto) {
         double rating = feedbackDto.getRating();
         if (rating == 0 || !VALID_RATINGS.contains(rating)) {
             return apiResUtil.returnApiRes(false, ErrorCode.FEEDBACK_INVALID_RATING.getCode(), ErrorCode.FEEDBACK_INVALID_RATING.getMessage(), null);
         }
         return apiResUtil.returnApiRes(null, null, null,
-                feedbackService.createFeedback(courseId, type, feedbackDto));
+                feedbackService.createFeedback(courseId, feedbackDto));
     }
 
     @DeleteMapping("/feedback/{id}")

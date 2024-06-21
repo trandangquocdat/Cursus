@@ -18,7 +18,7 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping("/order/create-url")
-    public ApiRes<?> createUrl(@RequestBody PaymentDto request)  {
+    public ApiRes<?> createUrl(@RequestBody PaymentDto request) {
         return apiResUtil.returnApiRes(null, null, null, orderService.createUrl(request));
     }
 

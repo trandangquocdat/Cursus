@@ -127,17 +127,20 @@ public class UserService {
         account.setRole(Role.INSTRUCTOR);
         accountRepo.save(account);
     }
+
     public void sendVerifyInstructor(Long id, CvLinkDto cvLinkdto) {
         Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         account.setCvLink(cvLinkdto.getCvLink());
         account.setInstructorVerified(true);
         accountRepo.save(account);
     }
+
     public List<Account> getVerifyingInstructor() {
         return accountRepo.findAccountByInstructorVerified(true);
     }
+
     public void regenerateOtp(String email) {
-        if(accountRepo.findByEmail(email).isEmpty()){
+        if (accountRepo.findByEmail(email).isEmpty()) {
             throw new AppException(ErrorCode.EMAIL_NOT_FOUND);
         }
         otpRepo.updateOldOtps(email);
@@ -191,7 +194,7 @@ public class UserService {
     }
 
     public void forgotPassword(String email) {
-        if(accountRepo.findByEmail(email).isEmpty()){
+        if (accountRepo.findByEmail(email).isEmpty()) {
             throw new AppException(ErrorCode.EMAIL_NOT_FOUND);
         }
         String otp = otpService.generateOtp();
