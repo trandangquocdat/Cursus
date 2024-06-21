@@ -1,9 +1,6 @@
 package com.fpt.cursus.service;
 
-import com.fpt.cursus.dto.request.ChangePasswordDto;
-import com.fpt.cursus.dto.request.LoginReqDto;
-import com.fpt.cursus.dto.request.RegisterReqDto;
-import com.fpt.cursus.dto.request.ResetPasswordDto;
+import com.fpt.cursus.dto.request.*;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Otp;
@@ -130,9 +127,9 @@ public class UserService {
         account.setRole(Role.INSTRUCTOR);
         accountRepo.save(account);
     }
-    public void sendVerifyInstructor(Long id,String cvLink) {
+    public void sendVerifyInstructor(Long id, CvLinkDto cvLinkdto) {
         Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        account.setCvLink(cvLink);
+        account.setCvLink(cvLinkdto.getCvLink());
         account.setInstructorVerified(true);
         accountRepo.save(account);
     }
@@ -140,6 +137,9 @@ public class UserService {
         return accountRepo.findAccountByInstructorVerified(true);
     }
     public void regenerateOtp(String email) {
+        if(accountRepo.findByEmail(email).isEmpty()){
+            throw new AppException(ErrorCode.EMAIL_NOT_FOUND);
+        }
         otpRepo.updateOldOtps(email);
         String otp = otpService.generateOtp();
         otpService.sendOtpEmail(email, otp);
@@ -191,6 +191,9 @@ public class UserService {
     }
 
     public void forgotPassword(String email) {
+        if(accountRepo.findByEmail(email).isEmpty()){
+            throw new AppException(ErrorCode.EMAIL_NOT_FOUND);
+        }
         String otp = otpService.generateOtp();
         otpService.sendResetPasswordEmail(email, otp);
         otpService.saveOtp(email, otp);

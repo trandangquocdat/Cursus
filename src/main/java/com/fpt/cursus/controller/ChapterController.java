@@ -25,8 +25,8 @@ public class ChapterController {
         return apiResUtil.returnApiRes(null, null, successMessage,
                 chapterService.createChapter(courseId,request));
     }
-    @DeleteMapping("/chapter/delete/{chapterId}")
-    public ApiRes<?> deleteChapter(@PathVariable Long chapterId) {
+    @DeleteMapping("/chapter/delete")
+    public ApiRes<?> deleteChapter(@RequestParam Long chapterId) {
         chapterService.deleteChapterById(chapterId);
         String successMessage = "Delete chapter successfully";
         return apiResUtil.returnApiRes(null, null, successMessage,null);
@@ -48,8 +48,8 @@ public class ChapterController {
         return apiResUtil.returnApiRes(null, null, null,chapterService.findAll());
     }
 
-    @GetMapping("/chapter/get-by-course-id/{courseId}")
-    public ApiRes<?> findAllByCourseId(@PathVariable Long courseId) {
+    @GetMapping("/chapter/get-by-course")
+    public ApiRes<?> findAllByCourseId(@RequestParam Long courseId) {
         return apiResUtil.returnApiRes(null, null, null,chapterService.findAllByCourseId(courseId));
     }
 

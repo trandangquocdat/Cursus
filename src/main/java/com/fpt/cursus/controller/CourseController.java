@@ -37,7 +37,7 @@ public class CourseController {
         return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
 
-    @GetMapping("/admin/view-draft-course")
+    @GetMapping("/course/get-draft-course")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ApiRes<?> viewDraftCourse() {
         return apiResUtil.returnApiRes(null, null,null,courseService.findCourseByStatus(CourseStatus.DRAFT));
@@ -54,7 +54,7 @@ public class CourseController {
     public ApiRes<?> findAllCourse(@RequestParam(required = false) String sortBy, @RequestParam(defaultValue = "1", required = false) int offset, @RequestParam(defaultValue = "10", required = false) int pageSize) {
         return apiResUtil.returnApiRes(null, null, null, courseService.getAllCourse(sortBy, offset, pageSize));
     }
-    @GetMapping("/enrolled_course")
+    @GetMapping("/course/get-enrolled_course")
     public ApiRes<?> getEnrolledCourses() {
         List<Course> enrolledCourse = courseService.getEnrolledCourses();
         return apiResUtil.returnApiRes(null, null, null, enrolledCourse);
