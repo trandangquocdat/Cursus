@@ -22,14 +22,15 @@ public interface CourseRepo extends JpaRepository<Course, Long> {
             nativeQuery = true)
     Page<Course> findAllByStatus(@Param("status") String status, Pageable pageable);
 
-    List<Course> findAllByStatus(CourseStatus status);
+    Page<Course> findAllByStatus(CourseStatus status, Pageable pageable);
 
-    List<Course> findByIdIn(List<Long> id);
+    Page<Course> findByIdIn(List<Long> id, Pageable pageable);
 
     boolean existsByName(String name);
-    List<Course> findCourseByStatus(CourseStatus status);
+
+    Page<Course> findCourseByStatus(CourseStatus status, Pageable pageable);
 
     Course findCourseById(Long id);
 
-    List<Course> findCourseByCategory(Category category);
+    Page<Course> findCourseByCategory(Category category, Pageable pageable);
 }

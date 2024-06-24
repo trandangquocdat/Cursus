@@ -8,7 +8,7 @@ import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.enums.type.Gender;
 import com.fpt.cursus.enums.type.Role;
 import com.fpt.cursus.enums.status.UserStatus;
-import com.fpt.cursus.service.UserService;
+import com.fpt.cursus.service.AccountService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,11 +23,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTest {
+public class AccountControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private UserService userService;
+    private AccountService accountService;
 
     private RegisterReqDto request;
     private Account response;
@@ -67,7 +67,7 @@ public class UserControllerTest {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        Mockito.when(userService.register(Mockito.any())).thenReturn(response);
+        Mockito.when(accountService.register(Mockito.any())).thenReturn(response);
         //WHEN
         try {
             mockMvc.perform(MockMvcRequestBuilders
@@ -98,7 +98,7 @@ public class UserControllerTest {
         request.setUsername(null);
         ObjectMapper mapper = new ObjectMapper();
         String content = mapper.writeValueAsString(request);
-        Mockito.when(userService.register(Mockito.any())).thenReturn(response);
+        Mockito.when(accountService.register(Mockito.any())).thenReturn(response);
         //WHEN
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/auth/register")
@@ -118,7 +118,7 @@ public class UserControllerTest {
         request.setUsername("dat tran dang");
         ObjectMapper mapper = new ObjectMapper();
         String content = mapper.writeValueAsString(request);
-        Mockito.when(userService.register(Mockito.any())).thenReturn(response);
+        Mockito.when(accountService.register(Mockito.any())).thenReturn(response);
         //WHEN
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/auth/register")
@@ -139,7 +139,7 @@ public class UserControllerTest {
         request.setUsername("d");
         ObjectMapper mapper = new ObjectMapper();
         String content = mapper.writeValueAsString(request);
-        Mockito.when(userService.register(Mockito.any())).thenReturn(response);
+        Mockito.when(accountService.register(Mockito.any())).thenReturn(response);
         //WHEN
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/auth/register")

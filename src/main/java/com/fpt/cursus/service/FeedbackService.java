@@ -24,8 +24,6 @@ public class FeedbackService {
     @Autowired
     private AccountUtil accountUtil;
     @Autowired
-    private CourseRepo courseRepo;
-    @Autowired
     private CourseService courseService;
 
 //    @Resource
@@ -36,12 +34,23 @@ public class FeedbackService {
         feedback.setRating(feedbackDto.getRating());
         feedback.setCreatedDate(new Date());
         feedback.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
-        feedback.setCourse(courseRepo.findCourseById(courseId));
+        feedback.setCourse(courseService.findCourseById(courseId));
         feedback.setType(type);
         if(type == FeedbackType.REVIEW) {
-            courseService.ratingCourse(courseId, feedbackDto.getRating());
+            ratingCourse(courseId, feedbackDto.getRating());
         }
         return feedbackRepo.save(feedback);
+    }
+    public void ratingCourse(long courseId, float rating) {
+        List<Feedback> feedbacks = getFeedbackByCourseId(courseId);
+        float sum = 0;
+        for (Feedback feedback : feedbacks) {
+            sum += feedback.getRating();
+        }
+        sum += rating;
+        Course course = courseService.findCourseById(courseId);
+        course.setRating((float) (Math.round(sum / (feedbacks.size() + 1) * 10.0) / 10.0));
+        courseService.saveCourse(course);
     }
     public void deleteFeedbackById(long id) {
         feedbackRepo.deleteById(id);
@@ -74,5 +83,6 @@ public class FeedbackService {
         }
         return feedbacks;
     }
+
 
 }

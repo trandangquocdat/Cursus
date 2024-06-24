@@ -29,7 +29,16 @@ public class OtpService {
     public String generateOtp() {
         return otpUtil.generateOtp();
     }
-
+    public void updateOldOtps(String email) {
+        otpRepo.updateOldOtps(email);
+    }
+    public Otp findOtpByEmailAndValid(String email, Boolean valid) {
+        Otp otp = otpRepo.findOtpByEmailAndValid(email, valid);
+        if (otp == null) {
+            throw new AppException(ErrorCode.OTP_NOT_FOUND);
+        }
+        return otpRepo.findOtpByEmailAndValid(email, valid);
+    }
     @Async
     public void saveOtp(String email, String otp) {
         Otp otpEntity = new Otp();

@@ -19,7 +19,7 @@ public class EnrollCourseService {
     @Autowired
     private AccountUtil accountUtil;
     @Autowired
-    private AccountRepo accountRepo;
+    private AccountService accountService;
 
     @Transactional
     public void enrollCourseAfterPay(List<Long> ids) throws JsonProcessingException {
@@ -38,7 +38,7 @@ public class EnrollCourseService {
             account.setEnrolledCourse(ids);
             account.setEnrolledCourseJson(mapper.writeValueAsString(ids));
         }
-        accountRepo.save(account);
+        accountService.saveAccount(account);
     }
 
 }

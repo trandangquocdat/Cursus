@@ -21,20 +21,20 @@ public class LessonController {
     private LessonService lessonService;
 
     @PostMapping("/lesson/create")
-    public ApiRes<?> createChapter(@RequestParam Long chapterId,@RequestBody @Valid CreateLessonDto request) {
+    public ApiRes<?> createLesson(@RequestParam Long chapterId,@RequestBody @Valid CreateLessonDto request) {
         return apiResUtil.returnApiRes(null, null, null,
                 lessonService.createLesson(chapterId,request));
     }
 
     @PutMapping("/lesson/update")
-    public ApiRes<?> updateChapter(@RequestParam Long lessonId, @RequestBody @Valid CreateLessonDto request) {
+    public ApiRes<?> updateLesson(@RequestParam Long lessonId, @RequestBody @Valid CreateLessonDto request) {
         lessonService.updateLesson(lessonId, request);
         String successMessage = "Update chapter successfully!";
         return apiResUtil.returnApiRes(null, null, successMessage,null);
     }
 
     @DeleteMapping("/lesson/delete")
-    public ApiRes<?> deleteChapter(@RequestParam Long lessonId) {
+    public ApiRes<?> deleteLesson(@RequestParam Long lessonId) {
         lessonService.deleteLessonById(lessonId);
         String successMessage = "Delete chapter successfully!";
         return apiResUtil.returnApiRes(null, null, successMessage,null);

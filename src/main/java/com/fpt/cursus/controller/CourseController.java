@@ -2,6 +2,7 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.dto.response.ApiRes;
+import com.fpt.cursus.dto.response.GeneralCourse;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.status.CourseStatus;
@@ -13,6 +14,7 @@ import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +36,7 @@ public class CourseController {
         return apiResUtil.returnApiRes(null, null, null,
                 courseService.createCourse(createCourseDto));
     }
+
     @PutMapping("/course/update")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ApiRes<?> updateCourse(@RequestParam Long id, @RequestBody CreateCourseDto createCourseDto) {
@@ -44,10 +47,13 @@ public class CourseController {
 
     @GetMapping("/course/get-draft-course")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
-    public ApiRes<?> viewDraftCourse() {
-        return apiResUtil.returnApiRes(null, null,null,
-                courseService.findCourseByStatus(CourseStatus.DRAFT));
+    public ApiRes<?> viewDraftCourse(@RequestParam(required = false) String sortBy,
+                                     @RequestParam(defaultValue = "0", required = false) int offset,
+                                     @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return apiResUtil.returnApiRes(null, null, null,
+                courseService.findCourseByStatus(CourseStatus.DRAFT, offset, pageSize, sortBy));
     }
+
     @DeleteMapping("/course/delete")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ApiRes<?> deleteCourse(@RequestParam Long id) {
@@ -57,24 +63,38 @@ public class CourseController {
     }
 
     @GetMapping("/course/get-all-course")
-    public ApiRes<?> findAllCourse(@RequestParam(required = false) String sortBy,
-                                   @RequestParam(defaultValue = "1", required = false) int offset,
-                                   @RequestParam(defaultValue = "10", required = false) int pageSize) {
+    public ApiRes<?> getAllCourse(@RequestParam(required = false) String sortBy,
+                                  @RequestParam(defaultValue = "0", required = false) int offset,
+                                  @RequestParam(defaultValue = "10", required = false) int pageSize) {
         return apiResUtil.returnApiRes(null, null, null,
-                courseService.getAllCourse(sortBy, offset, pageSize));
+                courseService.getAllGeneralCourses(sortBy, offset, pageSize));
     }
-    @GetMapping("/course/get-enrolled_course")
-    public ApiRes<?> getEnrolledCourses() {
-        List<Course> enrolledCourse = courseService.getEnrolledCourses();
-        return apiResUtil.returnApiRes(null, null, null, enrolledCourse);
 
+    @GetMapping("/course/get-general-enrolled_course")
+    public ApiRes<?> getEnrolledCourses(@RequestParam(required = false) String sortBy,
+                                        @RequestParam(defaultValue = "0", required = false) int offset,
+                                        @RequestParam(defaultValue = "10", required = false) int pageSize) {
+
+        return apiResUtil.returnApiRes(null, null, null,
+                courseService.getGeneralEnrolledCourses(sortBy, offset, pageSize));
+    }
+
+    @GetMapping("/course/get-detail-enrolled_course")
+    public ApiRes<?> getDetailEnrolledCourses(@RequestParam(required = false) String sortBy,
+                                              @RequestParam(defaultValue = "0", required = false) int offset,
+                                              @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return apiResUtil.returnApiRes(null, null, null,
+                courseService.getDetailEnrolledCourses(sortBy, offset, pageSize));
     }
 
     @GetMapping("/course/get-by-category")
-    public ApiRes<?> getCourseByCategory(@RequestParam(defaultValue = "ALL" ) Category category) {
+    public ApiRes<?> getCourseByCategory(@RequestParam(defaultValue = "ALL") Category category,
+                                         @RequestParam(required = false) String sortBy,
+                                         @RequestParam(defaultValue = "0", required = false) int offset,
+                                         @RequestParam(defaultValue = "10", required = false) int pageSize) {
 
         return apiResUtil.returnApiRes(null, null, null,
-                courseService.findCourseByCategory(category));
+                courseService.findCourseByCategory(category,offset, pageSize, sortBy));
     }
 
 }

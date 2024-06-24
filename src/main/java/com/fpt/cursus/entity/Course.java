@@ -34,6 +34,8 @@ public class Course {
     private float version = 1.0f;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-    @JsonIgnore
     private List<Chapter> chapter;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    private List<Feedback> feedback;
 }

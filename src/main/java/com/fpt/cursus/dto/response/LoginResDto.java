@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class LoginResDto {
-    private String token;
+    private String accessToken;
     private String refreshToken;
+    private long expire;
 }

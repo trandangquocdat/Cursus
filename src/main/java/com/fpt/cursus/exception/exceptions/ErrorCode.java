@@ -14,7 +14,7 @@ public enum ErrorCode {
     USER_ENROLLED_EMPTY (603, "User hasn't enrolled in any courses "),
     USER_ROLE_CAN_NOT_SELECTED(604, "This role can not be selected"),
     REFRESH_TOKEN_NOT_VALID(605, "Refresh token not valid"),
-
+    REFRESH_TOKEN_EXPIRED(606, "Refresh token expired"),
     //Register error - 61x
     USERNAME_EXISTS(610, "Username already exists"),
     USERNAME_SIZE_INVALID(611, "Username must be between 4 and 18 characters"),
@@ -43,6 +43,7 @@ public enum ErrorCode {
     //OTP error - 66X
     OTP_INVALID(660,"Wrong OTP"),
     OTP_EXPIRED(661, "OTP expired"),
+    OTP_NOT_FOUND(662, "OTP not found"),
     //Course error - 70x
     COURSE_NOT_FOUND(700, "Course not found"),
     COURSE_SIZE_INVALID(701, "Course name must be less than 200 characters"),
