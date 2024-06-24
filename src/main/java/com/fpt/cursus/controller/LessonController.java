@@ -29,7 +29,7 @@ public class LessonController {
     }
 
     @PutMapping("/lesson/update")
-    public ApiRes<Object> updateLesson(@RequestParam Long lessonId, @RequestBody @Valid CreateLessonDto request) {
+    public ApiRes<?> updateLesson(@RequestParam Long lessonId, @RequestBody @Valid CreateLessonDto request) {
         lessonService.updateLesson(lessonId, request);
         String successMessage = "Update chapter successfully!";
         return apiResUtil.returnApiRes(null, null, successMessage, null);
