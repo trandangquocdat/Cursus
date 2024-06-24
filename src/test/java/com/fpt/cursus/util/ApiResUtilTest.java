@@ -30,10 +30,10 @@ class ApiResUtilTest {
         apiRes = apiResUtil.returnApiRes(status, code, message, data);
 
         assertNotNull(apiRes);
-        assertTrue(apiRes.isStatus());
+        assertTrue(apiRes.getStatus());
         assertEquals(code, apiRes.getCode());
         assertEquals(message, apiRes.getMessage());
-        assertEquals(data, apiRes.getResult());
+        assertEquals(data, apiRes.getData());
     }
 
     @Test
@@ -45,9 +45,9 @@ class ApiResUtilTest {
         apiRes = apiResUtil.returnApiRes(status, code, message, null);
 
         assertNotNull(apiRes);
-        assertTrue(apiRes.isStatus());
+        assertTrue(apiRes.getStatus());
         assertEquals(code, apiRes.getCode());
         assertEquals(message, apiRes.getMessage());
-        assertNull(apiRes.getResult());
+        assertNull(apiRes.getData());
     }
 }

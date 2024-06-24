@@ -155,14 +155,14 @@ class LessonServiceTest {
         when(accountUtil.getCurrentAccount()).thenReturn(account);
         when(lessonRepo.save(any(Lesson.class))).thenReturn(lesson);
 
-        Lesson result = lessonService.updateLesson(id, request);
+        lessonService.updateLesson(id, request);
 
-        assertNotNull(result);
-        assertEquals(id, result.getId());
-        assertEquals(request.getName(), result.getName());
-        assertEquals(request.getDescription(), result.getDescription());
-        assertNotNull(result.getUpdatedDate());
-        assertEquals(account.getUsername(), result.getUpdatedBy());
+        assertNotNull(lesson);
+        assertEquals(id, lesson.getId());
+        assertEquals(request.getName(), lesson.getName());
+        assertEquals(request.getDescription(), lesson.getDescription());
+        assertNotNull(lesson.getUpdatedDate());
+        assertEquals(account.getUsername(), lesson.getUpdatedBy());
         verify(lessonRepo, times(1)).save(any(Lesson.class));
     }
 
