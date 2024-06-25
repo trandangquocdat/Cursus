@@ -34,7 +34,7 @@ public class FeedbackService {
         feedback.setRating(feedbackDto.getRating());
         feedback.setCreatedDate(new Date());
         feedback.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
-        feedback.setCourse(courseService.findCourseById(courseId));
+        feedback.setCourse(courseService.getCourseById(courseId));
         feedback.setType(type);
         if(type == FeedbackType.REVIEW) {
             ratingCourse(courseId, feedbackDto.getRating());
@@ -48,7 +48,7 @@ public class FeedbackService {
             sum += feedback.getRating();
         }
         sum += rating;
-        Course course = courseService.findCourseById(courseId);
+        Course course = courseService.getCourseById(courseId);
         course.setRating((float) (Math.round(sum / (feedbacks.size() + 1) * 10.0) / 10.0));
         courseService.saveCourse(course);
     }

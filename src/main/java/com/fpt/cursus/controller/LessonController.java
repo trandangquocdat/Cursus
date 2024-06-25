@@ -1,6 +1,5 @@
 package com.fpt.cursus.controller;
 
-import com.fpt.cursus.dto.request.CreateChapterRequest;
 import com.fpt.cursus.dto.request.CreateLessonDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.service.LessonService;
@@ -8,7 +7,6 @@ import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

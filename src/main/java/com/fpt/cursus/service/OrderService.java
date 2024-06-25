@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.PaymentDto;
+import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Orders;
 import com.fpt.cursus.enums.status.OrderStatus;
@@ -12,6 +13,7 @@ import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.OrdersRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import javax.crypto.Mac;
@@ -26,14 +28,32 @@ import java.util.*;
 
 @Service
 public class OrderService {
-    @Autowired
-    private AccountUtil accountUtil;
-    @Autowired
-    private CourseService courseService;
-    @Autowired
-    private OrdersRepo ordersRepo;
-    @Autowired
-    private EnrollCourseService enroll;
+    private final AccountUtil accountUtil;
+    private final CourseService courseService;
+    private final OrdersRepo ordersRepo;
+    private final EnrollCourseService enroll;
+
+    public OrderService(AccountUtil accountUtil, CourseService courseService, OrdersRepo ordersRepo, EnrollCourseService enroll) {
+        this.accountUtil = accountUtil;
+        this.courseService = courseService;
+        this.ordersRepo = ordersRepo;
+        this.enroll = enroll;
+    }
+
+    @Value("${spring.vnpay.tmnCode}")
+    private String tmnCode;
+
+    @Value("${spring.vnpay.secretKey}")
+    private String secretKey;
+
+    @Value("${spring.vnpay.currCode}")
+    private String currCode;
+
+    @Value("${spring.vnpay.vnpUrl}")
+    private String vnpUrl;
+
+    @Value("${spring.vnpay.returnUrl}")
+    private String returnUrl;
 
     public ResponseEntity<String> createUrl(PaymentDto request) {
         List<Long> ids = request.getCourseId();
@@ -46,18 +66,14 @@ public class OrderService {
         String formattedCreateDate = createDate.format(formatter);
         double prices = 0;
         for (Long idCourse : ids) {
-            Course course = courseService.findCourseById(idCourse);
+            Course course = courseService.getCourseById(idCourse);
             if (course == null) {
                 throw new AppException(ErrorCode.COURSE_NOT_FOUND);
             }
             prices += course.getPrice();
         }
-        saveOrder(order, ids, prices);
-        String tmnCode = "9KM2MRF7";
-        String secretKey = "PMRS00LV60QVIJQNIW23P67UXP1RUAFB";
-        String vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        String returnUrl = "http://localhost:8080/order/update-status?id=" + order.getId();
-        String currCode = "VND";
+        setOrder(order, ids, prices);
+
         String id = String.valueOf(order.getId());
         String price = String.valueOf((long) (prices * 100)); // VND amount should be in cents
 
@@ -94,7 +110,6 @@ public class OrderService {
 
         return ResponseEntity.ok(urlBuilder.toString());
     }
-
     private void signUrl(Map<String, String> vnpParams, StringBuilder signDataBuilder) {
         for (Map.Entry<String, String> entry : vnpParams.entrySet()) {
             signDataBuilder.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8));
@@ -118,13 +133,19 @@ public class OrderService {
         return result.toString();
     }
 
-    public void orderSuccess(Long id) {
+    public void orderSuccess(String txnRef, String responseCode) {
+        Long id = Long.parseLong(txnRef);
         Orders order = ordersRepo.findOrdersById(id);
-        order.setStatus(OrderStatus.PAID);
+        if (!responseCode.equals("00")) {
+            order.setStatus(OrderStatus.FAIL);
+            ordersRepo.save(order);
+            throw new AppException(ErrorCode.ORDER_FAIL);
+        }
         ObjectMapper mapper = new ObjectMapper();
         try {
             order.setOrderCourse(mapper.readValue(order.getOrderCourseJson(), new TypeReference<>() {
             }));
+            order.setStatus(OrderStatus.PAID);
             enroll.enrollCourseAfterPay(order.getOrderCourse());
 
         } catch (JsonProcessingException e) {
@@ -133,7 +154,7 @@ public class OrderService {
         ordersRepo.save(order);
     }
 
-    public void saveOrder(Orders order, List<Long> ids, double price) {
+    public void setOrder(Orders order, List<Long> ids, double price) {
         order.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
         order.setCreatedDate(new Date());
         order.setStatus(OrderStatus.PENDING);

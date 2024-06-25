@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 @Service
 public class CourseService {
 
@@ -56,7 +55,7 @@ public class CourseService {
     }
 
     public void deleteCourseById(Long id) {
-        Course course = findCourseById(id);
+        Course course = getCourseById(id);
         course.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         course.setUpdatedDate(new Date());
         course.setStatus(CourseStatus.DELETED);
@@ -64,7 +63,7 @@ public class CourseService {
     }
 
     public void updateCourse(Long id, CreateCourseDto createCourseDto) {
-        Course existingCourse = findCourseById(id);
+        Course existingCourse = getCourseById(id);
         if (existingCourse.getStatus() == CourseStatus.DELETED) {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
         }
@@ -85,26 +84,26 @@ public class CourseService {
     }
 
     public void verifyCourseById(Long id) {
-        Course course = findCourseById(id);
+        Course course = getCourseById(id);
         course.setStatus(CourseStatus.PUBLISHED);
         courseRepo.save(course);
     }
 
-    public Course findCourseById(Long id) {
+    public Course getCourseById(Long id) {
         return courseRepo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
     }
 
-    public Page<Course> findCourseByStatus(CourseStatus status, int offset, int pageSize, String sortBy) {
+    public Page<Course> getCourseByStatus(CourseStatus status, int offset, int pageSize, String sortBy) {
         if (sortBy != null) {
-            Pageable pageable = PageRequest.of(offset, pageSize, Sort.by(sortBy));
+            Pageable pageable = PageRequest.of(offset-1, pageSize, Sort.by(sortBy));
             Page<Course> courses = courseRepo.findCourseByStatus(status, pageable);
             if (courses.isEmpty()) {
                 throw new AppException(ErrorCode.COURSE_NOT_FOUND);
             }
             return courses;
         }
-        Pageable pageable = PageRequest.of(offset, pageSize);
+        Pageable pageable = PageRequest.of(offset-1, pageSize);
         Page<Course> courses = courseRepo.findCourseByStatus(status, pageable);
         if (courses.isEmpty()) {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
@@ -132,16 +131,52 @@ public class CourseService {
         saveStudiedCourses(account, studiedCourses);
     }
 
-    public Page<Course> findCourseByCategory(Category category, int offset, int pageSize, String sortBy) {
+    public void addToWishList(List<Long> ids) {
+        List<Course> courses = courseRepo.findByIdIn(ids);
+
+        // Check if any IDs are missing
+        if (courses.size() != ids.size()) {
+            throw new AppException(ErrorCode.COURSE_NOT_FOUND);
+        }
+        Account account = accountUtil.getCurrentAccount();
+        List<Long> wishListCourses = getWishListCourses(account);
+        List<Long> nonDuplicateIds = ids.stream()
+                .filter(id -> !wishListCourses.contains(id))
+                .toList();
+        wishListCourses.addAll(nonDuplicateIds);
+        saveWishListCourses(account, wishListCourses);
+    }
+
+    public void removeFromWishList(Long id) {
+        Account account = accountUtil.getCurrentAccount();
+        List<Long> wishListCourses = getWishListCourses(account);
+        wishListCourses.remove(id);
+        saveWishListCourses(account, wishListCourses);
+    }
+    public Page<GeneralCourse> getWishListCourses(int offset, int pageSize, String sortBy) {
+        Account account = accountUtil.getCurrentAccount();
+        List<Long> wishListCourses = getWishListCourses(account);
         if (sortBy != null) {
-            Pageable pageable = PageRequest.of(offset, pageSize, Sort.by(sortBy));
+            Pageable pageable = PageRequest.of(offset-1, pageSize, Sort.by(sortBy));
+            Page<Course> courses = courseRepo.findByIdIn(wishListCourses, pageable);
+            return convertToGeneralCoursePage(courses);
+        }
+        Pageable pageable = PageRequest.of(offset-1, pageSize);
+        Page<Course> courses = courseRepo.findByIdIn(wishListCourses, pageable);
+        return convertToGeneralCoursePage(courses);
+    }
+
+    public Page<GeneralCourse> getCourseByCategory(Category category, int offset, int pageSize, String sortBy) {
+        if (sortBy != null) {
+            Pageable pageable = PageRequest.of(offset-1, pageSize, Sort.by(sortBy));
             Page<Course> courses = courseRepo.findCourseByCategory(category, pageable);
             if (courses.isEmpty()) {
                 throw new AppException(ErrorCode.COURSE_NOT_FOUND);
             }
-            return courses;
+
+            return convertToGeneralCoursePage(courses);
         }
-        Pageable pageable = PageRequest.of(offset, pageSize);
+        Pageable pageable = PageRequest.of(offset-1, pageSize);
         Page<Course> courses;
         if (category == Category.ALL) {
             courses = courseRepo.findAllByStatus(CourseStatus.PUBLISHED, pageable);
@@ -151,7 +186,7 @@ public class CourseService {
         if (courses.isEmpty()) {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
         }
-        return courses;
+        return convertToGeneralCoursePage(courses);
     }
 
     public double percentDoneCourse(Long courseId) {
@@ -169,14 +204,14 @@ public class CourseService {
     }
 
     private int getTotalLesson(Long courseId) {
-        Course course = findCourseById(courseId);
+        Course course = getCourseById(courseId);
         return course.getChapter().stream()
                 .mapToInt(chapter -> chapter.getLesson().size())
                 .sum();
     }
 
     public Page<GeneralCourse> getAllGeneralCourses(String sortBy, int offset, int pageSize) {
-        Pageable pageable = getPageable(sortBy, offset, pageSize);
+        Pageable pageable = getPageable(sortBy, offset-1, pageSize);
         Page<Course> courses = courseRepo.findAllByStatus(CourseStatus.PUBLISHED.name(), pageable);
         return convertToGeneralCoursePage(courses);
     }
@@ -199,8 +234,8 @@ public class CourseService {
 
     private Pageable getPageable(String sortBy, int offset, int pageSize) {
         return sortBy == null
-                ? PageRequest.of(offset, pageSize)
-                : PageRequest.of(offset, pageSize, Sort.by(sortBy));
+                ? PageRequest.of(offset-1, pageSize)
+                : PageRequest.of(offset-1, pageSize, Sort.by(sortBy));
     }
 
     private Page<GeneralCourse> convertToGeneralCoursePage(Page<Course> courses) {
@@ -241,7 +276,7 @@ public class CourseService {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
         }
 
-        Pageable pageable = PageRequest.of(offset, pageSize);
+        Pageable pageable = PageRequest.of(offset-1, pageSize);
         return courseRepo.findByIdIn(enrolledCourseIds, pageable);
     }
 
@@ -251,6 +286,25 @@ public class CourseService {
         }
         try {
             return objectMapper.readValue(account.getStudiedCourseJson(), new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
+    }
+    private List<Long> getWishListCourses(Account account) {
+        if (account.getWishListCourseJson() == null || account.getWishListCourseJson().isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            return objectMapper.readValue(account.getWishListCourseJson(), new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
+    }
+
+    private void saveWishListCourses(Account account, List<Long> wishListCourses) {
+        try {
+            account.setWishListCourseJson(objectMapper.writeValueAsString(wishListCourses));
+            accountService.saveAccount(account);
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
         }
