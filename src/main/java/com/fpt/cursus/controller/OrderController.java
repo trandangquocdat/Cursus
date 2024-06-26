@@ -2,7 +2,7 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.PaymentDto;
 import com.fpt.cursus.dto.response.ApiRes;
-import com.fpt.cursus.service.OrderService;
+import com.fpt.cursus.service.impl.OrderServiceImpl;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ public class OrderController {
     @Autowired
     private ApiResUtil apiResUtil;
     @Autowired
-    private OrderService orderService;
+    private OrderServiceImpl orderService;
 
     @PostMapping("/order/create-url")
     public ApiRes<?> createUrl(@RequestBody PaymentDto request) {

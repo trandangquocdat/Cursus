@@ -2,6 +2,7 @@ package com.fpt.cursus.service;
 
 import com.fpt.cursus.entity.Chapter;
 import com.fpt.cursus.repository.ChapterRepo;
+import com.fpt.cursus.service.impl.ChapterServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,8 +13,6 @@ import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @ExtendWith(SpringExtension.class)
 @MockBeans({
         @MockBean(AccountUtil.class),
@@ -21,14 +20,14 @@ import static org.junit.jupiter.api.Assertions.*;
         @MockBean(ChapterRepo.class),
 })
 @ContextConfiguration(classes = {
-        ChapterService.class,
+        ChapterServiceImpl.class,
         AccountUtil.class,
         CourseService.class,
         ChapterRepo.class,
 })
 class ChapterServiceTest {
     @Autowired
-    private ChapterService chapterService;
+    private ChapterServiceImpl chapterService;
 
     @Autowired
     private AccountUtil accountUtil;

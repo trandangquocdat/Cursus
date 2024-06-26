@@ -54,6 +54,11 @@ class LessonControllerTest {
 
     @BeforeEach
     void setUp() {
+        mockMvc = standaloneSetup(new LessonController(apiResUtil, lessonService))
+                .alwaysDo(print())
+                .alwaysExpect(status().isOk())
+                .build();
+
         createLessonDto = new CreateLessonDto();
         createLessonDto.setName("Lesson 1");
         createLessonDto.setDescription("Content of lesson 1");
@@ -69,11 +74,6 @@ class LessonControllerTest {
         lesson.setUpdatedDate(new Date());
         lesson.setCreatedBy("admin");
         lesson.setUpdatedBy("admin");
-
-        mockMvc = standaloneSetup(new LessonController(apiResUtil, lessonService))
-                .alwaysDo(print())
-                .alwaysExpect(status().isOk())
-                .build();
     }
 
     @Test
