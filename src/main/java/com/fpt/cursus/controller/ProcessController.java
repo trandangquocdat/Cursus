@@ -1,6 +1,7 @@
 package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.response.ApiRes;
+import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.impl.CourseServiceImpl;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -17,7 +18,7 @@ public class ProcessController {
     @Autowired
     private ApiResUtil apiResUtil;
     @Autowired
-    private CourseServiceImpl courseService;
+    private CourseService courseService;
 
     @PutMapping("/process")
     public ApiRes<?> addStudiedLesson(@RequestParam Long courserId, @RequestParam Long lessonId) {

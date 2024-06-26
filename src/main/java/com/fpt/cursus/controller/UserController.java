@@ -4,19 +4,16 @@ import com.fpt.cursus.dto.request.*;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.service.OtpService;
 import com.fpt.cursus.service.UserService;
+import com.fpt.cursus.service.impl.OtpServiceImpl;
+import com.fpt.cursus.service.impl.UserServiceImpl;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @CrossOrigin("*")

@@ -4,6 +4,7 @@ import com.fpt.cursus.dto.request.CreateFeedbackDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.enums.type.FeedbackType;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
+import com.fpt.cursus.service.FeedbackService;
 import com.fpt.cursus.util.ApiResUtil;
 import com.fpt.cursus.service.impl.FeedbackServiceImpl;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -21,7 +22,7 @@ public class FeedbackController {
     @Autowired
     private ApiResUtil apiResUtil;
     @Autowired
-    private FeedbackServiceImpl feedbackService;
+    private FeedbackService feedbackService;
 
     @PostMapping("/feedback/")
     public ApiRes<?> createFeedback(@RequestParam Long courseId, @RequestBody CreateFeedbackDto feedbackDto) {

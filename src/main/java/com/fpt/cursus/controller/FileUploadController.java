@@ -3,6 +3,7 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.FirebaseStorageService;
+import com.fpt.cursus.service.impl.FirebaseStorageServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +22,7 @@ public class FileUploadController {
     private final FirebaseStorageService storageService;
 
     @Autowired
-    public FileUploadController(FirebaseStorageService storageService) {
+    public FileUploadController(FirebaseStorageServiceImpl storageService) {
         this.storageService = storageService;
     }
 

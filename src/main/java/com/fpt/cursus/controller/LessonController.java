@@ -3,6 +3,7 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.dto.request.CreateLessonDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.service.LessonService;
+import com.fpt.cursus.service.impl.LessonServiceImpl;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -17,7 +18,7 @@ public class LessonController {
     private final LessonService lessonService;
 
     @Autowired
-    public LessonController(ApiResUtil apiResUtil, LessonService lessonService) {
+    public LessonController(ApiResUtil apiResUtil, LessonServiceImpl lessonService) {
         this.apiResUtil = apiResUtil;
         this.lessonService = lessonService;
     }

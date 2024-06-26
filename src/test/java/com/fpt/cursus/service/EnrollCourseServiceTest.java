@@ -29,7 +29,7 @@ class EnrollCourseServiceTest {
     private AccountRepo accountRepo;
 
     @InjectMocks
-    private EnrollCourseServiceImpl enrollCourseService;
+    private EnrollCourseService enrollCourseService;
 
     private Account account;
 

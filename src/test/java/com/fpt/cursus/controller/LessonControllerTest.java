@@ -5,7 +5,7 @@ import com.fpt.cursus.dto.request.CreateLessonDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.enums.status.LessonStatus;
-import com.fpt.cursus.service.LessonService;
+import com.fpt.cursus.service.impl.LessonServiceImpl;
 import com.fpt.cursus.util.ApiResUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,12 +33,12 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 @WebMvcTest(LessonController.class)
 @ContextConfiguration(classes = {LessonController.class,
         ApiResUtil.class,
-        LessonService.class
+        LessonServiceImpl.class
 })
 class LessonControllerTest {
 
     @MockBean
-    private LessonService lessonService;
+    private LessonServiceImpl lessonService;
 
     @MockBean
     private ApiResUtil apiResUtil;

@@ -42,10 +42,10 @@ class OrderServiceTest {
     OrdersRepo ordersRepo;
 
     @Mock
-    EnrollCourseServiceImpl enrollCourseService;
+    EnrollCourseService enrollCourseService;
 
     @Mock
-    CourseServiceImpl courseService;
+    CourseService courseService;
 
     @Mock
     ObjectMapper mapper;

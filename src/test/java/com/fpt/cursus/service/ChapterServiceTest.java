@@ -14,39 +14,6 @@ import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(SpringExtension.class)
-@MockBeans({
-        @MockBean(AccountUtil.class),
-        @MockBean(CourseServiceImpl.class),
-        @MockBean(ChapterRepo.class),
-})
-@ContextConfiguration(classes = {
-        ChapterServiceImpl.class,
-        AccountUtil.class,
-        CourseServiceImpl.class,
-        ChapterRepo.class,
-})
+
 class ChapterServiceTest {
-    @Autowired
-    private ChapterServiceImpl chapterService;
-
-    @Autowired
-    private AccountUtil accountUtil;
-
-    @Autowired
-    private CourseServiceImpl courseService;
-
-    @Autowired
-    private ChapterRepo chapterRepo;
-
-    @BeforeEach
-    void initDate() {
-
-    }
-
-    @Test
-    void testCreateChapter() {
-        Chapter chapter = new Chapter();
-
-    }
 }

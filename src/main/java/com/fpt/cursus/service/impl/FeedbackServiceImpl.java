@@ -7,6 +7,7 @@ import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.repository.FeedbackRepo;
+import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.FeedbackService;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Autowired
     private CourseRepo courseRepo;
     @Autowired
-    private CourseServiceImpl courseService;
+    private CourseService courseService;
 
     public Feedback createFeedback(Long courseId, CreateFeedbackDto feedbackDto) {
         Feedback feedback = new Feedback();

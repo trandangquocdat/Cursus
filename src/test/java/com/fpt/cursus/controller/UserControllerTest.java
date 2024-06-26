@@ -8,7 +8,7 @@ import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.enums.type.Gender;
 import com.fpt.cursus.enums.type.Role;
 import com.fpt.cursus.enums.status.UserStatus;
-import com.fpt.cursus.service.UserService;
+import com.fpt.cursus.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,7 +27,7 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private UserService userService;
+    private UserServiceImpl userService;
 
     private RegisterReqDto request;
     private Account response;

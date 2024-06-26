@@ -9,6 +9,7 @@ import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.LessonRepo;
 import com.fpt.cursus.service.impl.ChapterServiceImpl;
+import com.fpt.cursus.service.impl.LessonServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class LessonServiceTest {
     private LessonRepo lessonRepo;
 
     @Mock
-    private ChapterServiceImpl chapterService;
+    private ChapterService chapterService;
 
     @Mock
     private AccountUtil accountUtil;

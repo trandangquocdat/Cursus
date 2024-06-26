@@ -1,65 +1,14 @@
 package com.fpt.cursus.service;
 
-import com.fpt.cursus.entity.Otp;
-import com.fpt.cursus.exception.exceptions.AppException;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.repository.OtpRepo;
-import com.fpt.cursus.util.EmailUtil;
-import com.fpt.cursus.util.OtpUtil;
-import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+public interface OtpService {
 
-import java.time.LocalDateTime;
-import java.util.concurrent.CompletableFuture;
+    void deleteOldOtps();
 
-@Service
-public class OtpService {
-    @Autowired
-    private OtpRepo otpRepo;
+    void sendResetPasswordEmail(String email, String otp);
 
-    @Autowired
-    private OtpUtil otpUtil;
+    void sendOtpEmail(String email, String otp);
 
-    @Autowired
-    private EmailUtil emailUtil;
+    void saveOtp(String email, String otp);
 
-    public String generateOtp() {
-        return otpUtil.generateOtp();
-    }
-
-    @Async
-    public void saveOtp(String email, String otp) {
-        Otp otpEntity = new Otp();
-        otpEntity.setEmail(email);
-        otpEntity.setOtp(otp);
-        otpEntity.setOtpGeneratedTime(LocalDateTime.now());
-        otpRepo.save(otpEntity);
-    }
-
-    @Async
-    public void sendOtpEmail(String email, String otp) {
-        try {
-            emailUtil.sendOtpEmail(email, otp);
-        } catch (MessagingException e) {
-            throw new AppException(ErrorCode.EMAIL_CAN_NOT_SEND);
-        }
-    }
-
-    @Async
-    public void sendResetPasswordEmail(String email, String otp) {
-        try {
-            emailUtil.sendPasswordResetEmail(email, otp);
-        } catch (MessagingException e) {
-            throw new AppException(ErrorCode.EMAIL_CAN_NOT_SEND);
-        }
-    }
-
-    @Scheduled(cron = "0 0 0 * * ?") // Lập lịch chạy mỗi ngày vào nửa đêm
-    public void deleteOldOtps() {
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        otpRepo.deleteInvalidOrExpiredOtps(thirtyDaysAgo);
-    }
+    String generateOtp();
 }
