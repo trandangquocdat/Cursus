@@ -3,6 +3,7 @@ package com.fpt.cursus.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.repository.AccountRepo;
+import com.fpt.cursus.service.impl.EnrollCourseServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class EnrollCourseServiceTest {
     private AccountRepo accountRepo;
 
     @InjectMocks
-    private EnrollCourseService enrollCourseService;
+    private EnrollCourseServiceImpl enrollCourseService;
 
     private Account account;
 

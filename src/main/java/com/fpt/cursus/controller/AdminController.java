@@ -1,13 +1,11 @@
 package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.response.ApiRes;
-import com.fpt.cursus.enums.status.CourseStatus;
-import com.fpt.cursus.service.CourseService;
+import com.fpt.cursus.service.impl.CourseServiceImpl;
 import com.fpt.cursus.service.UserService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +18,7 @@ public class AdminController {
     @Autowired
     private UserService userService;
     @Autowired
-    private CourseService courseService;
+    private CourseServiceImpl courseService;
 
     @PatchMapping("/admin/verify-instructor")
     @PreAuthorize("hasAuthority('ADMIN')")

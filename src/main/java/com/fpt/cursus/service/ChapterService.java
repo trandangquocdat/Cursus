@@ -7,16 +7,16 @@ import java.util.List;
 
 public interface ChapterService {
 
-    public Chapter createChapter(Long courseId, CreateChapterRequest request);
+    Chapter createChapter(Long courseId, CreateChapterRequest request);
 
-    public void deleteChapterById(Long id);
+    void deleteChapterById(Long id);
 
-    public void updateChapter(Long id, CreateChapterRequest request);
+    void updateChapter(Long id, CreateChapterRequest request);
 
-    public Chapter findChapterById(Long id);
+    Chapter findChapterById(Long id);
 
-    public List<Chapter> findAll();
+    List<Chapter> findAll();
 
-    public List<Chapter> findAllByCourseId(Long id);
+    List<Chapter> findAllByCourseId(Long id);
 
 }

@@ -10,6 +10,8 @@ import com.fpt.cursus.enums.status.OrderStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.OrdersRepo;
+import com.fpt.cursus.service.impl.CourseServiceImpl;
+import com.fpt.cursus.service.impl.EnrollCourseServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,10 +42,10 @@ class OrderServiceTest {
     OrdersRepo ordersRepo;
 
     @Mock
-    EnrollCourseService enrollCourseService;
+    EnrollCourseServiceImpl enrollCourseService;
 
     @Mock
-    CourseService courseService;
+    CourseServiceImpl courseService;
 
     @Mock
     ObjectMapper mapper;

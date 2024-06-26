@@ -1,9 +1,7 @@
 package com.fpt.cursus.controller;
 
-import com.fpt.cursus.service.CourseService;
-import org.assertj.core.api.Assertions;
+import com.fpt.cursus.service.impl.CourseServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,7 +26,7 @@ class CourseControllerTest {
     private CourseController controller;
 
     @MockBean
-    private CourseService service;
+    private CourseServiceImpl service;
 
     @BeforeEach
     void setUp() throws Exception {
