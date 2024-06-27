@@ -2,6 +2,7 @@ package com.fpt.cursus.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.TimeZoneColumn;
 
 import java.time.LocalDateTime;
 @Entity

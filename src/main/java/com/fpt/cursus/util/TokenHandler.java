@@ -29,6 +29,7 @@ public class TokenHandler {
     public String generateRefreshToken(Account account) {
         return generateToken(account, refreshTokenExpiration);
     }
+
     private String generateToken(Account account, long expiration) {
         Date now = new Date(); // get current time
         Date expirationDate = new Date(now.getTime() + expiration);

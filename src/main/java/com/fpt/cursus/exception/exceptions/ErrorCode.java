@@ -28,14 +28,14 @@ public enum ErrorCode {
     PASSWORD_NOT_CORRECT(630,"Password is incorrect"),
     PASSWORD_NOT_MATCH(631, "Password does not match"),
     PASSWORD_IS_SAME_CURRENT(632, "Password is same as current password"),
-    PASSWORD_SIZE_INVALID(633, "Password must be between 4 and 18 characters"),
+    PASSWORD_SIZE_INVALID(633, "Password must be between 6 and 18 characters"),
     PASSWORD_NULL(634, "Password can not be null"),
     PASSWORD_CONTAINS_WHITESPACE(635, "Password contains whitespace"),
     //phone error - 64X
     PHONE_NOT_VALID(640, "Phone not valid"),
     PHONE_NULL(641, "Phone can not be null"),
     //email error - 65X
-    EMAIL_UNAUTHENTICATED(650, "Email unauthenticated"),
+    EMAIL_UNAUTHENTICATED(650, "Please check your email to verify your account"),
     EMAIL_NOT_FOUND(651, "Email not found"),
     EMAIL_INVALID(652, "Email invalid"),
     EMAIL_EXISTS(654, "Email already exists"),
@@ -81,6 +81,8 @@ public enum ErrorCode {
     //
     FEEDBACK_NOT_FOUND(760, "Feedback not found"),
     FEEDBACK_INVALID_RATING(761, "Invalid rating"),
+
+    INVALID_OFFSET(800, "Invalid Page"),
     ;
 
     ErrorCode(int code, String message) {

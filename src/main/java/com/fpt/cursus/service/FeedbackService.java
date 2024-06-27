@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class FeedbackService {
     private AccountUtil accountUtil;
     @Autowired
     private CourseService courseService;
+    private static final List<Double> VALID_RATINGS = Arrays.asList(1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0);
 
 //    @Resource
 //    private ratingService
@@ -37,6 +39,8 @@ public class FeedbackService {
         feedback.setCourse(courseService.getCourseById(courseId));
         feedback.setType(type);
         if(type == FeedbackType.REVIEW) {
+            if (!VALID_RATINGS.contains(feedbackDto.getRating()))
+                throw new AppException(ErrorCode.FEEDBACK_INVALID_RATING);
             ratingCourse(courseId, feedbackDto.getRating());
         }
         return feedbackRepo.save(feedback);
@@ -70,11 +74,7 @@ public class FeedbackService {
         return feedbacks;
     }
     public List<Feedback> getFeedbackByType(FeedbackType type) {
-        List<Feedback> feedbacks = feedbackRepo.findFeedbackByType(type);
-        if(feedbacks == null){
-            throw new AppException(ErrorCode.FEEDBACK_NOT_FOUND);
-        }
-        return feedbacks;
+        return feedbackRepo.findFeedbackByType(type);
     }
     public List<Feedback> getFeedbackByCourseIdAndType(long id, FeedbackType type) {
         List<Feedback> feedbacks = feedbackRepo.findFeedbackByCourseIdAndType(id, type);

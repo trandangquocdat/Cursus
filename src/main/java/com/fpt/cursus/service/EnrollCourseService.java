@@ -22,9 +22,9 @@ public class EnrollCourseService {
     private AccountService accountService;
 
     @Transactional
-    public void enrollCourseAfterPay(List<Long> ids) throws JsonProcessingException {
+    public void enrollCourseAfterPay(List<Long> ids, String username) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        Account account = accountUtil.getCurrentAccount();
+        Account account = accountService.getAccountByUsername(username);
 
         if(account.getEnrolledCourseJson() != null) {
             List<Long> enrolledCourse = mapper.readValue(account.getEnrolledCourseJson(), new TypeReference<>() {

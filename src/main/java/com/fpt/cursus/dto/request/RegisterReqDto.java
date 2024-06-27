@@ -15,7 +15,7 @@ public class RegisterReqDto {
     @Size(min = 4, max = 18, message = "USERNAME_SIZE_INVALID")
     @NotBlank(message = "USERNAME_NULL")
     private String username;
-    @Size(min = 6, max = 18, message = "PASSWORD_INVALID_SIZE")
+    @Size(min = 6, max = 18, message = "PASSWORD_SIZE_INVALID")
     @NotBlank(message = "PASSWORD_NULL")
     private String password;
     @Email(message = "EMAIL_INVALID")
@@ -26,5 +26,5 @@ public class RegisterReqDto {
     private String phone;
     private String avatar;
     private Gender gender;
-    private String cvLink;
+
 }

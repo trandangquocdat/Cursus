@@ -15,10 +15,6 @@ import java.util.List;
 @Repository
 public interface CourseRepo extends JpaRepository<Course, Long> {
 
-    @Query(value = "SELECT * FROM Course c WHERE c.status = :status",
-            countQuery = "SELECT count(*) FROM Course c WHERE c.status = :status",
-            nativeQuery = true)
-    Page<Course> findAllByStatus(@Param("status") String status, Pageable pageable);
 
     Page<Course> findAllByStatus(CourseStatus status, Pageable pageable);
 
@@ -26,8 +22,8 @@ public interface CourseRepo extends JpaRepository<Course, Long> {
     List<Course> findByIdIn(List<Long> id);
 
     boolean existsByName(String name);
-
+    Page<Course> findCourseByCreatedBy(String createdBy, Pageable pageable);
     Page<Course> findCourseByStatus(CourseStatus status, Pageable pageable);
 
-    Page<Course> findCourseByCategory(Category category, Pageable pageable);
+    Page<Course> findCourseByCategoryAndStatus(Category category,CourseStatus status, Pageable pageable);
 }

@@ -68,7 +68,8 @@ public class OtpService {
 
     @Scheduled(cron = "0 0 0 * * ?") // Lập lịch chạy mỗi ngày vào nửa đêm
     public void deleteOldOtps() {
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        otpRepo.deleteInvalidOrExpiredOtps(thirtyDaysAgo);
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        otpRepo.deleteInvalidOrExpiredOtps(sevenDaysAgo);
     }
+
 }

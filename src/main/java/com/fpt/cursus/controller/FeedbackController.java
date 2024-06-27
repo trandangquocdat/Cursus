@@ -17,7 +17,7 @@ import java.util.List;
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
 public class FeedbackController {
-    private static final List<Double> VALID_RATINGS = Arrays.asList(1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0);
+
     @Autowired
     private ApiResUtil apiResUtil;
     @Autowired
@@ -25,10 +25,6 @@ public class FeedbackController {
 
     @PostMapping("/feedback/")
     public ApiRes<?> createFeedback(@RequestParam Long courseId, @RequestParam FeedbackType type, @RequestBody CreateFeedbackDto feedbackDto) {
-        double rating = feedbackDto.getRating();
-        if (rating == 0 || !VALID_RATINGS.contains(rating)) {
-            return apiResUtil.returnApiRes(false, ErrorCode.FEEDBACK_INVALID_RATING.getCode(), ErrorCode.FEEDBACK_INVALID_RATING.getMessage(), null);
-        }
         return apiResUtil.returnApiRes(null, null, null,
                 feedbackService.createFeedback(courseId, type, feedbackDto));
     }

@@ -29,6 +29,7 @@ public class AccountController {
     public ApiRes<?> register(@Valid @RequestBody RegisterReqDto account) {
         Account newAccount = accountService.register(account);
         String otp = otpService.generateOtp();
+        otpService.updateOldOtps(account.getEmail());
         otpService.sendOtpEmail(account.getEmail(), otp);
         otpService.saveOtp(account.getEmail(), otp);
         return apiResUtil.returnApiRes(null, null, null, newAccount);
@@ -46,7 +47,7 @@ public class AccountController {
         return apiResUtil.returnApiRes(null, null, null, newAccount);
     }
 
-    @PatchMapping("/auth/verify-account")
+    @GetMapping("/auth/verify-account")
     public ApiRes<?> verifyAccount(@RequestParam String email, @RequestParam String otp) {
         accountService.verifyAccount(email, otp);
         String successMessage = "Verify account successfully. You can now login with your email and password.";
@@ -54,9 +55,9 @@ public class AccountController {
     }
 
     @PatchMapping("/auth/send-verify-instructor")
-    public ApiRes<?> verifyInstructor(@RequestParam long id,@RequestBody @Valid CvLinkDto cvLink) {
-        accountService.sendVerifyInstructor(id,cvLink);
-        String successMessage = "Verify instructor successfully. You can now login with your email and password.";
+    public ApiRes<?> verifyInstructor(@RequestBody @Valid CvLinkDto cvLink) {
+        accountService.sendVerifyInstructor(cvLink);
+        String successMessage = "Your CV has been submitted";
         return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
 

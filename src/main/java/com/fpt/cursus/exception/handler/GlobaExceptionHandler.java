@@ -22,26 +22,18 @@ public class GlobaExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleRuntimeException(Exception exception) {
         ApiRes<?> apiRes = apiResUtil.returnApiRes(false, ErrorCode.UNCATEGORIZED_ERROR.getCode(), ErrorCode.UNCATEGORIZED_ERROR.getMessage(), null);
-        return ResponseEntity.status(ErrorCode.UNCATEGORIZED_ERROR.getCode()).body(apiRes);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
     @ExceptionHandler(AppException.class)
     public ResponseEntity<?> handleAppException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
         ApiRes<?> apiRes = apiResUtil.returnApiRes(false, errorCode.getCode(), errorCode.getMessage(), null);
-        return ResponseEntity.status(exception.getErrorCode().getCode()).body(apiRes);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
         String exceptionMessage = exception.getMessage();
-        String detailMessage = null;
-        if (exceptionMessage != null) {
-            int detailStart = exceptionMessage.indexOf("Detail:") + 8;
-            int detailEnd = exceptionMessage.indexOf("]", detailStart);
-            if (detailStart > 0) {
-                detailMessage = exceptionMessage.substring(detailStart, detailEnd);
-            }
-        }
         ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), exceptionMessage, null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }

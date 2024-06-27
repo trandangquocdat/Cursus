@@ -63,17 +63,18 @@ public class CourseController {
     public ApiRes<Object> viewWishList(@RequestParam(required = false) String sortBy,
                                        @RequestParam(defaultValue = "1", required = false) int offset,
                                        @RequestParam(defaultValue = "10", required = false) int pageSize) {
-        return apiResUtil.returnApiRes(null, null, null, courseService.getWishListCourses(offset, pageSize, sortBy));
-    }
-    @GetMapping("/course/view-draft-course")
-    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
-    public ApiRes<Object> viewDraftCourse(@RequestParam(required = false) String sortBy,
-                                     @RequestParam(defaultValue = "1", required = false) int offset,
-                                     @RequestParam(defaultValue = "10", required = false) int pageSize) {
         return apiResUtil.returnApiRes(null, null, null,
-                courseService.getCourseByStatus(CourseStatus.DRAFT, offset, pageSize, sortBy));
+                courseService.getWishListCourses(offset, pageSize,sortBy ));
     }
+    @GetMapping("/course/view-my-course")
+    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR') ")
+    public ApiRes<Object> viewMyCourse(@RequestParam(required = false) String sortBy,
+                                       @RequestParam(defaultValue = "1", required = false) int offset,
+                                       @RequestParam(defaultValue = "10", required = false) int pageSize){
 
+        return apiResUtil.returnApiRes(null, null, null,
+                courseService.getCourseByCreatedBy(offset,pageSize , sortBy));
+    }
     @GetMapping("/course/view-all-general-course")
     public ApiRes<Object> viewAllGeneralCourse(@RequestParam(required = false) String sortBy,
                                   @RequestParam(defaultValue = "1", required = false) int offset,

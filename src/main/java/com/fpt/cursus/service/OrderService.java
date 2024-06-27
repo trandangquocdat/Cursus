@@ -146,7 +146,8 @@ public class OrderService {
             order.setOrderCourse(mapper.readValue(order.getOrderCourseJson(), new TypeReference<>() {
             }));
             order.setStatus(OrderStatus.PAID);
-            enroll.enrollCourseAfterPay(order.getOrderCourse());
+            String username = order.getCreatedBy();
+            enroll.enrollCourseAfterPay(order.getOrderCourse(),username);
 
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.ORDER_FAIL);
