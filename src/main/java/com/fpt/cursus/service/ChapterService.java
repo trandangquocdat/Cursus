@@ -34,7 +34,6 @@ public class ChapterService {
         chapter.setCreatedDate(date);
         chapter.setCourse(course);
         chapter.setStatus(ChapterStatus.ACTIVE);
-        chapter.setUpdatedDate(date);
         chapter.setCreatedBy(account.getUsername());
         return chapterRepo.save(chapter);
     }
