@@ -7,6 +7,7 @@ import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.util.ApiResUtil;
 import com.fpt.cursus.service.FeedbackService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,12 +17,16 @@ import java.util.List;
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
+@Tag(name = "Feedback Controller")
 public class FeedbackController {
 
-    @Autowired
-    private ApiResUtil apiResUtil;
-    @Autowired
-    private FeedbackService feedbackService;
+    private final ApiResUtil apiResUtil;
+    private final FeedbackService feedbackService;
+
+    public FeedbackController(ApiResUtil apiResUtil, FeedbackService feedbackService) {
+        this.apiResUtil = apiResUtil;
+        this.feedbackService = feedbackService;
+    }
 
     @PostMapping("/feedback/")
     public ApiRes<?> createFeedback(@RequestParam Long courseId, @RequestParam FeedbackType type, @RequestBody CreateFeedbackDto feedbackDto) {

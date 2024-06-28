@@ -5,6 +5,7 @@ import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.service.LessonService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +13,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
+@Tag(name = "Lesson Controller")
 public class LessonController {
-    @Autowired
-    private ApiResUtil apiResUtil;
-    @Autowired
-    private LessonService lessonService;
+    private final ApiResUtil apiResUtil;
+    private final LessonService lessonService;
+
+    public LessonController(ApiResUtil apiResUtil, LessonService lessonService) {
+        this.apiResUtil = apiResUtil;
+        this.lessonService = lessonService;
+    }
 
     @PostMapping("/lesson/create")
     public ApiRes<?> createLesson(@RequestParam Long chapterId,@RequestBody @Valid CreateLessonDto request) {

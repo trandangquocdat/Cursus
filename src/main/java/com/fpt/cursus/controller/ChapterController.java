@@ -5,6 +5,7 @@ import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.service.ChapterService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +13,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
+@Tag(name = "Chapter Controller")
 public class ChapterController {
-    @Autowired
-    private ChapterService chapterService;
-    @Autowired
-    private ApiResUtil apiResUtil;
+    private final ChapterService chapterService;
+    private final ApiResUtil apiResUtil;
+
+    public ChapterController(ChapterService chapterService, ApiResUtil apiResUtil) {
+        this.chapterService = chapterService;
+        this.apiResUtil = apiResUtil;
+    }
 
     @PostMapping("/chapter/create")
     public ApiRes<?> createChapter(@RequestParam Long courseId,@RequestBody @Valid CreateChapterRequest request) {

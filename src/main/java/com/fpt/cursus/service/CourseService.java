@@ -84,6 +84,7 @@ public class CourseService {
 
         courseRepo.save(existingCourse);
     }
+
     public Page<Course> getCourseByCreatedBy(int offset, int pageSize, String sortBy) {
         String username = accountUtil.getCurrentAccount().getUsername();
         checkOffset(offset);

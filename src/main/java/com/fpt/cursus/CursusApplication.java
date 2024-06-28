@@ -17,12 +17,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import java.util.TimeZone;
 
 @SpringBootApplication
-@OpenAPIDefinition(info = @Info(title = "Cursus API", version = "1.0",
-        contact = @Contact(name = "Cursus education", email = "cursusedu@gmail.com"),
-        license = @License(name = "Apache 2.0", url = "http://www.apache.org/licenses/LICENSE-2.0"),
-        extensions = {
-                @Extension(name = "securityLevel", properties = @ExtensionProperty(name = "internal", value = "high"))
-        }))
 @SecurityScheme(name = "api", scheme = "bearer", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 @EnableAsync
 @EnableScheduling

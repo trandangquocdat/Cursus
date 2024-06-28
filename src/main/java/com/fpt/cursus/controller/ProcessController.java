@@ -4,6 +4,7 @@ import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,11 +14,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
+@Tag(name = "Process Controller")
 public class ProcessController {
-    @Autowired
-    private ApiResUtil apiResUtil;
-    @Autowired
-    private CourseService courseService;
+    private final ApiResUtil apiResUtil;
+    private final CourseService courseService;
+
+    public ProcessController(ApiResUtil apiResUtil, CourseService courseService) {
+        this.apiResUtil = apiResUtil;
+        this.courseService = courseService;
+    }
+
     @PutMapping("/process")
     public ApiRes<?> addStudiedLesson(@RequestParam Long courserId, @RequestParam Long lessonId) {
         courseService.addStudiedLesson(courserId, lessonId);
