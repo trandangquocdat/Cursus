@@ -7,11 +7,9 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface OrderService {
-
     ResponseEntity<String> createUrl(PaymentDto request);
 
-    void orderSuccess(Long id);
+    void orderSuccess(String txnRef, String responseCode);
 
-    void saveOrder(Orders order, List<Long> ids, double price);
-
+    void setOrder(Orders order, List<Long> ids, double price);
 }

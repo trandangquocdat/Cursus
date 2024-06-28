@@ -8,7 +8,6 @@ import com.fpt.cursus.service.OtpService;
 import com.fpt.cursus.util.EmailUtil;
 import com.fpt.cursus.util.OtpUtil;
 import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -17,17 +16,32 @@ import java.time.LocalDateTime;
 
 @Service
 public class OtpServiceImpl implements OtpService {
-    @Autowired
-    private OtpRepo otpRepo;
+    private final OtpRepo otpRepo;
 
-    @Autowired
-    private OtpUtil otpUtil;
+    private final OtpUtil otpUtil;
 
-    @Autowired
-    private EmailUtil emailUtil;
+    private final EmailUtil emailUtil;
+
+    public OtpServiceImpl(OtpRepo otpRepo, OtpUtil otpUtil, EmailUtil emailUtil) {
+        this.otpRepo = otpRepo;
+        this.otpUtil = otpUtil;
+        this.emailUtil = emailUtil;
+    }
 
     public String generateOtp() {
         return otpUtil.generateOtp();
+    }
+
+    public void updateOldOtps(String email) {
+        otpRepo.updateOldOtps(email);
+    }
+
+    public Otp findOtpByEmailAndValid(String email, Boolean valid) {
+        Otp otp = otpRepo.findOtpByEmailAndValid(email, valid);
+        if (otp == null) {
+            throw new AppException(ErrorCode.OTP_NOT_FOUND);
+        }
+        return otpRepo.findOtpByEmailAndValid(email, valid);
     }
 
     @Async
@@ -59,7 +73,8 @@ public class OtpServiceImpl implements OtpService {
 
     @Scheduled(cron = "0 0 0 * * ?") // Lập lịch chạy mỗi ngày vào nửa đêm
     public void deleteOldOtps() {
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        otpRepo.deleteInvalidOrExpiredOtps(thirtyDaysAgo);
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        otpRepo.deleteInvalidOrExpiredOtps(sevenDaysAgo);
     }
+
 }

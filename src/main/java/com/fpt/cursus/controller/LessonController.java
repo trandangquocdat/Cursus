@@ -3,22 +3,21 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.dto.request.CreateLessonDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.service.LessonService;
-import com.fpt.cursus.service.impl.LessonServiceImpl;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
+@Tag(name = "Lesson Controller")
 public class LessonController {
     private final ApiResUtil apiResUtil;
     private final LessonService lessonService;
 
-    @Autowired
-    public LessonController(ApiResUtil apiResUtil, LessonServiceImpl lessonService) {
+    public LessonController(ApiResUtil apiResUtil, LessonService lessonService) {
         this.apiResUtil = apiResUtil;
         this.lessonService = lessonService;
     }

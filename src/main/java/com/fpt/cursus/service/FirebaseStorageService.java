@@ -11,5 +11,4 @@ public interface FirebaseStorageService {
     Resource downloadFileAsResource(String bucketName, String fileName);
 
     byte[] downloadFileAsBytes(String bucketName, String fileName);
-
 }

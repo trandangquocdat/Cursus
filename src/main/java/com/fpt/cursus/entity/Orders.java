@@ -20,7 +20,6 @@ public class Orders {
     private OrderStatus status;
     private String createdBy;
     private Date createdDate;
-
     @Column(columnDefinition = "TEXT")
     private String orderCourseJson;
     @Transient

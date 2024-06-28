@@ -11,7 +11,6 @@ import com.fpt.cursus.repository.LessonRepo;
 import com.fpt.cursus.service.ChapterService;
 import com.fpt.cursus.service.LessonService;
 import com.fpt.cursus.util.AccountUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -19,12 +18,17 @@ import java.util.List;
 
 @Service
 public class LessonServiceImpl implements LessonService {
-    @Autowired
-    private LessonRepo lessonRepo;
-    @Autowired
-    private ChapterService chapterService;
-    @Autowired
-    private AccountUtil accountUtil;
+    private final LessonRepo lessonRepo;
+    private final ChapterService chapterService;
+    private final AccountUtil accountUtil;
+
+    public LessonServiceImpl(LessonRepo lessonRepo,
+                             ChapterService chapterService,
+                             AccountUtil accountUtil) {
+        this.lessonRepo = lessonRepo;
+        this.chapterService = chapterService;
+        this.accountUtil = accountUtil;
+    }
 
     public Lesson createLesson(Long chapterId, CreateLessonDto request) {
         Chapter chapter = chapterService.findChapterById(chapterId);

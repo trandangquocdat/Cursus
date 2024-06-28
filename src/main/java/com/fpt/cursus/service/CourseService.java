@@ -1,8 +1,10 @@
 package com.fpt.cursus.service;
 
 import com.fpt.cursus.dto.request.CreateCourseDto;
+import com.fpt.cursus.dto.response.GeneralCourse;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.status.CourseStatus;
+import com.fpt.cursus.enums.type.Category;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -15,19 +17,36 @@ public interface CourseService {
 
     void updateCourse(Long id, CreateCourseDto createCourseDto);
 
-    void verifyCourseById(Long id);
+    Page<Course> getCourseByCreatedBy(int offset, int pageSize, String sortBy);
 
-    Course findCourseById(Long id);
+    void verifyCourseById(Long id, CourseStatus status);
 
-    List<Course> findCourseByStatus(CourseStatus status);
+    Course getCourseById(Long id);
 
-    void addStudiedLesson(Long id, Long lessonId);
+    Page<Course> getCourseByStatus(CourseStatus status, int offset, int pageSize, String sortBy);
 
-    double percentDoneCourse(Long id);
+    void checkOffset(int offset);
 
-    Page<Course> getAllCourse(String sortBy, int offset, int pageSize);
+    void addStudiedLesson(Long courseId, Long lessonId);
 
-    List<Course> getEnrolledCourses();
+    void addToWishList(List<Long> ids);
 
-    void ratingCourse(long courseId, float rating);
+    void removeFromWishList(Long id);
+
+    Page<GeneralCourse> getWishListCourses(int offset, int pageSize, String sortBy);
+
+    Page<GeneralCourse> getCourseByCategory(Category category,
+                                            int offset,
+                                            int pageSize,
+                                            String sortBy);
+
+    double percentDoneCourse(Long courseId);
+
+    Page<GeneralCourse> getAllGeneralCourses(String sortBy, int offset, int pageSize);
+
+    Page<GeneralCourse> getGeneralEnrolledCourses(String sortBy, int offset, int pageSize);
+
+    Page<Course> getDetailEnrolledCourses(String sortBy, int offset, int pageSize);
+
+    void saveCourse(Course course);
 }

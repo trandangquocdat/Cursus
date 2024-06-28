@@ -19,15 +19,21 @@ import java.util.List;
 
 @Service
 public class ChapterServiceImpl implements ChapterService {
+    private final ChapterRepo chapterRepo;
+    private final CourseService courseService;
+    private final AccountUtil accountUtil;
+
     @Autowired
-    private ChapterRepo chapterRepo;
-    @Autowired
-    private CourseService courseService;
-    @Autowired
-    private AccountUtil accountUtil;
+    public ChapterServiceImpl(ChapterRepo chapterRepo,
+                              CourseService courseService,
+                              AccountUtil accountUtil) {
+        this.chapterRepo = chapterRepo;
+        this.courseService = courseService;
+        this.accountUtil = accountUtil;
+    }
 
     public Chapter createChapter(Long courseId, CreateChapterRequest request) {
-        Course course = courseService.findCourseById(courseId);
+        Course course = courseService.getCourseById(courseId);
         Account account = accountUtil.getCurrentAccount();
         Date date = new Date();
         Chapter chapter = new Chapter();
@@ -36,7 +42,6 @@ public class ChapterServiceImpl implements ChapterService {
         chapter.setCreatedDate(date);
         chapter.setCourse(course);
         chapter.setStatus(ChapterStatus.ACTIVE);
-        chapter.setUpdatedDate(date);
         chapter.setCreatedBy(account.getUsername());
         return chapterRepo.save(chapter);
     }

@@ -2,8 +2,9 @@ package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fpt.cursus.dto.object.StudiedCourse;
-import com.fpt.cursus.enums.type.Gender;
 import com.fpt.cursus.enums.status.UserStatus;
+import com.fpt.cursus.enums.type.Gender;
+import com.fpt.cursus.enums.type.InstructorStatus;
 import com.fpt.cursus.enums.type.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -45,7 +46,8 @@ public class Account implements UserDetails {
     @Builder.Default
     private UserStatus status = UserStatus.INACTIVE;
     private String cvLink;
-    private boolean instructorVerified = false;
+    @Enumerated(EnumType.STRING)
+    private InstructorStatus instructorStatus;
     private Date createdDate;
     private Date updatedDate;
     private String createdBy;

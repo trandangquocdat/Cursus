@@ -1,8 +1,7 @@
 package com.fpt.cursus.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fpt.cursus.enums.type.Category;
 import com.fpt.cursus.enums.status.CourseStatus;
+import com.fpt.cursus.enums.type.Category;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,6 +33,8 @@ public class Course {
     private float version = 1.0f;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-    @JsonIgnore
     private List<Chapter> chapter;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    private List<Feedback> feedback;
 }

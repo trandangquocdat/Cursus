@@ -6,7 +6,6 @@ import com.fpt.cursus.entity.Chapter;
 import java.util.List;
 
 public interface ChapterService {
-
     Chapter createChapter(Long courseId, CreateChapterRequest request);
 
     void deleteChapterById(Long id);
@@ -18,5 +17,4 @@ public interface ChapterService {
     List<Chapter> findAll();
 
     List<Chapter> findAllByCourseId(Long id);
-
 }

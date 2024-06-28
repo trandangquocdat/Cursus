@@ -7,7 +7,9 @@ import com.fpt.cursus.enums.type.FeedbackType;
 import java.util.List;
 
 public interface FeedbackService {
-    Feedback createFeedback(Long courseId, CreateFeedbackDto feedbackDto);
+    Feedback createFeedback(Long courseId, FeedbackType type, CreateFeedbackDto feedbackDto);
+
+    void ratingCourse(long courseId, float rating);
 
     void deleteFeedbackById(long id);
 

@@ -6,10 +6,11 @@ import com.fpt.cursus.service.FirebaseStorageService;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.*;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.google.cloud.storage.Blob;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;

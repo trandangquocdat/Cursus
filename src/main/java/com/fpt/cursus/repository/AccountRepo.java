@@ -1,6 +1,7 @@
 package com.fpt.cursus.repository;
 
 import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.enums.type.InstructorStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,7 +18,7 @@ public interface AccountRepo extends JpaRepository<Account, Long> {
 
     Account findAccountByUsername(String username);
 
-    List<Account> findAccountByInstructorVerified(boolean instructorVerified);
+    List<Account> findAccountByInstructorStatus(InstructorStatus status);
 
     boolean existsByUsername(String username);
 

@@ -13,7 +13,8 @@ public enum ErrorCode {
     USER_UNAUTHORIZED(602, "User doesn't have permission to perform this action "),
     USER_ENROLLED_EMPTY(603, "User hasn't enrolled in any courses "),
     USER_ROLE_CAN_NOT_SELECTED(604, "This role can not be selected"),
-
+    REFRESH_TOKEN_NOT_VALID(605, "Refresh token not valid"),
+    REFRESH_TOKEN_EXPIRED(606, "Refresh token expired"),
     //Register error - 61x
     USERNAME_EXISTS(610, "Username already exists"),
     USERNAME_SIZE_INVALID(611, "Username must be between 4 and 18 characters"),
@@ -27,14 +28,14 @@ public enum ErrorCode {
     PASSWORD_NOT_CORRECT(630, "Password is incorrect"),
     PASSWORD_NOT_MATCH(631, "Password does not match"),
     PASSWORD_IS_SAME_CURRENT(632, "Password is same as current password"),
-    PASSWORD_SIZE_INVALID(633, "Password must be between 4 and 18 characters"),
+    PASSWORD_SIZE_INVALID(633, "Password must be between 6 and 18 characters"),
     PASSWORD_NULL(634, "Password can not be null"),
     PASSWORD_CONTAINS_WHITESPACE(635, "Password contains whitespace"),
     //phone error - 64X
     PHONE_NOT_VALID(640, "Phone not valid"),
     PHONE_NULL(641, "Phone can not be null"),
     //email error - 65X
-    EMAIL_UNAUTHENTICATED(650, "Email unauthenticated"),
+    EMAIL_UNAUTHENTICATED(650, "Please check your email to verify your account"),
     EMAIL_NOT_FOUND(651, "Email not found"),
     EMAIL_INVALID(652, "Email invalid"),
     EMAIL_EXISTS(654, "Email already exists"),
@@ -42,6 +43,7 @@ public enum ErrorCode {
     //OTP error - 66X
     OTP_INVALID(660, "Wrong OTP"),
     OTP_EXPIRED(661, "OTP expired"),
+    OTP_NOT_FOUND(662, "OTP not found"),
     //Course error - 70x
     COURSE_NOT_FOUND(700, "Course not found"),
     COURSE_SIZE_INVALID(701, "Course name must be less than 200 characters"),
@@ -49,6 +51,7 @@ public enum ErrorCode {
     COURSE_CATEGORY_NULL(703, "Category of course can not be null"),
     COURSE_EXISTS(704, "Course already exists"),
     COURSE_PRICE_INVALID(705, "Price of course must be greater than 5.000 VND"),
+    CATEGORY_NOT_FOUND(706, "Category not found"),
 
     //chapter error - 71x
     CHAPTER_NAME_NULL(710, "Chapter name can not be null"),
@@ -78,6 +81,8 @@ public enum ErrorCode {
     //
     FEEDBACK_NOT_FOUND(760, "Feedback not found"),
     FEEDBACK_INVALID_RATING(761, "Invalid rating"),
+
+    INVALID_OFFSET(800, "Invalid Page"),
     ;
 
     ErrorCode(int code, String message) {

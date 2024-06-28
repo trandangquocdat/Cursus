@@ -30,11 +30,7 @@ class CourseControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        mockMvc = standaloneSetup(new CourseController())
-                .defaultRequest(get("/find-all-course-pagination").accept(MediaType.APPLICATION_JSON))
-                .alwaysExpect(status().isOk())
-                .alwaysExpect(content().contentType("application/json;charset=UTF-8"))
-                .build();
+        
     }
 
 }

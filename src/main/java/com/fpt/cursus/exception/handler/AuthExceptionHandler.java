@@ -24,14 +24,14 @@ public class AuthExceptionHandler {
 
     @ExceptionHandler(InternalAuthenticationServiceException.class)
     public ResponseEntity<?> handleException(InternalAuthenticationServiceException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.UNAUTHORIZED.value(), exception.getMessage(), null);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiRes);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> handleException(AccessDeniedException exception) {
         ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.FORBIDDEN.value(), "Forbidden", null);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiRes);
     }
 
 }

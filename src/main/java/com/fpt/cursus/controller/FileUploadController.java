@@ -3,7 +3,8 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.FirebaseStorageService;
-import com.fpt.cursus.service.impl.FirebaseStorageServiceImpl;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -16,17 +17,19 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/files")
+@CrossOrigin("*")
+@SecurityRequirement(name = "api")
+@Tag(name = "File Controller")
 public class FileUploadController {
 
     private final FirebaseStorageService storageService;
 
     @Autowired
-    public FileUploadController(FirebaseStorageServiceImpl storageService) {
+    public FileUploadController(FirebaseStorageService storageService) {
         this.storageService = storageService;
     }
 
-    @PostMapping("/upload")
+    @PostMapping("/files/upload")
     public String uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             return storageService.uploadFile(file);
@@ -35,7 +38,7 @@ public class FileUploadController {
         }
     }
 
-    @GetMapping("/download/{fileName}")
+    @GetMapping("/files/download/{fileName}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {
         String bucketName = "cursus-b6cde.appspot.com"; // Replace with your Firebase Storage bucket name
         Resource content = storageService.downloadFileAsResource(bucketName, fileName);
