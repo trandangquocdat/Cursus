@@ -3,12 +3,11 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.enums.status.CourseStatus;
 import com.fpt.cursus.enums.type.InstructorStatus;
-import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.AccountService;
+import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +33,7 @@ public class AdminController {
         String successMessage = "Verify instructor successfully.";
         return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
+
     @GetMapping("/course/view-draft-course")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ApiRes<Object> viewDraftCourse(@RequestParam(required = false) String sortBy,

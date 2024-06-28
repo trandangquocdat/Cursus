@@ -2,8 +2,8 @@ package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fpt.cursus.dto.object.StudiedCourse;
-import com.fpt.cursus.enums.type.Gender;
 import com.fpt.cursus.enums.status.UserStatus;
+import com.fpt.cursus.enums.type.Gender;
 import com.fpt.cursus.enums.type.InstructorStatus;
 import com.fpt.cursus.enums.type.Role;
 import jakarta.persistence.*;
@@ -72,6 +72,7 @@ public class Account implements UserDetails {
         authorities.add(new SimpleGrantedAuthority(this.role.toString()));
         return authorities;
     }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

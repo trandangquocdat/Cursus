@@ -21,10 +21,11 @@ public class OpenApiConfig {
     public OpenAPI openAPI(@Value("${open.api.server.url}") String url,
                            @Value("${open.api.server.description}") String description) {
         return new OpenAPI().info(new Info().title("Cursus API").version("1.0")
-                .contact(new Contact().name("Cursus education").email("cursusedu@gmail.com"))
-                .license(new License().name("Apache 2.0").url("http://www.apache.org/licenses/LICENSE-2.0")))
+                        .contact(new Contact().name("Cursus education").email("cursusedu@gmail.com"))
+                        .license(new License().name("Apache 2.0").url("http://www.apache.org/licenses/LICENSE-2.0")))
                 .servers(List.of(new Server().url(url).description(description)));
     }
+
     @Bean
     public GroupedOpenApi userGroupedOpenApi() {
         return GroupedOpenApi.builder()
@@ -37,16 +38,18 @@ public class OpenApiConfig {
     public GroupedOpenApi adminGroupedOpenApi() {
         return GroupedOpenApi.builder()
                 .group("user")
-                .pathsToMatch("/admin/**","/auth/**","/token/**","/files/**")
+                .pathsToMatch("/admin/**", "/auth/**", "/token/**", "/files/**")
                 .build();
     }
+
     @Bean
     public GroupedOpenApi courseGroupedOpenApi() {
         return GroupedOpenApi.builder()
                 .group("course")
-                .pathsToMatch("/course/**", "/lesson/**", "/chapter/**","/process/**,/feedback/**","/files/**")
+                .pathsToMatch("/course/**", "/lesson/**", "/chapter/**", "/process/**,/feedback/**", "/files/**")
                 .build();
     }
+
     @Bean
     public GroupedOpenApi orderGroupedOpenApi() {
         return GroupedOpenApi.builder()

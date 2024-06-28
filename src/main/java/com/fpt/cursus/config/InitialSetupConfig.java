@@ -1,4 +1,5 @@
 package com.fpt.cursus.config;
+
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.enums.status.UserStatus;
 import com.fpt.cursus.enums.type.Role;

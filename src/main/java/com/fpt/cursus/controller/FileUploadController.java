@@ -37,6 +37,7 @@ public class FileUploadController {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
         }
     }
+
     @GetMapping("/files/download/{fileName}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {
         String bucketName = "cursus-b6cde.appspot.com"; // Replace with your Firebase Storage bucket name

@@ -2,7 +2,6 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.dto.response.ApiRes;
-import com.fpt.cursus.enums.status.CourseStatus;
 import com.fpt.cursus.enums.type.Category;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.ApiResUtil;
@@ -42,6 +41,7 @@ public class CourseController {
         String successMessage = "Update course successfully!";
         return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
+
     @DeleteMapping("/course/delete")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ApiRes<Object> deleteCourse(@RequestParam Long id) {
@@ -49,46 +49,51 @@ public class CourseController {
         courseService.deleteCourseById(id);
         return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
+
     @PostMapping("/course/add-to-wishlist")
     public ApiRes<Object> addToWishList(@RequestParam List<Long> id) {
         courseService.addToWishList(id);
         String successMessage = "Add course to wishlist successfully!";
-        return apiResUtil.returnApiRes(null, null, successMessage,null);
+        return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
+
     @DeleteMapping("/course/remove-from-wishlist")
     public ApiRes<Object> removeFromWishList(@RequestParam Long id) {
         courseService.removeFromWishList(id);
         String successMessage = "Remove course from wishlist successfully!";
         return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
+
     @GetMapping("/course/view-wishlist")
     public ApiRes<Object> viewWishList(@RequestParam(required = false) String sortBy,
                                        @RequestParam(defaultValue = "1", required = false) int offset,
                                        @RequestParam(defaultValue = "10", required = false) int pageSize) {
         return apiResUtil.returnApiRes(null, null, null,
-                courseService.getWishListCourses(offset, pageSize,sortBy ));
+                courseService.getWishListCourses(offset, pageSize, sortBy));
     }
+
     @GetMapping("/course/view-my-course")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR') ")
     public ApiRes<Object> viewMyCourse(@RequestParam(required = false) String sortBy,
                                        @RequestParam(defaultValue = "1", required = false) int offset,
-                                       @RequestParam(defaultValue = "10", required = false) int pageSize){
+                                       @RequestParam(defaultValue = "10", required = false) int pageSize) {
 
         return apiResUtil.returnApiRes(null, null, null,
-                courseService.getCourseByCreatedBy(offset,pageSize , sortBy));
+                courseService.getCourseByCreatedBy(offset, pageSize, sortBy));
     }
+
     @GetMapping("/course/view-all-general-course")
     public ApiRes<Object> viewAllGeneralCourse(@RequestParam(required = false) String sortBy,
-                                  @RequestParam(defaultValue = "1", required = false) int offset,
-                                  @RequestParam(defaultValue = "10", required = false) int pageSize) {
+                                               @RequestParam(defaultValue = "1", required = false) int offset,
+                                               @RequestParam(defaultValue = "10", required = false) int pageSize) {
         return apiResUtil.returnApiRes(null, null, null,
                 courseService.getAllGeneralCourses(sortBy, offset, pageSize));
     }
 
     @GetMapping("/course/view-general-enrolled_course")
     public ApiRes<Object> viewEnrolledCourses(@RequestParam(required = false) String sortBy,
-                                        @RequestParam(defaultValue = "1", required = false) int offset,
-                                        @RequestParam(defaultValue = "10", required = false) int pageSize) {
+                                              @RequestParam(defaultValue = "1", required = false) int offset,
+                                              @RequestParam(defaultValue = "10", required = false) int pageSize) {
 
         return apiResUtil.returnApiRes(null, null, null,
                 courseService.getGeneralEnrolledCourses(sortBy, offset, pageSize));
@@ -96,20 +101,20 @@ public class CourseController {
 
     @GetMapping("/course/view-detail-enrolled_course")
     public ApiRes<Object> viewDetailEnrolledCourses(@RequestParam(required = false) String sortBy,
-                                              @RequestParam(defaultValue = "1", required = false) int offset,
-                                              @RequestParam(defaultValue = "10", required = false) int pageSize) {
+                                                    @RequestParam(defaultValue = "1", required = false) int offset,
+                                                    @RequestParam(defaultValue = "10", required = false) int pageSize) {
         return apiResUtil.returnApiRes(null, null, null,
                 courseService.getDetailEnrolledCourses(sortBy, offset, pageSize));
     }
 
     @GetMapping("/course/view-general-course-by-category")
     public ApiRes<Object> viewCourseByCategory(@RequestParam(defaultValue = "ALL") Category category,
-                                         @RequestParam(required = false) String sortBy,
-                                         @RequestParam(defaultValue = "1", required = false) int offset,
-                                         @RequestParam(defaultValue = "10", required = false) int pageSize) {
+                                               @RequestParam(required = false) String sortBy,
+                                               @RequestParam(defaultValue = "1", required = false) int offset,
+                                               @RequestParam(defaultValue = "10", required = false) int pageSize) {
 
         return apiResUtil.returnApiRes(null, null, null,
-                courseService.getCourseByCategory(category,offset, pageSize, sortBy));
+                courseService.getCourseByCategory(category, offset, pageSize, sortBy));
     }
 
 }

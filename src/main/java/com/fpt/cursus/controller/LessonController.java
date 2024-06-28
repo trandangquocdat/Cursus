@@ -7,7 +7,6 @@ import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,31 +23,32 @@ public class LessonController {
     }
 
     @PostMapping("/lesson/create")
-    public ApiRes<?> createLesson(@RequestParam Long chapterId,@RequestBody @Valid CreateLessonDto request) {
+    public ApiRes<?> createLesson(@RequestParam Long chapterId, @RequestBody @Valid CreateLessonDto request) {
         return apiResUtil.returnApiRes(null, null, null,
-                lessonService.createLesson(chapterId,request));
+                lessonService.createLesson(chapterId, request));
     }
 
     @PutMapping("/lesson/update")
     public ApiRes<?> updateLesson(@RequestParam Long lessonId, @RequestBody @Valid CreateLessonDto request) {
         lessonService.updateLesson(lessonId, request);
         String successMessage = "Update chapter successfully!";
-        return apiResUtil.returnApiRes(null, null, successMessage,null);
+        return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
 
     @DeleteMapping("/lesson/delete")
     public ApiRes<?> deleteLesson(@RequestParam Long lessonId) {
         lessonService.deleteLessonById(lessonId);
         String successMessage = "Delete chapter successfully!";
-        return apiResUtil.returnApiRes(null, null, successMessage,null);
+        return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
 
     @GetMapping("/lesson/get-all")
     public ApiRes<?> findAll() {
-        return apiResUtil.returnApiRes(null, null, null,lessonService.findAll());
+        return apiResUtil.returnApiRes(null, null, null, lessonService.findAll());
     }
+
     @GetMapping("/lesson/get-by-chapter")
-    public ApiRes<?> findById(@RequestParam  Long chapterId) {
-        return apiResUtil.returnApiRes(null, null, null,lessonService.findAllByChapterId(chapterId));
+    public ApiRes<?> findById(@RequestParam Long chapterId) {
+        return apiResUtil.returnApiRes(null, null, null, lessonService.findAllByChapterId(chapterId));
     }
 }

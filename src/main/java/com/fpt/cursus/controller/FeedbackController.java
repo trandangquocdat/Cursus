@@ -3,16 +3,11 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.enums.type.FeedbackType;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.util.ApiResUtil;
 import com.fpt.cursus.service.FeedbackService;
+import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
-import java.util.List;
 
 @RestController
 @CrossOrigin("*")

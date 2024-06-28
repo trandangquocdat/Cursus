@@ -1,8 +1,6 @@
 package com.fpt.cursus.dto.request;
 
 import com.fpt.cursus.enums.type.Gender;
-import com.fpt.cursus.enums.type.Role;
-import jakarta.validation.Constraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -5,7 +5,6 @@ import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,7 +32,7 @@ public class ProcessController {
 
     @PutMapping("/process/percent-done")
     public ApiRes<?> percentDoneCourse(@RequestParam Long courseId) {
-        return apiResUtil.returnApiRes(null, null, null,  courseService.percentDoneCourse(courseId));
+        return apiResUtil.returnApiRes(null, null, null, courseService.percentDoneCourse(courseId));
     }
 
 }

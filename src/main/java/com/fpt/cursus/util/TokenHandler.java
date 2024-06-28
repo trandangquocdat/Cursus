@@ -26,6 +26,7 @@ public class TokenHandler {
     public String generateAccessToken(Account account) {
         return generateToken(account, accessTokenExpiration);
     }
+
     public String generateRefreshToken(Account account) {
         return generateToken(account, refreshTokenExpiration);
     }
