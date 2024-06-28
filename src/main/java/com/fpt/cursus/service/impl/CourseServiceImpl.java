@@ -180,7 +180,7 @@ public class CourseServiceImpl implements CourseService {
 
     }
 
-    private int getTotalLesson(Long id) {
+    public int getTotalLesson(Long id) {
         Course course = courseRepo.findCourseById(id);
         if (course == null) {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
@@ -232,7 +232,4 @@ public class CourseServiceImpl implements CourseService {
         course.setRating((float) (Math.round(sum / (feedbacks.size() + 1) * 10.0) / 10.0));
         courseRepo.save(course);
     }
-
 }
-
-

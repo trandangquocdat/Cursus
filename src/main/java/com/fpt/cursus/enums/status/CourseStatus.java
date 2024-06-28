@@ -5,5 +5,5 @@ public enum CourseStatus {
     VERIFYING,
     PUBLISHED,
     REJECTED,
-    DELETED
+    ACTIVE, DELETED
 }

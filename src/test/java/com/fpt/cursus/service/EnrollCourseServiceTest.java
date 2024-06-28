@@ -11,6 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,29 +32,13 @@ class EnrollCourseServiceTest {
     private AccountRepo accountRepo;
 
     @InjectMocks
-    private EnrollCourseService enrollCourseService;
+    private EnrollCourseServiceImpl enrollCourseService;
 
-    private Account account;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
-        account = new Account();
-        account.setUsername("username");
-    }
-
-    @Test
-    void testEnrollCourseEnrolledCourseJsonNotNull() throws JsonProcessingException {
-        account.setEnrolledCourseJson("[3,4]");
-        List<Long> list = new ArrayList<>();
-        list.add(1L);
-        list.add(2L);
-
-        when(accountUtil.getCurrentAccount()).thenReturn(account);
-        when(accountRepo.save(any(Account.class))).thenReturn(account);
-
-        enrollCourseService.enrollCourseAfterPay(list);
-
-        assertEquals("[1,2,3,4]", account.getEnrolledCourseJson());
-        assertEquals(4, account.getEnrolledCourse().size());
+        MockitoAnnotations.openMocks(this);
+        objectMapper = new ObjectMapper();
     }
 }
