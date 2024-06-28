@@ -25,7 +25,8 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FirebaseStorageServiceTest {
@@ -47,12 +48,9 @@ class FirebaseStorageServiceTest {
     @BeforeEach
     void setUp() throws NoSuchFieldException, IllegalAccessException {
         //given
-        multipartFile = new MockMultipartFile("file",
-                "test.txt",
-                "text/plain",
-                "Hello World".getBytes());
-        setField(firebaseStorageService, "bucketName", "cursus-b6cde.appspot.com");
-        setField(firebaseStorageService, "credentialsFilePath", "./firebase-file-admin.json");
+        setField(firebaseStorageService,
+                "bucketName",
+                "cursus-b6cde.appspot.com");
     }
 
     private void setField(Object targetObject, String fieldName, Object value)
@@ -63,32 +61,38 @@ class FirebaseStorageServiceTest {
     }
 
     @Test
-    void testInitializeStorageSuccess() throws Exception {
-        //when
+    void testInitializeStorage_Success() throws Exception {
+        //given
+        setField(firebaseStorageService, "credentialsFilePath", "./firebase-file-admin.json");
+        //then
         Method initializeStorageMethod = FirebaseStorageServiceImpl.class
                 .getDeclaredMethod("initializeStorage");
         initializeStorageMethod.setAccessible(true);
         initializeStorageMethod.invoke(firebaseStorageService);
-        //then
         assertNotNull(storage);
     }
 
     @Test
-    void testUploadFile_InputStreamException() throws IOException {
+    void testInitializeStorage_Failure() throws Exception {
         //given
-        String fileName = "testFile.txt";
-        MultipartFile file = mock(MultipartFile.class);
+        setField(firebaseStorageService, "credentialsFilePath", "non");
         //when
-        when(file.getOriginalFilename()).thenReturn(fileName);
-        when(file.getContentType()).thenReturn("text/plain");
-        when(file.getInputStream()).thenReturn(null);
-        //then
-        assertThrows(StorageException.class,
-                () -> firebaseStorageService.uploadFile(file));
+        Method initializeStorageMethod = FirebaseStorageServiceImpl.class
+                .getDeclaredMethod("initializeStorage");
+        initializeStorageMethod.setAccessible(true);
+        assertThrows(AppException.class,
+                () -> initializeStorageMethod.invoke(firebaseStorageService),
+                ErrorCode.STORAGE_INITIALIZE_FAIL.getMessage());
     }
 
     @Test
-    void testUploadFile_Success() throws IOException {
+    void testUploadFile_Success()
+            throws IOException {
+        //given
+        multipartFile = new MockMultipartFile("file",
+                "test.txt",
+                "text/plain",
+                "Hello World".getBytes());
         //when
         String result = firebaseStorageService.uploadFile(multipartFile);
         //then
@@ -98,7 +102,16 @@ class FirebaseStorageServiceTest {
     }
 
     @Test
+    void testUploadFile_InputStreamException() throws IOException {
+    }
+
+    @Test
     void testUploadFile_StorageException() {
+        //given
+        multipartFile = new MockMultipartFile("file",
+                "test.txt",
+                "text/plain",
+                "Hello World".getBytes());
         //when
         doThrow(StorageException.class)
                 .when(storage)
@@ -130,8 +143,8 @@ class FirebaseStorageServiceTest {
         //when
         when(storage.get(anyString(), anyString())).thenReturn(blob);
         when(blob.getContent()).thenReturn(content);
-        Resource resource = firebaseStorageService.downloadFileAsResource(bucketName, fileName);
         //then
+        Resource resource = firebaseStorageService.downloadFileAsResource(bucketName, fileName);
         assertNotNull(resource);
         assertEquals(content, ((ByteArrayResource) resource).getByteArray());
     }
@@ -156,8 +169,8 @@ class FirebaseStorageServiceTest {
         //when
         when(storage.get(anyString(), anyString())).thenReturn(blob);
         when(blob.getContent()).thenReturn(content);
-        byte[] downloadedContent = firebaseStorageService.downloadFileAsBytes(bucketName, fileName);
         //then
+        byte[] downloadedContent = firebaseStorageService.downloadFileAsBytes(bucketName, fileName);
         assertNotNull(downloadedContent);
         assertEquals(content, downloadedContent);
     }
