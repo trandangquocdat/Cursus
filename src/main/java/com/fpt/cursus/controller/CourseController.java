@@ -7,6 +7,7 @@ import com.fpt.cursus.enums.type.Category;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
+@Tag(name = "Course Controller")
 public class CourseController {
 
     private final CourseService courseService;

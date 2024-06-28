@@ -5,6 +5,7 @@ import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.service.OrderService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,11 +14,15 @@ import javax.annotation.security.PermitAll;
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
+@Tag(name = "Order Controller")
 public class OrderController {
-    @Autowired
-    private ApiResUtil apiResUtil;
-    @Autowired
-    private OrderService orderService;
+    private final ApiResUtil apiResUtil;
+    private final OrderService orderService;
+
+    public OrderController(ApiResUtil apiResUtil, OrderService orderService) {
+        this.apiResUtil = apiResUtil;
+        this.orderService = orderService;
+    }
 
     @PostMapping("/order/create-url")
     public ApiRes<?> createUrl(@RequestBody PaymentDto request)  {

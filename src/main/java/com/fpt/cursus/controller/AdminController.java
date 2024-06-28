@@ -7,6 +7,7 @@ import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,13 +15,17 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
+@Tag(name = "Admin Controller")
 public class AdminController {
-    @Autowired
-    private ApiResUtil apiResUtil;
-    @Autowired
-    private AccountService accountService;
-    @Autowired
-    private CourseService courseService;
+    private final ApiResUtil apiResUtil;
+    private final AccountService accountService;
+    private final CourseService courseService;
+
+    public AdminController(ApiResUtil apiResUtil, AccountService accountService, CourseService courseService) {
+        this.apiResUtil = apiResUtil;
+        this.accountService = accountService;
+        this.courseService = courseService;
+    }
 
     @PatchMapping("/admin/verify-instructor")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -53,7 +58,7 @@ public class AdminController {
         return apiResUtil.returnApiRes(null, null, null, accountService.getInstructorByInstStatus(status));
     }
 
-    @DeleteMapping("/auth/delete-account")
+    @DeleteMapping("/admin/delete-account")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ApiRes<?> deleteAccount(@RequestParam String username) {
         accountService.deleteAccount(username);
@@ -61,7 +66,7 @@ public class AdminController {
         return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
 
-    @PatchMapping("/auth/set-admin")
+    @PatchMapping("/admin/set-admin")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ApiRes<?> setAdmin(@RequestParam String email) {
         accountService.setAdmin(email);
