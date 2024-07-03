@@ -10,7 +10,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,13 +23,15 @@ import java.io.IOException;
 
 @Component
 public class Filter extends OncePerRequestFilter {
-    @Autowired
-    @Qualifier("handlerExceptionResolver")
-    private HandlerExceptionResolver resolver;
-    @Autowired
-    private TokenHandler tokenHandler;
-    @Autowired
-    private AccountRepo accountRepo;
+    private final HandlerExceptionResolver resolver;
+    private final TokenHandler tokenHandler;
+    private final AccountRepo accountRepo;
+
+    public Filter(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver, TokenHandler tokenHandler, AccountRepo accountRepo) {
+        this.resolver = resolver;
+        this.tokenHandler = tokenHandler;
+        this.accountRepo = accountRepo;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

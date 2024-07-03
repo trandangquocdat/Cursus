@@ -1,6 +1,5 @@
 package com.fpt.cursus.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fpt.cursus.enums.type.Category;
 import com.fpt.cursus.enums.status.CourseStatus;
 import jakarta.persistence.*;

@@ -14,10 +14,11 @@ import com.fpt.cursus.util.*;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import com.google.type.DateTime;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -48,11 +49,15 @@ public class AccountService {
     private final Regex regex;
 
     private final OtpService otpService;
+    private final PageUtil pageUtil;
 
     @Value("${spring.security.jwt.access-token-expiration}")
     private long accessTokenExpiration;
 
-    public AccountService(AccountRepo accountRepo, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, TokenHandler tokenHandler, AccountUtil accountUtil, Regex regex, OtpService otpService) {
+    public AccountService(AccountRepo accountRepo, PasswordEncoder passwordEncoder,
+                          AuthenticationManager authenticationManager, TokenHandler tokenHandler,
+                          AccountUtil accountUtil, Regex regex, OtpService otpService,
+                          PageUtil pageUtil) {
         this.accountRepo = accountRepo;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -60,6 +65,7 @@ public class AccountService {
         this.accountUtil = accountUtil;
         this.regex = regex;
         this.otpService = otpService;
+        this.pageUtil = pageUtil;
     }
 
 
@@ -188,6 +194,14 @@ public class AccountService {
         return accounts;
     }
 
+    public List<Account> getInstructorByName(String name) {
+        List<Account> accounts = accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%",InstructorStatus.APPROVED);
+        if (accounts.isEmpty()) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+        return accounts;
+    }
+
     public void regenerateOtp(String email) {
         if (accountRepo.findByEmail(email).isEmpty()) {
             throw new AppException(ErrorCode.EMAIL_NOT_FOUND);
@@ -198,16 +212,18 @@ public class AccountService {
         otpService.saveOtp(email, otp);
     }
 
-    public void deleteAccount(String username) {
+    public void setStatusAccount(String username, UserStatus status) {
         Account account = accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        account.setStatus(UserStatus.DELETED);
+        account.setStatus(status);
         accountRepo.save(account);
     }
 
     public void setAdmin(String username) {
         Account account = accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         account.setRole(Role.ADMIN);
+        account.setStatus(UserStatus.ACTIVE);
+        account.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         accountRepo.save(account);
     }
 
@@ -268,6 +284,24 @@ public class AccountService {
         }
     }
 
+    public void updateAccount(){
+        Account account = accountUtil.getCurrentAccount();
+
+    }
+    public Page<Account> getListOfStudentAndInstructor(Role role,int offset, int pageSize, String sortBy){
+        pageUtil.checkOffset(offset);
+        Pageable pageable = pageUtil.getPageable(sortBy,offset-1,pageSize);
+        if(role != null){
+            return accountRepo.findAccountByRole(role,pageable);
+        }
+        else{
+            List<Account> instructorList = accountRepo.findAccountByRole(Role.INSTRUCTOR);
+            List<Account> studentList = accountRepo.findAccountByRole(Role.STUDENT);
+            studentList.addAll(instructorList);
+            return new PageImpl<>(studentList,pageable,studentList.size());
+        }
+    }
+
     public void saveAccount(Account account) {
         accountRepo.save(account);
     }
@@ -278,5 +312,6 @@ public class AccountService {
     public Account getAccountByUsername(String username) {
         return accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
+
 }
 

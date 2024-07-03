@@ -2,6 +2,9 @@ package com.fpt.cursus.repository;
 
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.enums.type.InstructorStatus;
+import com.fpt.cursus.enums.type.Role;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +21,13 @@ public interface AccountRepo extends JpaRepository<Account, Long> {
 
     Account findAccountByUsername(String username);
 
+    Page<Account> findAccountByRole(Role role, Pageable pageable);
+
+    List<Account> findAccountByRole(Role role);
+
     List<Account> findAccountByInstructorStatus(InstructorStatus status);
+
+    List<Account> findByFullNameLikeAndInstructorStatus(String partialName, InstructorStatus status);
 
     boolean existsByUsername(String username);
 
