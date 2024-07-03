@@ -2,7 +2,6 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.dto.response.ApiRes;
-import com.fpt.cursus.enums.status.CourseStatus;
 import com.fpt.cursus.enums.type.Category;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.ApiResUtil;
@@ -110,6 +109,15 @@ public class CourseController {
 
         return apiResUtil.returnApiRes(null, null, null,
                 courseService.getCourseByCategory(category,offset, pageSize, sortBy));
+    }
+    @GetMapping("/course/view-general-course-by-name")
+    public ApiRes<Object> viewCourseByName(@RequestParam String name,
+                                           @RequestParam(required = false) String sortBy,
+                                           @RequestParam(defaultValue = "1", required = false) int offset,
+                                           @RequestParam(defaultValue = "10", required = false) int pageSize){
+
+        return apiResUtil.returnApiRes(null, null, null,
+                courseService.getGeneralCourseByName(name,offset, pageSize, sortBy));
     }
 
 }

@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuthException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -46,8 +47,17 @@ public class GlobaExceptionHandler {
        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, errorCode.getCode(), message, null);
        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
-    @ExceptionHandler({FirebaseAuthException.class, IOException.class})
-    public ResponseEntity<?> handleFirebaseAuthException(FirebaseAuthException exception) {
+    @ExceptionHandler(value = FirebaseAuthException.class)
+    public ResponseEntity<ApiRes<?>> handleFirebaseAuthException(FirebaseAuthException exception) {
+        String message = exception.getMessage();
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), message, null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(apiRes);
+    }
+
+    @ExceptionHandler(value = IOException.class)
+    public ResponseEntity<?> handleFirebaseAuthException(IOException exception) {
         String message = exception.getMessage();
         ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), message, null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);

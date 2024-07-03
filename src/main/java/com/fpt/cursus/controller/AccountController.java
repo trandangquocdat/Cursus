@@ -40,7 +40,7 @@ public class AccountController {
         otpService.saveOtp(account.getEmail(), otp);
         return apiResUtil.returnApiRes(null, null, null, newAccount);
     }
-
+    @Operation(summary = "Login")
     @PostMapping("/auth/login")
     public ApiRes<Object> login(@RequestBody @Valid LoginReqDto account) {
         LoginResDto newAccount = accountService.login(account);
@@ -68,7 +68,7 @@ public class AccountController {
         String successMessage = "Your CV has been submitted";
         return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
-
+    @Operation(summary = "Regenerate Otp for email register")
     @PutMapping("/auth/regenerate-otp")
     public ApiRes<Object> regenerateOtp(@RequestParam String email) {
         accountService.regenerateOtp(email);
@@ -97,8 +97,11 @@ public class AccountController {
         String successMessage = "Reset password successfully. Please login with your new password.";
         return apiResUtil.returnApiRes(null, null, successMessage, null);
     }
-
-
+    @Operation(summary = "view instructor by name", description = "input a partial name of instructor")
+    @GetMapping("/view-instructor")
+    public ApiRes<Object> getInstructor(@RequestParam String name) {
+        return apiResUtil.returnApiRes(null, null, null, accountService.getInstructorByName(name));
+    }
 }
 
 

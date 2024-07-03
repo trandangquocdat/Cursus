@@ -10,6 +10,7 @@ import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.LessonRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -17,12 +18,15 @@ import java.util.List;
 
 @Service
 public class LessonService {
-    @Autowired
-    private LessonRepo lessonRepo;
-    @Autowired
-    private ChapterService chapterService;
-    @Autowired
-    private AccountUtil accountUtil;
+    private final LessonRepo lessonRepo;
+    private final ChapterService chapterService;
+    private final AccountUtil accountUtil;
+
+    public LessonService(LessonRepo lessonRepo, @Lazy ChapterService chapterService, AccountUtil accountUtil) {
+        this.lessonRepo = lessonRepo;
+        this.chapterService = chapterService;
+        this.accountUtil = accountUtil;
+    }
 
     public Lesson createLesson(Long chapterId, CreateLessonDto request) {
         Chapter chapter = chapterService.findChapterById(chapterId);
@@ -67,5 +71,7 @@ public class LessonService {
     public List<Lesson> findAll() {
         return lessonRepo.findAll();
     }
-
+    public void save(Lesson lesson){
+        lessonRepo.save(lesson);
+    }
 }

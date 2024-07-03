@@ -9,7 +9,6 @@ import com.fpt.cursus.util.TokenHandler;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,13 +29,13 @@ public class TokenController {
     }
 
     @GetMapping("/token/generate-refresh-token")
-    public ApiRes<?> getRefreshToken() {
+    public ApiRes<Object> getRefreshToken() {
         Account account = accountUtil.getCurrentAccount();
         return apiResUtil.returnApiRes(null, null, null, tokenHandler.generateRefreshToken(account));
     }
 
     @PostMapping("/token/refresh-token")
-    public ApiRes<?> refreshToken(HttpServletRequest request) {
+    public ApiRes<Object> refreshToken(HttpServletRequest request) {
         return apiResUtil.returnApiRes(null, null, null, accountService.refreshToken(request));
     }
 }

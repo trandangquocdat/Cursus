@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @CrossOrigin("*")
@@ -36,6 +37,10 @@ public class FileUploadController {
         } catch (IOException e) {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
         }
+    }
+    @PostMapping("/upload-excel")
+    public List<String> uploadExcelFile(@RequestParam Long chapterId,@RequestParam("file") MultipartFile file) throws IOException {
+        return storageService.uploadFilesFromExcel(chapterId,file);
     }
     @GetMapping("/files/download/{fileName}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {

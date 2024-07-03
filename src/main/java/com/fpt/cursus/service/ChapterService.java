@@ -10,6 +10,7 @@ import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.ChapterRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -17,12 +18,15 @@ import java.util.List;
 
 @Service
 public class ChapterService {
-    @Autowired
-    private ChapterRepo chapterRepo;
-    @Autowired
-    private CourseService courseService;
-    @Autowired
-    private AccountUtil accountUtil;
+    private final ChapterRepo chapterRepo;
+    private final CourseService courseService;
+    private final AccountUtil accountUtil;
+
+    public ChapterService(@Lazy CourseService courseService, ChapterRepo chapterRepo, AccountUtil accountUtil) {
+        this.courseService = courseService;
+        this.chapterRepo = chapterRepo;
+        this.accountUtil = accountUtil;
+    }
 
     public Chapter createChapter(Long courseId,CreateChapterRequest request) {
         Course course = courseService.getCourseById(courseId);
