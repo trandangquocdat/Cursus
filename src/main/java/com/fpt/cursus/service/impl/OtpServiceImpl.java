@@ -28,7 +28,8 @@ public class OtpServiceImpl implements OtpService {
         this.emailUtil = emailUtil;
     }
 
-    public String generateOtp() {
+    public String
+    generateOtp() {
         return otpUtil.generateOtp();
     }
 
