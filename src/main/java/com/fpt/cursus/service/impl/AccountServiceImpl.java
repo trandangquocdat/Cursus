@@ -268,7 +268,7 @@ public class AccountServiceImpl implements AccountService {
         otpService.saveOtp(email, otp);
     }
 
-    private boolean validateOtp(Otp userOtp, String otp) {
+    public boolean validateOtp(Otp userOtp, String otp) {
         if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (2 * 60)) {
             return userOtp.getOtp().equals(otp);
         } else {
