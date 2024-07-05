@@ -15,6 +15,7 @@ import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.util.AccountUtil;
 import com.fpt.cursus.util.PageUtil;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -32,27 +33,25 @@ public class CourseService {
     private final ObjectMapper objectMapper;
     private final LessonService lessonService;
     private final PageUtil pageUtil;
+    private final ModelMapper modelMapper;
 
     public CourseService(AccountUtil accountUtil, AccountService accountService,
                          CourseRepo courseRepo, ObjectMapper objectMapper,
-                         LessonService lessonService, PageUtil pageUtil) {
+                         LessonService lessonService, PageUtil pageUtil,
+                         ModelMapper modelMapper) {
         this.accountUtil = accountUtil;
         this.accountService = accountService;
         this.courseRepo = courseRepo;
         this.objectMapper = objectMapper;
         this.lessonService = lessonService;
         this.pageUtil = pageUtil;
+        this.modelMapper = modelMapper;
     }
 
     public Course createCourse(CreateCourseDto createCourseDto) {
         validateCourseDto(createCourseDto);
 
-        Course course = new Course();
-        course.setName(createCourseDto.getName());
-        course.setDescription(createCourseDto.getDescription());
-        course.setPictureLink(createCourseDto.getPictureLink());
-        course.setPrice(createCourseDto.getPrice());
-        course.setCategory(createCourseDto.getCategory());
+        Course course = modelMapper.map(createCourseDto, Course.class);
         course.setCreatedDate(new Date());
         course.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
         course.setStatus(CourseStatus.DRAFT);
