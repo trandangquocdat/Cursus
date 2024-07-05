@@ -31,16 +31,16 @@ public class FileUploadController {
     }
 
     @PostMapping("/files/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            return storageService.uploadFile(file);
+            return ResponseEntity.ok().body(storageService.uploadFile(file));
         } catch (IOException e) {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
         }
     }
     @PostMapping("/upload-excel")
-    public List<String> uploadExcelFile(@RequestParam Long chapterId,@RequestParam("file") MultipartFile file) throws IOException {
-        return storageService.uploadFilesFromExcel(chapterId,file);
+    public ResponseEntity<List<String>> uploadExcelFile(@RequestParam Long chapterId,@RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok().body(storageService.uploadFilesFromExcel(chapterId,file));
     }
     @GetMapping("/files/download/{fileName}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {

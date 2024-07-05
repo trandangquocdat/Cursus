@@ -131,7 +131,7 @@ public class OrderService {
         return result.toString();
     }
 
-    public void orderSuccess(String txnRef, String responseCode) {
+    public Orders orderSuccess(String txnRef, String responseCode) {
         Long id = Long.parseLong(txnRef);
         Orders order = ordersRepo.findOrdersById(id);
         if (!responseCode.equals("00")) {
@@ -150,7 +150,7 @@ public class OrderService {
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.ORDER_FAIL);
         }
-        ordersRepo.save(order);
+        return ordersRepo.save(order);
     }
 
     public void setOrder(Orders order, List<Long> ids, double price) {

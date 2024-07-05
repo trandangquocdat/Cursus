@@ -9,6 +9,8 @@ import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.LessonRepo;
 import com.fpt.cursus.util.AccountUtil;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -20,20 +22,20 @@ public class LessonService {
     private final LessonRepo lessonRepo;
     private final ChapterService chapterService;
     private final AccountUtil accountUtil;
-
-    public LessonService(LessonRepo lessonRepo, @Lazy ChapterService chapterService, AccountUtil accountUtil) {
+    private final ModelMapper modelMapper;
+    public LessonService(LessonRepo lessonRepo, @Lazy ChapterService chapterService,
+                         AccountUtil accountUtil,ModelMapper modelMapper) {
         this.lessonRepo = lessonRepo;
         this.chapterService = chapterService;
         this.accountUtil = accountUtil;
+        this.modelMapper = modelMapper;
     }
 
     public Lesson createLesson(Long chapterId, CreateLessonDto request) {
         Chapter chapter = chapterService.findChapterById(chapterId);
         Account account = accountUtil.getCurrentAccount();
         Date date = new Date();
-        Lesson lesson = new Lesson();
-        lesson.setName(request.getName());
-        lesson.setDescription(request.getDescription());
+        Lesson lesson = modelMapper.map(request, Lesson.class);
         lesson.setChapter(chapter);
         lesson.setCreatedDate(date);
         lesson.setCreatedBy(account.getUsername());
@@ -45,20 +47,23 @@ public class LessonService {
         return lessonRepo.findLessonById(id);
     }
 
-    public void deleteLessonById(Long id) {
+    public Lesson deleteLessonById(Long id) {
         Lesson lesson = this.findLessonById(id);
         lesson.setChapter(null);
         lesson.setStatus(LessonStatus.DELETED);
-        lessonRepo.save(lesson);
+        return lessonRepo.save(lesson);
     }
 
-    public void updateLesson(Long id, CreateLessonDto request) {
+    public Lesson updateLesson(Long id, CreateLessonDto request) {
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.STRICT)
+                .setSkipNullEnabled(true);
         Lesson lesson = this.findLessonById(id);
-        lesson.setName(request.getName());
-        lesson.setDescription(request.getDescription());
+        mapper.map(request, lesson);
         lesson.setUpdatedDate(new Date());
         lesson.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
-        lessonRepo.save(lesson);
+        return lessonRepo.save(lesson);
     }
 
     public List<Lesson> findAllByChapterId(Long id) {
