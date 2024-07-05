@@ -1,6 +1,7 @@
 package com.fpt.cursus.entity;
 
-import com.fpt.cursus.enums.status.OrderStatus;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fpt.cursus.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

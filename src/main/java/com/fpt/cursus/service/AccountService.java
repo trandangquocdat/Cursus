@@ -4,9 +4,9 @@ import com.fpt.cursus.dto.request.*;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Otp;
-import com.fpt.cursus.enums.type.InstructorStatus;
-import com.fpt.cursus.enums.type.Role;
-import com.fpt.cursus.enums.status.UserStatus;
+import com.fpt.cursus.enums.InstructorStatus;
+import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
@@ -275,7 +275,7 @@ public class AccountService {
     }
 
     private boolean validateOtp(Otp userOtp, String otp) {
-        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (2 * 60)) {
+        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (10 * 60)) {
             return userOtp.getOtp().equals(otp);
         } else {
             userOtp.setValid(false);

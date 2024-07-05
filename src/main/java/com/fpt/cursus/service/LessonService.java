@@ -4,12 +4,11 @@ import com.fpt.cursus.dto.request.CreateLessonDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Chapter;
 import com.fpt.cursus.entity.Lesson;
-import com.fpt.cursus.enums.status.LessonStatus;
+import com.fpt.cursus.enums.LessonStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.LessonRepo;
 import com.fpt.cursus.util.AccountUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +37,7 @@ public class LessonService {
         lesson.setChapter(chapter);
         lesson.setCreatedDate(date);
         lesson.setCreatedBy(account.getUsername());
+        lesson.setVideoLink(request.getVideoLink());
         return lessonRepo.save(lesson);
     }
 

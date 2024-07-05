@@ -1,4 +1,4 @@
-package com.fpt.cursus.enums.type;
+package com.fpt.cursus.enums;
 
 public enum Category {
     ALL,

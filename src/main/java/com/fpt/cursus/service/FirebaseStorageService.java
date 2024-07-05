@@ -1,7 +1,7 @@
 package com.fpt.cursus.service;
 
 import com.fpt.cursus.entity.Lesson;
-import com.fpt.cursus.enums.status.LessonStatus;
+import com.fpt.cursus.enums.LessonStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.util.AccountUtil;

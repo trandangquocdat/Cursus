@@ -1,8 +1,8 @@
 package com.fpt.cursus.repository;
 
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.enums.type.InstructorStatus;
-import com.fpt.cursus.enums.type.Role;
+import com.fpt.cursus.enums.InstructorStatus;
+import com.fpt.cursus.enums.Role;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

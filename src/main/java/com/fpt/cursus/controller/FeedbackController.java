@@ -2,7 +2,7 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
 import com.fpt.cursus.dto.response.ApiRes;
-import com.fpt.cursus.enums.type.FeedbackType;
+import com.fpt.cursus.enums.FeedbackType;
 import com.fpt.cursus.util.ApiResUtil;
 import com.fpt.cursus.service.FeedbackService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

@@ -24,8 +24,7 @@ public class ChapterController {
 
     @PostMapping("/chapter/create")
     public ApiRes<Object> createChapter(@RequestParam Long courseId,@RequestBody @Valid CreateChapterRequest request) {
-        String successMessage = "Create chapter successfully";
-        return apiResUtil.returnApiRes(null, null, successMessage,
+        return apiResUtil.returnApiRes(null, null, null,
                 chapterService.createChapter(courseId,request));
     }
     @DeleteMapping("/chapter/delete")

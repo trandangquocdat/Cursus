@@ -1,6 +1,6 @@
 package com.fpt.cursus.dto.request;
 
-import com.fpt.cursus.enums.type.Category;
+import com.fpt.cursus.enums.Category;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;

@@ -8,9 +8,13 @@ import com.fpt.cursus.service.OtpService;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,25 +36,30 @@ public class AccountController {
     }
     @Operation(summary = "Register new account", description = "API Register new account, auto send otp to email")
     @PostMapping("/auth/register")
-    public ApiRes<Object> register(@Valid @RequestBody RegisterReqDto account) {
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Account created"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    public ResponseEntity<Object> register(@Valid @RequestBody RegisterReqDto account) {
         Account newAccount = accountService.register(account);
         String otp = otpService.generateOtp();
         otpService.updateOldOtps(account.getEmail());
         otpService.sendOtpEmail(account.getEmail(), otp);
         otpService.saveOtp(account.getEmail(), otp);
-        return apiResUtil.returnApiRes(null, null, null, newAccount);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newAccount);
     }
+
     @Operation(summary = "Login")
     @PostMapping("/auth/login")
-    public ApiRes<Object> login(@RequestBody @Valid LoginReqDto account) {
-        LoginResDto newAccount = accountService.login(account);
-        return apiResUtil.returnApiRes(null, null, null, newAccount);
+    public ResponseEntity<Object> login(@RequestBody @Valid LoginReqDto loginAccountDto) {
+        LoginResDto account = accountService.login(loginAccountDto);
+        return ResponseEntity.status(HttpStatus.OK).body(account);
     }
 
     @PostMapping("/auth/login-google-firebase")
-    public ApiRes<Object> loginGoogle(@RequestBody LoginGoogleReq loginGoogleReq) {
-        LoginResDto newAccount = accountService.loginGoogle(loginGoogleReq.getToken());
-        return apiResUtil.returnApiRes(null, null, null, newAccount);
+    public ResponseEntity<Object> loginGoogle(@RequestBody LoginGoogleReq loginGoogleReq) {
+        LoginResDto account = accountService.loginGoogle(loginGoogleReq.getToken());
+        return ResponseEntity.status(HttpStatus.OK).body(account);
     }
     @Operation(summary = "Verify Otp from email register", description = "Run after user click on link in email")
     @GetMapping("/auth/verify-account")

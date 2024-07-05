@@ -3,17 +3,14 @@ package com.fpt.cursus.service;
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Feedback;
-import com.fpt.cursus.enums.type.FeedbackType;
+import com.fpt.cursus.enums.FeedbackType;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.repository.FeedbackRepo;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;

@@ -1,7 +1,8 @@
 package com.fpt.cursus.entity;
 
-import com.fpt.cursus.enums.type.Category;
-import com.fpt.cursus.enums.status.CourseStatus;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fpt.cursus.enums.Category;
+import com.fpt.cursus.enums.CourseStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
