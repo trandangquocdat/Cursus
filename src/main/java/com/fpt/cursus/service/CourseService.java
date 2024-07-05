@@ -356,7 +356,7 @@ public class CourseService {
         if (courseRepo.existsByName(createCourseDto.getName())) {
             throw new AppException(ErrorCode.COURSE_EXISTS);
         }
-        if (createCourseDto.getPrice() < 5000) {
+        if (createCourseDto.getPrice() < 10000 || createCourseDto.getPrice() > 10000000) {
             throw new AppException(ErrorCode.COURSE_PRICE_INVALID);
         }
 

@@ -50,7 +50,7 @@ public enum ErrorCode {
     COURSE_PRICE_NULL(702, "Price of course can not be null"),
     COURSE_CATEGORY_NULL(703, "Category of course can not be null"),
     COURSE_EXISTS(704, "Course already exists"),
-    COURSE_PRICE_INVALID(705, "Price of course must be greater than 5.000 VND"),
+    COURSE_PRICE_INVALID(705, "Price of course must be greater than 10.000 VND and less than 10.000.000 VND"),
     CATEGORY_NOT_FOUND(706, "Category not found"),
 
     //chapter error - 71x
