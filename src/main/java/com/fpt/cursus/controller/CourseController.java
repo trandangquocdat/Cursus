@@ -48,32 +48,7 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.deleteCourseById(id));
     }
-    @PostMapping("/wishlist/add")
-    public ResponseEntity<Object> addToWishList(@RequestParam List<Long> id) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(courseService.addToWishList(id));
-    }
-    @DeleteMapping("/wishlist/remove")
-    public ResponseEntity<Object> removeFromWishList(@RequestParam Long id) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(courseService.removeFromWishList(id));
-    }
-    @GetMapping("/wishlist/view")
-    public ResponseEntity<Object> viewWishList(@RequestParam(required = false) String sortBy,
-                                       @RequestParam(defaultValue = "1", required = false) int offset,
-                                       @RequestParam(defaultValue = "10", required = false) int pageSize) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(courseService.getWishListCourses(offset, pageSize, sortBy));
-    }
-    @GetMapping("/course/view-my-course")
-    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR') ")
-    public ResponseEntity<Object> viewMyCourse(@RequestParam(required = false) String sortBy,
-                                       @RequestParam(defaultValue = "1", required = false) int offset,
-                                       @RequestParam(defaultValue = "10", required = false) int pageSize){
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(courseService.getCourseByCreatedBy(offset,pageSize , sortBy));
-    }
     @GetMapping("/course/view-all-general")
     public ResponseEntity<Object> viewAllGeneralCourse(@RequestParam(required = false) String sortBy,
                                   @RequestParam(defaultValue = "1", required = false) int offset,
@@ -82,22 +57,7 @@ public class CourseController {
                 .body(courseService.getAllGeneralCourses(sortBy, offset, pageSize));
     }
 
-    @GetMapping("/enrolled-course/view-all-general")
-    public ResponseEntity<Object> viewEnrolledCourses(@RequestParam(required = false) String sortBy,
-                                        @RequestParam(defaultValue = "1", required = false) int offset,
-                                        @RequestParam(defaultValue = "10", required = false) int pageSize) {
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(courseService.getGeneralEnrolledCourses(sortBy, offset, pageSize));
-    }
-
-    @GetMapping("/enrolled-course/view-all-detail")
-    public ResponseEntity<Object> viewDetailEnrolledCourses(@RequestParam(required = false) String sortBy,
-                                              @RequestParam(defaultValue = "1", required = false) int offset,
-                                              @RequestParam(defaultValue = "10", required = false) int pageSize) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(courseService.getDetailEnrolledCourses(sortBy, offset, pageSize));
-    }
 
     @GetMapping("/course/view-general-by-category")
     public ResponseEntity<Object> viewCourseByCategory(@RequestParam(defaultValue = "ALL") Category category,

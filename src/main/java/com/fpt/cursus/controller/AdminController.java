@@ -27,10 +27,10 @@ public class AdminController {
         this.courseService = courseService;
     }
 
-    @PatchMapping("/admin/verify-instructor")
+    @PatchMapping("/admin/approve-instructor")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Object> verifyAccount(@RequestParam long id, @RequestParam InstructorStatus status) {
-        return ResponseEntity.ok(accountService.verifyInstructorById(id, status));
+    public ResponseEntity<Object> approveInstructor(@RequestParam long id, @RequestParam InstructorStatus status) {
+        return ResponseEntity.ok(accountService.approveInstructorById(id, status));
     }
 
     @GetMapping("/admin/view-draft-course")
@@ -52,19 +52,19 @@ public class AdminController {
                 .body(courseService.getAllCourse(offset, pageSize, sortBy));
     }
 
-    @PatchMapping("/admin/verify-course")
+    @PatchMapping("/admin/approve-course")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Object> verifyCourse(@RequestParam long id, @RequestParam CourseStatus status) {
-        return ResponseEntity.ok(courseService.verifyCourseById(id, status));
+    public ResponseEntity<Object> approveCourse(@RequestParam long id, @RequestParam CourseStatus status) {
+        return ResponseEntity.ok(courseService.approveCourseById(id, status));
     }
 
-    @GetMapping("/admin/view-verifying-instructor")
+    @GetMapping("/admin/view-instructor")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Object> viewVerifyingInstructor(@RequestParam InstructorStatus status) {
         return ResponseEntity.ok(accountService.getInstructorByInstStatus(status));
     }
 
-    @GetMapping("/admin/view-instructor-student-list")
+    @GetMapping("/admin/view-instructor-and-student")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Object> viewList(@RequestParam(required = false) Role role,
                                    @RequestParam(required = false) String sortBy,

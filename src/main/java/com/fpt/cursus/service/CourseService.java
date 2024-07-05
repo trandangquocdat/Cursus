@@ -107,16 +107,20 @@ public class CourseService {
         return courses;
     }
 
-    public Course verifyCourseById(Long id, CourseStatus status) {
+    public Course approveCourseById(Long id, CourseStatus status) {
         if (status.equals(CourseStatus.PUBLISHED)) {
             Course course = getCourseById(id);
             course.setStatus(CourseStatus.PUBLISHED);
+            course.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
+            course.setUpdatedDate(new Date());
             return courseRepo.save(course);
 
         }
         if (status.equals(CourseStatus.REJECTED)) {
             Course course = getCourseById(id);
             course.setStatus(CourseStatus.REJECTED);
+            course.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
+            course.setUpdatedDate(new Date());
             return courseRepo.save(course);
         }
         return null;

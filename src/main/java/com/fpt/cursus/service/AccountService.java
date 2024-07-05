@@ -46,7 +46,7 @@ public class AccountService {
     private final Regex regex;
     private final OtpService otpService;
     private final PageUtil pageUtil;
-    private final FirebaseStorageService fileService;
+    private final FileService fileService;
 
     @Value("${spring.security.jwt.access-token-expiration}")
     private long accessTokenExpiration;
@@ -54,7 +54,7 @@ public class AccountService {
     public AccountService(AccountRepo accountRepo, PasswordEncoder passwordEncoder,
                           AuthenticationManager authenticationManager, TokenHandler tokenHandler,
                           AccountUtil accountUtil, Regex regex, OtpService otpService,
-                          PageUtil pageUtil, FirebaseStorageService fileService) {
+                          PageUtil pageUtil, FileService fileService) {
         this.accountRepo = accountRepo;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -152,7 +152,7 @@ public class AccountService {
         }
     }
 
-    public Account verifyAccount(String email, String otp) {
+    public Account authenticateAccount(String email, String otp) {
         Otp userOtp = otpService.findOtpByEmailAndValid(email, true);
         if (validateOtp(userOtp, otp)) {
             Account account = accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -168,7 +168,7 @@ public class AccountService {
         return resAccount;
     }
 
-    public Account verifyInstructorById(Long id, InstructorStatus status) {
+    public Account approveInstructorById(Long id, InstructorStatus status) {
         Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         if (status.equals(InstructorStatus.REJECTED)) {
             account.setInstructorStatus(InstructorStatus.REJECTED);
@@ -181,7 +181,7 @@ public class AccountService {
         return account;
     }
 
-    public Account sendVerifyInstructor(MultipartFile file) {
+    public Account sendCv(MultipartFile file) {
         Account account = accountUtil.getCurrentAccount();
         String cvLink = null;
         try {
