@@ -11,11 +11,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmailUtil {
 
-    @Autowired
-    private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
 
     @Value("${spring.host}")
     private String host;
+
+    @Autowired
+    public EmailUtil(JavaMailSender javaMailSender) {
+        this.javaMailSender = javaMailSender;
+    }
 
     public void sendEmail(String email, String subject, String content) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -28,7 +32,7 @@ public class EmailUtil {
 
     public void sendOtpEmail(String email, String otp) throws MessagingException {
         String subject = "[Cursus] Email verification";
-        String url = "http://" + host + ":8080/auth/verify-account?email=" + email + "&otp=" + otp;
+        String url = "http://" + host + ":8080/auth/authenticate-account?email=" + email + "&otp=" + otp;
         String content = """
                 <div>
                   Dear %s,<br>

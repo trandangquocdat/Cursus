@@ -5,19 +5,29 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.dto.request.CreateCourseDto;
+import com.fpt.cursus.dto.request.UpdateCourseDto;
 import com.fpt.cursus.dto.response.GeneralCourse;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
-import com.fpt.cursus.enums.status.CourseStatus;
-import com.fpt.cursus.enums.type.Category;
+import com.fpt.cursus.enums.Category;
+import com.fpt.cursus.enums.CourseStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.CourseService;
+import com.fpt.cursus.service.FileService;
+import com.fpt.cursus.service.LessonService;
 import com.fpt.cursus.util.AccountUtil;
+import com.fpt.cursus.util.FileUtil;
+import com.fpt.cursus.util.PageUtil;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,81 +39,95 @@ import java.util.List;
 public class CourseServiceImpl implements CourseService {
 
     private final CourseRepo courseRepo;
-
     private final AccountUtil accountUtil;
-
     private final AccountService accountService;
-
     private final ObjectMapper objectMapper;
+    private final LessonService lessonService;
+    private final PageUtil pageUtil;
+    private final ModelMapper modelMapper;
+    private final FileService fileService;
+    private final FileUtil fileUtil;
 
     @Autowired
     public CourseServiceImpl(AccountUtil accountUtil,
                              AccountService accountService,
                              CourseRepo courseRepo,
-                             ObjectMapper objectMapper) {
+                             ObjectMapper objectMapper,
+                             LessonService lessonService,
+                             PageUtil pageUtil,
+                             ModelMapper modelMapper,
+                             FileService fileService,
+                             FileUtil fileUtil) {
         this.accountUtil = accountUtil;
         this.accountService = accountService;
         this.courseRepo = courseRepo;
         this.objectMapper = objectMapper;
+        this.lessonService = lessonService;
+        this.pageUtil = pageUtil;
+        this.modelMapper = modelMapper;
+        this.fileService = fileService;
+        this.fileUtil = fileUtil;
     }
 
     public Course createCourse(CreateCourseDto createCourseDto) {
         validateCourseDto(createCourseDto);
-
-        Course course = new Course();
-        course.setName(createCourseDto.getName());
-        course.setDescription(createCourseDto.getDescription());
-        course.setPictureLink(createCourseDto.getPictureLink());
-        course.setPrice(createCourseDto.getPrice());
-        course.setCategory(createCourseDto.getCategory());
-        course.setCreatedDate(new Date());
+        Course course = modelMapper.map(createCourseDto, Course.class);
+        Date date = new Date();
+        course.setCreatedDate(date);
         course.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
+        if (!fileUtil.isImage(createCourseDto.getPictureLink())) {
+            throw new AppException(ErrorCode.FILE_INVALID_IMAGE);
+        } else {
+            fileService.setPicture(createCourseDto.getPictureLink(), course);
+        }
         course.setStatus(CourseStatus.DRAFT);
-
+        course.setVersion(1f);
         return courseRepo.save(course);
+
     }
 
-    public void deleteCourseById(Long id) {
+    public Course deleteCourseById(Long id) {
         Course course = getCourseById(id);
         course.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         course.setUpdatedDate(new Date());
         course.setStatus(CourseStatus.DELETED);
-        courseRepo.save(course);
+        return courseRepo.save(course);
     }
 
-    public void updateCourse(Long id, CreateCourseDto createCourseDto) {
+    public Course updateCourse(Long id, UpdateCourseDto request) {
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.STRICT)
+                .setSkipNullEnabled(true);
+
         Course existingCourse = getCourseById(id);
         if (existingCourse.getStatus() == CourseStatus.DELETED) {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
         }
-
-        validateCourseDto(createCourseDto);
-
-        existingCourse.setName(createCourseDto.getName());
-        existingCourse.setPrice(createCourseDto.getPrice());
-        existingCourse.setPictureLink(createCourseDto.getPictureLink());
-        existingCourse.setDescription(createCourseDto.getDescription());
-        existingCourse.setCategory(createCourseDto.getCategory());
+        if (request.getName() != null
+                && courseRepo.existsByName(request.getName())
+                && !existingCourse.getName().equals(request.getName())) {
+            throw new AppException(ErrorCode.COURSE_EXISTS);
+        }
+        if (request.getPrice() != null && (request.getPrice() < 10000 || request.getPrice() > 10000000)) {
+            throw new AppException(ErrorCode.COURSE_PRICE_INVALID);
+        }
+        mapper.map(request, existingCourse);
+        if (request.getPictureLink() != null) {
+            fileService.setPicture(request.getPictureLink(), existingCourse);
+        }
         existingCourse.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         existingCourse.setStatus(CourseStatus.DRAFT);
-        existingCourse.setVersion(existingCourse.getVersion() + 0.1f);
+        existingCourse.setVersion(Math.round((existingCourse.getVersion() + 0.1f) * 10) / 10.0f);
         existingCourse.setUpdatedDate(new Date());
 
-        courseRepo.save(existingCourse);
+        return courseRepo.save(existingCourse);
     }
 
     public Page<Course> getCourseByCreatedBy(int offset, int pageSize, String sortBy) {
         String username = accountUtil.getCurrentAccount().getUsername();
-        checkOffset(offset);
-        if (sortBy != null) {
-            Pageable pageable = PageRequest.of(offset - 1, pageSize, Sort.by(sortBy));
-            Page<Course> courses = courseRepo.findCourseByCreatedBy(username, pageable);
-            if (courses.isEmpty()) {
-                return new PageImpl<>(Collections.emptyList());
-            }
-            return courses;
-        }
-        Pageable pageable = PageRequest.of(offset - 1, pageSize);
+        pageUtil.checkOffset(offset);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         Page<Course> courses = courseRepo.findCourseByCreatedBy(username, pageable);
         if (courses.isEmpty()) {
             return new PageImpl<>(Collections.emptyList());
@@ -111,18 +135,23 @@ public class CourseServiceImpl implements CourseService {
         return courses;
     }
 
-    public void verifyCourseById(Long id, CourseStatus status) {
+    public Course approveCourseById(Long id, CourseStatus status) {
         if (status.equals(CourseStatus.PUBLISHED)) {
             Course course = getCourseById(id);
             course.setStatus(CourseStatus.PUBLISHED);
-            courseRepo.save(course);
+            course.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
+            course.setUpdatedDate(new Date());
+            return courseRepo.save(course);
 
         }
         if (status.equals(CourseStatus.REJECTED)) {
             Course course = getCourseById(id);
             course.setStatus(CourseStatus.REJECTED);
-            courseRepo.save(course);
+            course.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
+            course.setUpdatedDate(new Date());
+            return courseRepo.save(course);
         }
+        return null;
     }
 
     public Course getCourseById(Long id) {
@@ -131,16 +160,8 @@ public class CourseServiceImpl implements CourseService {
     }
 
     public Page<Course> getCourseByStatus(CourseStatus status, int offset, int pageSize, String sortBy) {
-        checkOffset(offset);
-        if (sortBy != null) {
-            Pageable pageable = PageRequest.of(offset - 1, pageSize, Sort.by(sortBy));
-            Page<Course> courses = courseRepo.findCourseByStatus(status, pageable);
-            if (courses.isEmpty()) {
-                return new PageImpl<>(Collections.emptyList());
-            }
-            return courses;
-        }
-        Pageable pageable = PageRequest.of(offset - 1, pageSize);
+        pageUtil.checkOffset(offset);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         Page<Course> courses = courseRepo.findCourseByStatus(status, pageable);
         if (courses.isEmpty()) {
             return new PageImpl<>(Collections.emptyList());
@@ -148,84 +169,83 @@ public class CourseServiceImpl implements CourseService {
         return courses;
     }
 
-    public void checkOffset(int offset) {
-        if (offset < 1) {
-            throw new AppException(ErrorCode.INVALID_OFFSET);
-        }
-    }
-
-    public void addStudiedLesson(Long courseId, Long lessonId) {
+    public Account addStudiedLesson(Long lessonId) {
         Account account = accountUtil.getCurrentAccount();
+        Long chapterId = lessonService.findLessonById(lessonId).getChapter().getId();
+        Long courseId = lessonService.findLessonById(lessonId).getChapter().getCourse().getId();
         List<StudiedCourse> studiedCourses = getStudiedCourses(account);
+        boolean courseExists = false;
 
-        studiedCourses.stream()
-                .filter(sc -> sc.getId().equals(courseId))
-                .findFirst()
-                .ifPresentOrElse(
-                        sc -> sc.getLessonIds().add(lessonId),
-                        () -> {
-                            StudiedCourse newCourse = new StudiedCourse();
-                            newCourse.setId(courseId);
-                            newCourse.setLessonIds(List.of(lessonId));
-                            studiedCourses.add(newCourse);
-                        }
-                );
-
+        for (StudiedCourse sc : studiedCourses) {
+            if (sc.getCourseId().equals(courseId) && sc.getChapterId().equals(chapterId) && sc.getLessonId().equals(lessonId)) {
+                courseExists = true;
+                sc.setCheckPoint(true);
+            } else {
+                sc.setCheckPoint(false);
+            }
+        }
+        if (!courseExists) {
+            StudiedCourse newCourse = new StudiedCourse();
+            newCourse.setCourseId(courseId);
+            newCourse.setChapterId(chapterId);
+            newCourse.setLessonId(lessonId);
+            newCourse.setCheckPoint(true);
+            studiedCourses.add(newCourse);
+        }
         saveStudiedCourses(account, studiedCourses);
+        // Set Res account
+        Account newAccount = new Account();
+        newAccount.setUsername(account.getUsername());
+        newAccount.setStudiedCourse(account.getStudiedCourse());
+        return newAccount;
     }
 
-    public void addToWishList(List<Long> ids) {
+    public Account addToWishList(List<Long> ids) {
         List<Course> courses = courseRepo.findByIdIn(ids);
-
         // Check if any IDs are missing
         if (courses.size() != ids.size()) {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
         }
         Account account = accountUtil.getCurrentAccount();
+        // get old wishlist
         List<Long> wishListCourses = getWishListCourses(account);
+        // Add the new course to the wishlist
         List<Long> nonDuplicateIds = ids.stream()
                 .filter(id -> !wishListCourses.contains(id))
                 .toList();
         wishListCourses.addAll(nonDuplicateIds);
         saveWishListCourses(account, wishListCourses);
+        // Return a new account object with the updated wishListCourses
+        Account wishListAccount = new Account();
+        wishListAccount.setId(account.getId());
+        wishListAccount.setWishListCourse(account.getWishListCourse());
+        return wishListAccount;
     }
 
-    public void removeFromWishList(Long id) {
+    public Account removeFromWishList(Long id) {
         Account account = accountUtil.getCurrentAccount();
         List<Long> wishListCourses = getWishListCourses(account);
         wishListCourses.remove(id);
         saveWishListCourses(account, wishListCourses);
+        // Return a new account object with the updated wishListCourses
+        Account wishListAccount = new Account();
+        wishListAccount.setId(account.getId());
+        wishListAccount.setWishListCourse(account.getWishListCourse());
+        return wishListAccount;
     }
 
     public Page<GeneralCourse> getWishListCourses(int offset, int pageSize, String sortBy) {
-        checkOffset(offset);
+        pageUtil.checkOffset(offset);
         Account account = accountUtil.getCurrentAccount();
         List<Long> wishListCourses = getWishListCourses(account);
-        if (sortBy != null) {
-            Pageable pageable = PageRequest.of(offset - 1, pageSize, Sort.by(sortBy));
-            Page<Course> courses = courseRepo.findByIdIn(wishListCourses, pageable);
-            return convertToGeneralCoursePage(courses);
-        }
-        Pageable pageable = PageRequest.of(offset - 1, pageSize);
-        Page<Course> courses = courseRepo.findByIdIn(wishListCourses, pageable);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+        Page<Course> courses = courseRepo.findByIdInAndStatus(wishListCourses, CourseStatus.PUBLISHED, pageable);
         return convertToGeneralCoursePage(courses);
     }
 
-    public Page<GeneralCourse> getCourseByCategory(Category category,
-                                                   int offset,
-                                                   int pageSize,
-                                                   String sortBy) {
-        checkOffset(offset);
-        if (sortBy != null) {
-            Pageable pageable = PageRequest.of(offset - 1, pageSize, Sort.by(sortBy));
-            Page<Course> courses = courseRepo.findCourseByCategoryAndStatus(category, CourseStatus.PUBLISHED, pageable);
-            if (courses.isEmpty()) {
-                return new PageImpl<>(new ArrayList<>());
-            }
-
-            return convertToGeneralCoursePage(courses);
-        }
-        Pageable pageable = PageRequest.of(offset - 1, pageSize);
+    public Page<GeneralCourse> getCourseByCategory(Category category, int offset, int pageSize, String sortBy) {
+        pageUtil.checkOffset(offset);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         Page<Course> courses;
         if (category == Category.ALL) {
             courses = courseRepo.findAllByStatus(CourseStatus.PUBLISHED, pageable);
@@ -242,15 +262,15 @@ public class CourseServiceImpl implements CourseService {
         Account account = accountUtil.getCurrentAccount();
         List<StudiedCourse> studiedCourses = getStudiedCourses(account);
 
-        return studiedCourses.stream()
-                .filter(sc -> sc.getId().equals(courseId))
-                .findFirst()
-                .map(sc -> {
-                    int totalLessons = getTotalLesson(courseId);
-                    return totalLessons == 0 ? 0 : (double) sc.getLessonIds().size() / totalLessons;
-                })
-                .orElse(0.0);
+        long completedLessons = studiedCourses.stream()
+                .filter(sc -> sc.getCourseId().equals(courseId))
+                .count();
+
+        int totalLessons = getTotalLesson(courseId);
+
+        return totalLessons == 0 ? 0 : (double) completedLessons / totalLessons;
     }
+
 
     private int getTotalLesson(Long courseId) {
         Course course = getCourseById(courseId);
@@ -260,23 +280,23 @@ public class CourseServiceImpl implements CourseService {
     }
 
     public Page<GeneralCourse> getAllGeneralCourses(String sortBy, int offset, int pageSize) {
-        checkOffset(offset);
-        Pageable pageable = getPageable(sortBy, offset - 1, pageSize);
+        pageUtil.checkOffset(offset);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         Page<Course> courses = courseRepo.findCourseByStatus(CourseStatus.PUBLISHED, pageable);
         return convertToGeneralCoursePage(courses);
     }
 
     public Page<GeneralCourse> getGeneralEnrolledCourses(String sortBy, int offset, int pageSize) {
-        checkOffset(offset);
+        pageUtil.checkOffset(offset);
         Page<Course> courses = getEnrolledCoursesPage(offset, pageSize);
-        Pageable pageable = getPageable(sortBy, offset, pageSize);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         return convertToGeneralCoursePage(new PageImpl<>(courses.getContent(), pageable, courses.getTotalElements()));
     }
 
     public Page<Course> getDetailEnrolledCourses(String sortBy, int offset, int pageSize) {
-        checkOffset(offset);
+        pageUtil.checkOffset(offset);
         Page<Course> courses = getEnrolledCoursesPage(offset, pageSize);
-        Pageable pageable = getPageable(sortBy, offset, pageSize);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         return new PageImpl<>(courses.getContent(), pageable, courses.getTotalElements());
     }
 
@@ -284,11 +304,6 @@ public class CourseServiceImpl implements CourseService {
         courseRepo.save(course);
     }
 
-    private Pageable getPageable(String sortBy, int offset, int pageSize) {
-        return sortBy == null
-                ? PageRequest.of(offset, pageSize)
-                : PageRequest.of(offset, pageSize, Sort.by(sortBy));
-    }
 
     private Page<GeneralCourse> convertToGeneralCoursePage(Page<Course> courses) {
         List<GeneralCourse> generalCoursesList = new ArrayList<>();
@@ -315,8 +330,16 @@ public class CourseServiceImpl implements CourseService {
         return generalCourse;
     }
 
+    public Page<GeneralCourse> getGeneralCourseByName(String name, int offset, int pageSize, String sortBy) {
+        pageUtil.checkOffset(offset);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+        List<Long> courses = courseRepo.findCourseByNameLike("%" + name + "%").stream().map(Course::getId).toList();
+        Page<Course> coursePage = courseRepo.findByIdInAndStatus(courses, CourseStatus.PUBLISHED, pageable);
+        return convertToGeneralCoursePage(coursePage);
+    }
+
     private Page<Course> getEnrolledCoursesPage(int offset, int pageSize) {
-        checkOffset(offset);
+        pageUtil.checkOffset(offset);
         Account account = accountUtil.getCurrentAccount();
         if (account.getEnrolledCourseJson() == null || account.getEnrolledCourseJson().isEmpty()) {
             return new PageImpl<>(Collections.emptyList());
@@ -331,7 +354,29 @@ public class CourseServiceImpl implements CourseService {
         }
 
         Pageable pageable = PageRequest.of(offset - 1, pageSize);
-        return courseRepo.findByIdIn(enrolledCourseIds, pageable);
+        return courseRepo.findByIdInAndStatus(enrolledCourseIds, CourseStatus.PUBLISHED, pageable);
+    }
+
+    public List<StudiedCourse> getAllStudiedCourses() {
+        Account account = accountUtil.getCurrentAccount();
+        return getStudiedCourses(account);
+    }
+
+    public StudiedCourse getCheckPoint() {
+        Account account = accountUtil.getCurrentAccount();
+        List<StudiedCourse> studiedCourses = getStudiedCourses(account);
+        for (StudiedCourse sc : studiedCourses) {
+            if (sc.isCheckPoint()) {
+                return sc;
+            }
+        }
+        return null;
+    }
+
+    public Page<Course> getAllCourse(int offset, int pageSize, String sortBy) {
+        List<Course> courses = courseRepo.findAll();
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+        return new PageImpl<>(courses, pageable, courses.size());
     }
 
     private List<StudiedCourse> getStudiedCourses(Account account) {
@@ -380,7 +425,7 @@ public class CourseServiceImpl implements CourseService {
         if (courseRepo.existsByName(createCourseDto.getName())) {
             throw new AppException(ErrorCode.COURSE_EXISTS);
         }
-        if (createCourseDto.getPrice() < 5000) {
+        if (createCourseDto.getPrice() < 10000 || createCourseDto.getPrice() > 10000000) {
             throw new AppException(ErrorCode.COURSE_PRICE_INVALID);
         }
 

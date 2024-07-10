@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.EnrollCourseService;
+import com.fpt.cursus.util.AccountUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +17,11 @@ import java.util.Set;
 
 @Service
 public class EnrollCourseServiceImpl implements EnrollCourseService {
+    private final AccountUtil accountUtil;
     private final AccountService accountService;
 
-    public EnrollCourseServiceImpl(AccountService accountService) {
+    public EnrollCourseServiceImpl(AccountUtil accountUtil, AccountService accountService) {
+        this.accountUtil = accountUtil;
         this.accountService = accountService;
     }
 

@@ -1,7 +1,7 @@
 package com.fpt.cursus.repository;
 
 import com.fpt.cursus.entity.Feedback;
-import com.fpt.cursus.enums.type.FeedbackType;
+import com.fpt.cursus.enums.FeedbackType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

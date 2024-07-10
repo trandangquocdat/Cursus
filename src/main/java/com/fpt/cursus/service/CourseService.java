@@ -1,44 +1,44 @@
 package com.fpt.cursus.service;
 
+import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.dto.request.CreateCourseDto;
+import com.fpt.cursus.dto.request.UpdateCourseDto;
 import com.fpt.cursus.dto.response.GeneralCourse;
+import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
-import com.fpt.cursus.enums.status.CourseStatus;
-import com.fpt.cursus.enums.type.Category;
+import com.fpt.cursus.enums.Category;
+import com.fpt.cursus.enums.CourseStatus;
 import org.springframework.data.domain.Page;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public interface CourseService {
-
     Course createCourse(CreateCourseDto createCourseDto);
 
-    void deleteCourseById(Long id);
+    Course deleteCourseById(Long id);
 
-    void updateCourse(Long id, CreateCourseDto createCourseDto);
+    Course updateCourse(Long id, UpdateCourseDto request);
 
     Page<Course> getCourseByCreatedBy(int offset, int pageSize, String sortBy);
 
-    void verifyCourseById(Long id, CourseStatus status);
+    Course approveCourseById(Long id, CourseStatus status);
 
     Course getCourseById(Long id);
 
     Page<Course> getCourseByStatus(CourseStatus status, int offset, int pageSize, String sortBy);
 
-    void checkOffset(int offset);
+    Account addStudiedLesson(Long lessonId);
 
-    void addStudiedLesson(Long courseId, Long lessonId);
+    Account addToWishList(List<Long> ids);
 
-    void addToWishList(List<Long> ids);
-
-    void removeFromWishList(Long id);
+    Account removeFromWishList(Long id);
 
     Page<GeneralCourse> getWishListCourses(int offset, int pageSize, String sortBy);
 
-    Page<GeneralCourse> getCourseByCategory(Category category,
-                                            int offset,
-                                            int pageSize,
-                                            String sortBy);
+    Page<GeneralCourse> getCourseByCategory(Category category, int offset, int pageSize, String sortBy);
 
     double percentDoneCourse(Long courseId);
 
@@ -49,4 +49,12 @@ public interface CourseService {
     Page<Course> getDetailEnrolledCourses(String sortBy, int offset, int pageSize);
 
     void saveCourse(Course course);
+
+    Page<GeneralCourse> getGeneralCourseByName(String name, int offset, int pageSize, String sortBy);
+
+    List<StudiedCourse> getAllStudiedCourses();
+
+    StudiedCourse getCheckPoint();
+
+    Page<Course> getAllCourse(int offset, int pageSize, String sortBy);
 }

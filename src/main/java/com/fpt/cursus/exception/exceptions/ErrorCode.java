@@ -40,6 +40,7 @@ public enum ErrorCode {
     EMAIL_INVALID(652, "Email invalid"),
     EMAIL_EXISTS(654, "Email already exists"),
     EMAIL_CAN_NOT_SEND(655, "Email can not send"),
+    EMAIL_NULL(656, "Email can not be null"),
     //OTP error - 66X
     OTP_INVALID(660, "Wrong OTP"),
     OTP_EXPIRED(661, "OTP expired"),
@@ -50,7 +51,7 @@ public enum ErrorCode {
     COURSE_PRICE_NULL(702, "Price of course can not be null"),
     COURSE_CATEGORY_NULL(703, "Category of course can not be null"),
     COURSE_EXISTS(704, "Course already exists"),
-    COURSE_PRICE_INVALID(705, "Price of course must be greater than 5.000 VND"),
+    COURSE_PRICE_INVALID(705, "Price of course must be greater than 10.000 VND and less than 10.000.000 VND"),
     CATEGORY_NOT_FOUND(706, "Category not found"),
 
     //chapter error - 71x
@@ -75,6 +76,10 @@ public enum ErrorCode {
     FILE_NOT_FOUND(741, "File not found"),
     FILE_DOWNLOAD_FAIL(742, "File download fail"),
     FILE_UPLOAD_FAIL(743, "File upload fail"),
+    FILE_INVALID_IMAGE(744, "Invalid image type"),
+    FILE_INVALID_PDF(745, "File must be PDF"),
+    FILE_INVALID_VIDEO(746, "File must be video"),
+
     //
     PROCESS_CALCULATE_PERCENT_FAIL(750, "Calculate percent fail"),
     PROCESS_ADD_STUDIED_COURSE_FAIL(751, "Add studied course fail"),
@@ -85,13 +90,13 @@ public enum ErrorCode {
     INVALID_OFFSET(800, "Invalid Page"),
     ;
 
+    private int code;
+    private String message;
+
     ErrorCode(int code, String message) {
         this.code = code;
         this.message = message;
 
     }
-
-    private int code;
-    private String message;
 
 }

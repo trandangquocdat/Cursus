@@ -8,6 +8,7 @@ import com.fpt.cursus.service.OtpService;
 import com.fpt.cursus.util.EmailUtil;
 import com.fpt.cursus.util.OtpUtil;
 import jakarta.mail.MessagingException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,14 +23,16 @@ public class OtpServiceImpl implements OtpService {
 
     private final EmailUtil emailUtil;
 
-    public OtpServiceImpl(OtpRepo otpRepo, OtpUtil otpUtil, EmailUtil emailUtil) {
+    @Autowired
+    public OtpServiceImpl(OtpRepo otpRepo,
+                          OtpUtil otpUtil,
+                          EmailUtil emailUtil) {
         this.otpRepo = otpRepo;
         this.otpUtil = otpUtil;
         this.emailUtil = emailUtil;
     }
 
-    public String
-    generateOtp() {
+    public String generateOtp() {
         return otpUtil.generateOtp();
     }
 

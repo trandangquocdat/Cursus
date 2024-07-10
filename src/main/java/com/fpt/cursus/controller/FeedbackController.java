@@ -1,13 +1,15 @@
 package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
-import com.fpt.cursus.dto.response.ApiRes;
-import com.fpt.cursus.enums.type.FeedbackType;
+import com.fpt.cursus.enums.FeedbackType;
 import com.fpt.cursus.service.FeedbackService;
-import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @CrossOrigin("*")
@@ -15,57 +17,46 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Feedback Controller")
 public class FeedbackController {
 
-    private final ApiResUtil apiResUtil;
     private final FeedbackService feedbackService;
 
-    public FeedbackController(ApiResUtil apiResUtil, FeedbackService feedbackService) {
-        this.apiResUtil = apiResUtil;
+    @Autowired
+    public FeedbackController(FeedbackService feedbackService) {
         this.feedbackService = feedbackService;
     }
 
-    @PostMapping("/feedback/")
-    public ApiRes<?> createFeedback(@RequestParam Long courseId, @RequestParam FeedbackType type, @RequestBody CreateFeedbackDto feedbackDto) {
-        String successMessage = "Create feedback successfully";
-        return apiResUtil.returnApiRes(null, null, successMessage,
-                feedbackService.createFeedback(courseId, type, feedbackDto));
+    @PostMapping("/feedback/create")
+    public ResponseEntity<Object> createFeedback(@RequestParam Long courseId,
+                                                 @RequestParam FeedbackType type,
+                                                 @RequestBody CreateFeedbackDto feedbackDto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(feedbackService.createFeedback(courseId, type, feedbackDto));
     }
 
-    @DeleteMapping("/feedback/{id}")
-    public ApiRes<?> deleteFeedback(@PathVariable Long id) {
-        String successMessage = "Delete feedback successfully";
+    @DeleteMapping("/feedback/delete")
+    public ResponseEntity<Object> deleteFeedback(@RequestParam Long id) {
         feedbackService.deleteFeedbackById(id);
-        return apiResUtil.returnApiRes(null, null, successMessage, null);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body("Delete feedback successfully");
     }
 
-    @PutMapping("/feedback/{id}")
-    public ApiRes<?> updateFeedback(@PathVariable Long id, @RequestBody CreateFeedbackDto feedbackDto) {
-        feedbackService.updateFeedbackById(id, feedbackDto);
-        String successMessage = "Update feedback successfully";
-        return apiResUtil.returnApiRes(null, null, successMessage, null);
+    @PutMapping("/feedback/update")
+    public ResponseEntity<Object> updateFeedback(@RequestParam Long id,
+                                                 @RequestBody CreateFeedbackDto feedbackDto) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(feedbackService.updateFeedbackById(id, feedbackDto));
     }
 
-    @GetMapping("/feedback/{courseId}")
-    public ApiRes<?> getFeedbackByCourseId(@PathVariable Long courseId) {
-        return apiResUtil.returnApiRes(null, null, null,
-                feedbackService.getFeedbackByCourseId(courseId));
+    @GetMapping("/feedback/view-by-course-id")
+    public ResponseEntity<Object> getFeedbackByCourseId(@RequestParam Long courseId,
+                                                        @RequestParam FeedbackType type) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(feedbackService.getFeedbackByCourseIdAndType(courseId, type));
     }
 
-    @GetMapping("/feedback/review")
-    public ApiRes<?> getReviewFeedback() {
-        return apiResUtil.returnApiRes(null, null, null,
-                feedbackService.getFeedbackByType(FeedbackType.REVIEW));
-    }
-
-    @GetMapping("/feedback/report")
-    public ApiRes<?> getReportFeedback() {
-        return apiResUtil.returnApiRes(null, null, null,
-                feedbackService.getFeedbackByType(FeedbackType.REPORT));
-    }
-
-    @GetMapping("/feedback")
-    public ApiRes<?> getFeedbackByCourseIdAndType(@RequestParam Long courseId, @RequestParam FeedbackType type) {
-        return apiResUtil.returnApiRes(null, null, null,
-                feedbackService.getFeedbackByCourseIdAndType(courseId, type));
+    @GetMapping("/feedback/view-by-type")
+    public ResponseEntity<Object> viewFeedbackByType(@RequestParam FeedbackType type) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(feedbackService.getFeedbackByType(type));
     }
 
 }

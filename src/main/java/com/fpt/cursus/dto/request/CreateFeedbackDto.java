@@ -6,6 +6,6 @@ import lombok.Data;
 public class CreateFeedbackDto {
 
     private String content;
-    private float rating;
+    private Float rating;
 
 }

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.PaymentDto;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Orders;
-import com.fpt.cursus.enums.status.OrderStatus;
+import com.fpt.cursus.enums.OrderStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.OrdersRepo;
@@ -38,6 +38,16 @@ public class OrderServiceImpl implements OrderService {
     private final CourseService courseService;
     private final OrdersRepo ordersRepo;
     private final EnrollCourseService enroll;
+    @Value("${spring.vnpay.tmnCode}")
+    private String tmnCode;
+    @Value("${spring.vnpay.secretKey}")
+    private String secretKey;
+    @Value("${spring.vnpay.currCode}")
+    private String currCode;
+    @Value("${spring.vnpay.vnpUrl}")
+    private String vnpUrl;
+    @Value("${spring.vnpay.returnUrl}")
+    private String returnUrl;
 
     @Autowired
     public OrderServiceImpl(AccountUtil accountUtil,
@@ -49,21 +59,6 @@ public class OrderServiceImpl implements OrderService {
         this.ordersRepo = ordersRepo;
         this.enroll = enroll;
     }
-
-    @Value("${spring.vnpay.tmnCode}")
-    private String tmnCode;
-
-    @Value("${spring.vnpay.secretKey}")
-    private String secretKey;
-
-    @Value("${spring.vnpay.currCode}")
-    private String currCode;
-
-    @Value("${spring.vnpay.vnpUrl}")
-    private String vnpUrl;
-
-    @Value("${spring.vnpay.returnUrl}")
-    private String returnUrl;
 
     public ResponseEntity<String> createUrl(PaymentDto request) {
         List<Long> ids = request.getCourseId();
@@ -144,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
         return result.toString();
     }
 
-    public void orderSuccess(String txnRef, String responseCode) {
+    public Orders orderSuccess(String txnRef, String responseCode) {
         Long id = Long.parseLong(txnRef);
         Orders order = ordersRepo.findOrdersById(id);
         if (!responseCode.equals("00")) {
@@ -163,7 +158,7 @@ public class OrderServiceImpl implements OrderService {
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.ORDER_FAIL);
         }
-        ordersRepo.save(order);
+        return ordersRepo.save(order);
     }
 
     public void setOrder(Orders order, List<Long> ids, double price) {

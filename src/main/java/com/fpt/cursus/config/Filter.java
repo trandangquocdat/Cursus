@@ -24,22 +24,25 @@ import java.io.IOException;
 
 @Component
 public class Filter extends OncePerRequestFilter {
+    private final HandlerExceptionResolver resolver;
+    private final TokenHandler tokenHandler;
+    private final AccountRepo accountRepo;
+
     @Autowired
-    @Qualifier("handlerExceptionResolver")
-    private HandlerExceptionResolver resolver;
-    @Autowired
-    private TokenHandler tokenHandler;
-    @Autowired
-    private AccountRepo accountRepo;
+    public Filter(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver,
+                  TokenHandler tokenHandler,
+                  AccountRepo accountRepo) {
+        this.resolver = resolver;
+        this.tokenHandler = tokenHandler;
+        this.accountRepo = accountRepo;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = getToken(request);
         String uri = request.getRequestURI();
         if (uri.contains("login") || uri.contains("register") || uri.contains("swagger-ui") || uri.contains("v3")
-                || uri.contains("verify-account") || uri.contains("generate-refresh-token") || uri.contains("refresh-token")
-                || uri.contains("reset-password") || uri.contains("forgot-password")
-                || uri.contains("regenerate-otp") || uri.contains("order/update-status")) {
+                || uri.contains("auth") || uri.contains("token") || uri.contains("order/update-status")) {
             filterChain.doFilter(request, response);
         } else {
             if (token == null) {

@@ -13,8 +13,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class AuthExceptionHandler {
+    private final ApiResUtil apiResUtil;
+
     @Autowired
-    private ApiResUtil apiResUtil;
+    public AuthExceptionHandler(ApiResUtil apiResUtil) {
+        this.apiResUtil = apiResUtil;
+    }
 
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<?> duplicate(AuthException exception) {

@@ -3,7 +3,7 @@ package com.fpt.cursus.service.impl;
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Feedback;
-import com.fpt.cursus.enums.type.FeedbackType;
+import com.fpt.cursus.enums.FeedbackType;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.FeedbackRepo;
@@ -19,10 +19,10 @@ import java.util.List;
 
 @Service
 public class FeedbackServiceImpl implements FeedbackService {
+    private static final List<Float> VALID_RATINGS = Arrays.asList(1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f);
     private final FeedbackRepo feedbackRepo;
     private final AccountUtil accountUtil;
     private final CourseService courseService;
-    private static final List<Double> VALID_RATINGS = Arrays.asList(1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0);
 
     @Autowired
     public FeedbackServiceImpl(FeedbackRepo feedbackRepo,
@@ -52,7 +52,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     public void ratingCourse(long courseId, float rating) {
-        List<Feedback> feedbacks = getFeedbackByCourseId(courseId);
+        List<Feedback> feedbacks = getFeedbackByCourseIdAndType(courseId, null);
         float sum = 0;
         for (Feedback feedback : feedbacks) {
             sum += feedback.getRating();
@@ -67,19 +67,11 @@ public class FeedbackServiceImpl implements FeedbackService {
         feedbackRepo.deleteById(id);
     }
 
-    public void updateFeedbackById(long id, CreateFeedbackDto feedbackDto) {
+    public Feedback updateFeedbackById(long id, CreateFeedbackDto feedbackDto) {
         Feedback feedback = feedbackRepo.findFeedbackById(id);
         feedback.setContent(feedbackDto.getContent());
         feedback.setUpdatedDate(new Date());
-        feedbackRepo.save(feedback);
-    }
-
-    public List<Feedback> getFeedbackByCourseId(long id) {
-        List<Feedback> feedbacks = feedbackRepo.findFeedbackByCourseId(id);
-        if (feedbacks == null) {
-            throw new AppException(ErrorCode.FEEDBACK_NOT_FOUND);
-        }
-        return feedbacks;
+        return feedbackRepo.save(feedback);
     }
 
     public List<Feedback> getFeedbackByType(FeedbackType type) {
@@ -87,7 +79,12 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     public List<Feedback> getFeedbackByCourseIdAndType(long id, FeedbackType type) {
-        List<Feedback> feedbacks = feedbackRepo.findFeedbackByCourseIdAndType(id, type);
+        List<Feedback> feedbacks;
+        if (type == null) {
+            feedbacks = feedbackRepo.findFeedbackByCourseId(id);
+        } else {
+            feedbacks = feedbackRepo.findFeedbackByCourseIdAndType(id, type);
+        }
         if (feedbacks == null) {
             throw new AppException(ErrorCode.FEEDBACK_NOT_FOUND);
         }

@@ -1,0 +1,134 @@
+package com.fpt.cursus.service.impl;
+
+
+import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.entity.Course;
+import com.fpt.cursus.entity.Lesson;
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
+import com.fpt.cursus.service.AccountService;
+import com.fpt.cursus.service.CourseService;
+import com.fpt.cursus.service.FileService;
+import com.fpt.cursus.service.LessonService;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.UUID;
+
+@Service
+public class FileServiceImpl implements FileService {
+    private final AccountService accountService;
+    private final CourseService courseService;
+    private final LessonService lessonService;
+    @Value("${firebase.storage.bucket}")
+    private String bucketName;
+    @Value("${fcm.credentials.file.path}")
+    private String credentialsFilePath;
+    private Storage storage;
+
+    @Autowired
+    public FileServiceImpl(@Lazy AccountService accountService,
+                           @Lazy CourseService courseService,
+                           @Lazy LessonService lessonService) {
+        this.accountService = accountService;
+        this.courseService = courseService;
+        this.lessonService = lessonService;
+    }
+
+    @PostConstruct
+    private void initializeStorage() {
+        try {
+            storage = StorageOptions.newBuilder().setCredentials(GoogleCredentials.fromStream(
+                    new ClassPathResource(credentialsFilePath).getInputStream())).build().getService();
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.STORAGE_INITIALIZE_FAIL);
+        }
+    }
+
+    public String uploadFile(MultipartFile file) throws IOException {
+        String fileName = generateUniqueFileName(file.getOriginalFilename());
+        BlobId blobId = BlobId.of(bucketName, fileName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
+        try (InputStream inputStream = file.getInputStream()) {
+            storage.create(blobInfo, inputStream);
+            return generateDownloadUrl(fileName);
+        } catch (StorageException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Async
+    public void setAvatar(MultipartFile file, Account account) {
+        try {
+            String link = uploadFile(file);
+            account.setAvatar(link);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        accountService.saveAccount(account);
+    }
+
+    @Async
+    public void setPicture(MultipartFile file, Course course) {
+        try {
+            String link = uploadFile(file);
+            course.setPictureLink(link);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        courseService.saveCourse(course);
+    }
+
+    @Async
+    public void setVideo(MultipartFile file, Lesson lesson) {
+        try {
+            String link = uploadFile(file);
+            lesson.setVideoLink(link);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        lessonService.save(lesson);
+    }
+
+    private String generateDownloadUrl(String fileName) {
+        return String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media", bucketName, fileName);
+    }
+
+    private String generateUniqueFileName(String originalFileName) {
+        String uniqueId = UUID.randomUUID().toString();
+        return uniqueId + "_" + originalFileName;
+    }
+
+    public Resource downloadFileAsResource(String bucketName, String fileName) {
+        Blob blob = storage.get(bucketName, fileName);
+        if (blob != null) {
+            byte[] content = blob.getContent();
+            // Create a ByteArrayResource to wrap the byte[] content
+            return new ByteArrayResource(content);
+        } else {
+            throw new AppException(ErrorCode.FILE_NOT_FOUND);
+        }
+    }
+
+    public byte[] downloadFileAsBytes(String bucketName, String fileName) {
+        Blob blob = storage.get(bucketName, fileName);
+        if (blob != null) {
+            return blob.getContent();
+        } else {
+            throw new AppException(ErrorCode.FILE_NOT_FOUND);
+        }
+    }
+
+}

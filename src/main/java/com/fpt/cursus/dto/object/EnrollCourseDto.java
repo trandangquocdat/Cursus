@@ -11,6 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 
 public class EnrollCourseDto {
+
     private String courseName;
     private String category;
     private double price;

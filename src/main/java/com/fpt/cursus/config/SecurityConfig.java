@@ -11,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,13 +23,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
-    @Autowired
-    AccountRepo accountRepo;
-    @Autowired
-    Filter filter;
+    final AccountRepo accountRepo;
+    final Filter filter;
 
+    @Autowired
+    public SecurityConfig(AccountRepo accountRepo, Filter filter) {
+        this.accountRepo = accountRepo;
+        this.filter = filter;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -48,7 +49,6 @@ public class SecurityConfig {
     }
 
     @Bean
-
     public UserDetailsService userDetailsService() {
         return username -> accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
