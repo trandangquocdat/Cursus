@@ -2,6 +2,7 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.dto.request.UpdateCourseDto;
+import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.Category;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.ApiResUtil;
@@ -30,8 +31,9 @@ public class CourseController {
 
     @PostMapping(value = "/course/create", consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
-    public ResponseEntity<Object> createCourse(@RequestBody @Valid CreateCourseDto createCourseDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(courseService.createCourse(createCourseDto));
+    public ResponseEntity<Object> createCourse(@ModelAttribute  @Valid CreateCourseDto createCourseDto) {
+        Course course = courseService.createCourse(createCourseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(course);
     }
 
     @PutMapping(value = "/course/update", consumes = "multipart/form-data")

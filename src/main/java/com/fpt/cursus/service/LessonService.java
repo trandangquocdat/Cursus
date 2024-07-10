@@ -105,6 +105,7 @@ public class LessonService {
         lesson.setChapter(chapter);
         lesson.setCreatedDate(date);
         lesson.setCreatedBy(account.getUsername());
+        lesson.setStatus(LessonStatus.ACTIVE);
         if(fileUtil.isVideo(request.getVideoLink())) {
             fileService.setVideo(request.getVideoLink(), lesson);
         }else{
