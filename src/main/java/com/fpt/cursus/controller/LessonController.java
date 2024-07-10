@@ -27,10 +27,10 @@ public class LessonController {
         this.lessonService = lessonService;
     }
 
-    @PostMapping("/lesson/create")
+    @PostMapping(value ="/lesson/create", consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> createLesson(@RequestParam Long chapterId,
-                                               @RequestBody @Valid CreateLessonDto request) {
+                                               @ModelAttribute @Valid CreateLessonDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(lessonService.createLesson(chapterId, request));
     }
     @PostMapping("/lesson/upload-excel")

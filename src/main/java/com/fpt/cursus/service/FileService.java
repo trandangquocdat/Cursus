@@ -3,6 +3,7 @@ package com.fpt.cursus.service;
 
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
+import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -23,9 +24,12 @@ import java.util.UUID;
 public class FileService {
     private final AccountService accountService;
     private final CourseService courseService;
-    public FileService(@Lazy AccountService accountService, @Lazy CourseService courseService) {
+    private final LessonService lessonService;
+    public FileService(@Lazy AccountService accountService, @Lazy CourseService courseService,
+                       @Lazy LessonService lessonService) {
         this.accountService = accountService;
         this.courseService = courseService;
+        this.lessonService = lessonService;
     }
 
     @Value("${firebase.storage.bucket}")
@@ -77,6 +81,16 @@ public class FileService {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
         }
         courseService.saveCourse(course);
+    }
+    @Async
+    public void setVideo(MultipartFile file, Lesson lesson) {
+        try {
+            String link = uploadFile(file);
+            lesson.setVideoLink(link);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        lessonService.save(lesson);
     }
     private String generateDownloadUrl(String fileName) {
         return String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media", bucketName, fileName);

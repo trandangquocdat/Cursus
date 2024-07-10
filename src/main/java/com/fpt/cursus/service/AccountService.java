@@ -48,15 +48,17 @@ public class AccountService {
     private final OtpService otpService;
     private final PageUtil pageUtil;
     private final FileService fileService;
+    private final FileUtil fileUtil;
 
     @Value("${spring.security.jwt.access-token-expiration}")
     private long accessTokenExpiration;
     @Value("${spring.otp.expiration}")
     private long otpExpiration;
+
     public AccountService(AccountRepo accountRepo, PasswordEncoder passwordEncoder,
                           AuthenticationManager authenticationManager, TokenHandler tokenHandler,
                           AccountUtil accountUtil, Regex regex, OtpService otpService,
-                          PageUtil pageUtil, FileService fileService) {
+                          PageUtil pageUtil, FileService fileService, FileUtil fileUtil) {
         this.accountRepo = accountRepo;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -66,6 +68,7 @@ public class AccountService {
         this.otpService = otpService;
         this.pageUtil = pageUtil;
         this.fileService = fileService;
+        this.fileUtil = fileUtil;
     }
 
 
@@ -89,7 +92,13 @@ public class AccountService {
         //set default role as "STUDENT"
         account.setRole(Role.STUDENT);
         //
-        fileService.setAvatar(registerReqDTO.getAvatar(),account);
+
+        if (fileUtil.isImage(registerReqDTO.getAvatar())) {
+            //set avatar
+            fileService.setAvatar(registerReqDTO.getAvatar(), account);
+        } else {
+            throw new AppException(ErrorCode.FILE_INVALID_IMAGE);
+        }
         //set default status as "INACTIVE"
         account.setStatus(UserStatus.INACTIVE);
         //save
@@ -183,6 +192,9 @@ public class AccountService {
         Account account = accountUtil.getCurrentAccount();
         String cvLink = null;
         try {
+            if (!fileUtil.isPDF(file)) {
+                throw new AppException(ErrorCode.FILE_INVALID_PDF);
+            }
             cvLink = fileService.uploadFile(file);
         } catch (IOException e) {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);

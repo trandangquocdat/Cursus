@@ -9,6 +9,7 @@ import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.LessonRepo;
 import com.fpt.cursus.util.AccountUtil;
+import com.fpt.cursus.util.FileUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -36,13 +37,16 @@ public class LessonService {
     private final AccountUtil accountUtil;
     private final ModelMapper modelMapper;
     private final FileService fileService;
+    private final FileUtil fileUtil;
     public LessonService(LessonRepo lessonRepo, @Lazy ChapterService chapterService,
-                         AccountUtil accountUtil,ModelMapper modelMapper, FileService fileService) {
+                         AccountUtil accountUtil,ModelMapper modelMapper, FileService fileService,
+                         FileUtil fileUtil) {
         this.lessonRepo = lessonRepo;
         this.chapterService = chapterService;
         this.accountUtil = accountUtil;
         this.modelMapper = modelMapper;
         this.fileService = fileService;
+        this.fileUtil = fileUtil;
     }
 
     public List<String> uploadLessonFromExcel(Long chapterId, MultipartFile excelFile) throws IOException {
@@ -68,7 +72,7 @@ public class LessonService {
                     lesson.setCreatedDate(new Date());
                     lesson.setStatus(LessonStatus.ACTIVE);
                     MultipartFile file = getFileFromPath(videoLink);
-                    if (file != null) {
+                    if (file != null && fileUtil.isVideo(file)) {
                         String fileUrl = fileService.uploadFile(file);
                         uploadedFileUrls.add(fileUrl);
                         lesson.setVideoLink(fileUrl);
@@ -101,7 +105,11 @@ public class LessonService {
         lesson.setChapter(chapter);
         lesson.setCreatedDate(date);
         lesson.setCreatedBy(account.getUsername());
-        lesson.setVideoLink(request.getVideoLink());
+        if(fileUtil.isVideo(request.getVideoLink())) {
+            fileService.setVideo(request.getVideoLink(), lesson);
+        }else{
+            throw new AppException(ErrorCode.FILE_INVALID_VIDEO);
+        }
         return lessonRepo.save(lesson);
     }
 
@@ -124,6 +132,13 @@ public class LessonService {
         Lesson lesson = this.findLessonById(id);
         mapper.map(request, lesson);
         lesson.setUpdatedDate(new Date());
+        if(request.getVideoLink() != null) {
+            if(fileUtil.isVideo(request.getVideoLink())) {
+                fileService.setVideo(request.getVideoLink(), lesson);
+            }else{
+                throw new AppException(ErrorCode.FILE_INVALID_VIDEO);
+            }
+        }
         lesson.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         return lessonRepo.save(lesson);
     }

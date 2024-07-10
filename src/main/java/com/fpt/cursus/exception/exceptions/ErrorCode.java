@@ -76,6 +76,10 @@ public enum ErrorCode {
     FILE_NOT_FOUND(741, "File not found"),
     FILE_DOWNLOAD_FAIL(742, "File download fail"),
     FILE_UPLOAD_FAIL(743, "File upload fail"),
+    FILE_INVALID_IMAGE(744, "Invalid image type"),
+    FILE_INVALID_PDF(745, "File must be PDF"),
+    FILE_INVALID_VIDEO(746, "File must be video"),
+
     //
     PROCESS_CALCULATE_PERCENT_FAIL(750, "Calculate percent fail"),
     PROCESS_ADD_STUDIED_COURSE_FAIL(751, "Add studied course fail"),

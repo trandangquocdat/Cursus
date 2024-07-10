@@ -15,6 +15,7 @@ import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.util.AccountUtil;
+import com.fpt.cursus.util.FileUtil;
 import com.fpt.cursus.util.PageUtil;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -37,11 +38,13 @@ public class CourseService {
     private final PageUtil pageUtil;
     private final ModelMapper modelMapper;
     private final FileService fileService;
+    private final FileUtil fileUtil;
 
     public CourseService(AccountUtil accountUtil, AccountService accountService,
                          CourseRepo courseRepo, ObjectMapper objectMapper,
                          LessonService lessonService, PageUtil pageUtil,
-                         ModelMapper modelMapper, FileService fileService) {
+                         ModelMapper modelMapper, FileService fileService,
+                         FileUtil fileUtil) {
         this.accountUtil = accountUtil;
         this.accountService = accountService;
         this.courseRepo = courseRepo;
@@ -50,6 +53,7 @@ public class CourseService {
         this.pageUtil = pageUtil;
         this.modelMapper = modelMapper;
         this.fileService = fileService;
+        this.fileUtil = fileUtil;
     }
 
     public Course createCourse(CreateCourseDto createCourseDto) {
@@ -58,7 +62,11 @@ public class CourseService {
         Date date = new Date();
         course.setCreatedDate(date);
         course.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
-        fileService.setPicture(createCourseDto.getPictureLink(),course);
+        if (!fileUtil.isImage(createCourseDto.getPictureLink())) {
+            throw new AppException(ErrorCode.FILE_INVALID_IMAGE);
+        } else {
+            fileService.setPicture(createCourseDto.getPictureLink(), course);
+        }
         course.setStatus(CourseStatus.DRAFT);
         course.setVersion(1f);
         return courseRepo.save(course);
@@ -92,8 +100,8 @@ public class CourseService {
             throw new AppException(ErrorCode.COURSE_PRICE_INVALID);
         }
         mapper.map(request, existingCourse);
-        if(request.getPictureLink() != null){
-            fileService.setPicture(request.getPictureLink(),existingCourse);
+        if (request.getPictureLink() != null) {
+            fileService.setPicture(request.getPictureLink(), existingCourse);
         }
         existingCourse.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         existingCourse.setStatus(CourseStatus.DRAFT);

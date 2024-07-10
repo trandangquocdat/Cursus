@@ -33,6 +33,7 @@ public class AccountController {
     }
 
     @Operation(summary = "Register new account", description = "API Register new account, auto send otp to email")
+
     @PostMapping(value = "/register", consumes = "multipart/form-data")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Account created"),
