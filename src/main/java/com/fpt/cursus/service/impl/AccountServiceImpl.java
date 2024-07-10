@@ -1,26 +1,32 @@
 package com.fpt.cursus.service.impl;
 
-import com.fpt.cursus.dto.request.*;
+import com.fpt.cursus.dto.request.ChangePasswordDto;
+import com.fpt.cursus.dto.request.LoginReqDto;
+import com.fpt.cursus.dto.request.RegisterReqDto;
+import com.fpt.cursus.dto.request.ResetPasswordDto;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Otp;
-import com.fpt.cursus.enums.status.UserStatus;
-import com.fpt.cursus.enums.type.InstructorStatus;
-import com.fpt.cursus.enums.type.Role;
+import com.fpt.cursus.enums.InstructorStatus;
+import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
 import com.fpt.cursus.service.AccountService;
+import com.fpt.cursus.service.FileService;
 import com.fpt.cursus.service.OtpService;
-import com.fpt.cursus.util.AccountUtil;
-import com.fpt.cursus.util.Regex;
-import com.fpt.cursus.util.TokenHandler;
+import com.fpt.cursus.util.*;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import jakarta.servlet.http.HttpServletRequest;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,7 +34,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -39,21 +47,20 @@ import java.util.List;
 public class AccountServiceImpl implements AccountService {
 
     private final AccountRepo accountRepo;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthenticationManager authenticationManager;
-
     private final TokenHandler tokenHandler;
-
     private final AccountUtil accountUtil;
-
     private final Regex regex;
-
     private final OtpService otpService;
+    private final PageUtil pageUtil;
+    private final FileService fileService;
+    private final FileUtil fileUtil;
 
     @Value("${spring.security.jwt.access-token-expiration}")
     private long accessTokenExpiration;
+    @Value("${spring.otp.expiration}")
+    private long otpExpiration;
 
     @Autowired
     public AccountServiceImpl(AccountRepo accountRepo,
@@ -62,7 +69,10 @@ public class AccountServiceImpl implements AccountService {
                               TokenHandler tokenHandler,
                               AccountUtil accountUtil,
                               Regex regex,
-                              OtpService otpService) {
+                              OtpService otpService,
+                              PageUtil pageUtil,
+                              FileService fileService,
+                              FileUtil fileUtil) {
         this.accountRepo = accountRepo;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -70,10 +80,14 @@ public class AccountServiceImpl implements AccountService {
         this.accountUtil = accountUtil;
         this.regex = regex;
         this.otpService = otpService;
+        this.pageUtil = pageUtil;
+        this.fileService = fileService;
+        this.fileUtil = fileUtil;
     }
 
 
     public Account register(RegisterReqDto registerReqDTO) {
+        ModelMapper modelMapper = new ModelMapper();
         //validate
         if (!regex.isPhoneValid(registerReqDTO.getPhone())) {
             throw new AppException(ErrorCode.PHONE_NOT_VALID);
@@ -85,24 +99,24 @@ public class AccountServiceImpl implements AccountService {
             throw new AppException(ErrorCode.EMAIL_EXISTS);
         }
         //set account
-        Account account = new Account();
-        account.setUsername(registerReqDTO.getUsername());
-        account.setEmail(registerReqDTO.getEmail());
-        account.setFullName(registerReqDTO.getFullName());
-        account.setPhone(registerReqDTO.getPhone());
-        account.setGender(registerReqDTO.getGender());
+        Account account = modelMapper.map(registerReqDTO, Account.class);
         account.setCreatedDate(new Date());
         //set password with password encoder
         account.setPassword(passwordEncoder.encode(registerReqDTO.getPassword()));
         //set default role as "STUDENT"
         account.setRole(Role.STUDENT);
-        //need to get link first, get from File Api
-        account.setAvatar(registerReqDTO.getAvatar());
+        //
+
+        if (fileUtil.isImage(registerReqDTO.getAvatar())) {
+            //set avatar
+            fileService.setAvatar(registerReqDTO.getAvatar(), account);
+        } else {
+            throw new AppException(ErrorCode.FILE_INVALID_IMAGE);
+        }
         //set default status as "INACTIVE"
         account.setStatus(UserStatus.INACTIVE);
         //save
         return accountRepo.save(account);
-
     }
 
     public LoginResDto login(LoginReqDto loginReqDto) {
@@ -158,7 +172,7 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    public void verifyAccount(String email, String otp) {
+    public Account authenticateAccount(String email, String otp) {
         Otp userOtp = otpService.findOtpByEmailAndValid(email, true);
         if (validateOtp(userOtp, otp)) {
             Account account = accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -168,26 +182,40 @@ public class AccountServiceImpl implements AccountService {
         } else {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
+        Account resAccount = new Account();
+        resAccount.setEmail(email);
+        resAccount.setStatus(UserStatus.ACTIVE);
+        return resAccount;
     }
 
-    public void verifyInstructorById(Long id, InstructorStatus status) {
+    public Account approveInstructorById(Long id, InstructorStatus status) {
         Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         if (status.equals(InstructorStatus.REJECTED)) {
             account.setInstructorStatus(InstructorStatus.REJECTED);
-            accountRepo.save(account);
-        }
-        if (status.equals(InstructorStatus.APPROVED)) {
+            return accountRepo.save(account);
+        } else if (status.equals(InstructorStatus.APPROVED)) {
             account.setRole(Role.INSTRUCTOR);
             account.setInstructorStatus(InstructorStatus.APPROVED);
-            accountRepo.save(account);
+            return accountRepo.save(account);
         }
+        return account;
     }
 
-    public void sendVerifyInstructor(CvLinkDto cvLinkdto) {
+    public Account sendCv(MultipartFile file) {
         Account account = accountUtil.getCurrentAccount();
-        account.setCvLink(cvLinkdto.getCvLink());
+        String cvLink = null;
+        try {
+            if (!fileUtil.isPDF(file)) {
+                throw new AppException(ErrorCode.FILE_INVALID_PDF);
+            }
+            cvLink = fileService.uploadFile(file);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        account.setCvLink(cvLink);
         account.setInstructorStatus(InstructorStatus.WAITING);
-        accountRepo.save(account);
+        return accountRepo.save(account);
+
     }
 
     public List<Account> getInstructorByInstStatus(InstructorStatus status) {
@@ -198,7 +226,15 @@ public class AccountServiceImpl implements AccountService {
         return accounts;
     }
 
-    public void regenerateOtp(String email) {
+    public List<Account> getInstructorByName(String name) {
+        List<Account> accounts = accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%", InstructorStatus.APPROVED);
+        if (accounts.isEmpty()) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+        return accounts;
+    }
+
+    public String regenerateOtp(String email) {
         if (accountRepo.findByEmail(email).isEmpty()) {
             throw new AppException(ErrorCode.EMAIL_NOT_FOUND);
         }
@@ -206,19 +242,21 @@ public class AccountServiceImpl implements AccountService {
         String otp = otpService.generateOtp();
         otpService.sendOtpEmail(email, otp);
         otpService.saveOtp(email, otp);
+        return otp;
     }
 
-    public void deleteAccount(String username) {
+    public Account setStatusAccount(String username, UserStatus status) {
         Account account = accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        account.setStatus(UserStatus.DELETED);
-        accountRepo.save(account);
+        account.setStatus(status);
+        return accountRepo.save(account);
     }
 
-    public void setAdmin(String username) {
+    public Account setAdmin(String username) {
         Account account = accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         account.setRole(Role.ADMIN);
-        accountRepo.save(account);
+        account.setStatus(UserStatus.ACTIVE);
+        account.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
+        return accountRepo.save(account);
     }
 
     public void changePassword(ChangePasswordDto changePasswordDto) {
@@ -251,6 +289,7 @@ public class AccountServiceImpl implements AccountService {
         Otp userOtp = otpService.findOtpByEmailAndValid(email, true);
         if (validateOtp(userOtp, otp)) {
             account.setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
+            // 1 thanh cong 1 fail , neu anh huong thi rollback
             otpService.updateOldOtps(email);
             accountRepo.save(account);
         } else {
@@ -268,8 +307,8 @@ public class AccountServiceImpl implements AccountService {
         otpService.saveOtp(email, otp);
     }
 
-    public boolean validateOtp(Otp userOtp, String otp) {
-        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (2 * 60)) {
+    private boolean validateOtp(Otp userOtp, String otp) {
+        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (otpExpiration)) {
             return userOtp.getOtp().equals(otp);
         } else {
             userOtp.setValid(false);
@@ -278,16 +317,27 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    public void saveAccount(Account account) {
-        accountRepo.save(account);
+
+    public Page<Account> getListOfStudentAndInstructor(Role role, int offset, int pageSize, String sortBy) {
+        pageUtil.checkOffset(offset);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+        if (role != null) {
+            return accountRepo.findAccountByRole(role, pageable);
+        } else {
+            List<Account> instructorList = accountRepo.findAccountByRole(Role.INSTRUCTOR);
+            List<Account> studentList = accountRepo.findAccountByRole(Role.STUDENT);
+            studentList.addAll(instructorList);
+            return new PageImpl<>(studentList, pageable, studentList.size());
+        }
     }
 
-    public boolean existAdmin(String username) {
-        return accountRepo.existsByUsername(username);
+    public void saveAccount(Account account) {
+        accountRepo.save(account);
     }
 
     public Account getAccountByUsername(String username) {
         return accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
+
 }
 

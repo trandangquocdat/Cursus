@@ -2,7 +2,7 @@ package com.fpt.cursus.service;
 
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
 import com.fpt.cursus.entity.Feedback;
-import com.fpt.cursus.enums.type.FeedbackType;
+import com.fpt.cursus.enums.FeedbackType;
 
 import java.util.List;
 
@@ -13,9 +13,7 @@ public interface FeedbackService {
 
     void deleteFeedbackById(long id);
 
-    void updateFeedbackById(long id, CreateFeedbackDto feedbackDto);
-
-    List<Feedback> getFeedbackByCourseId(long id);
+    Feedback updateFeedbackById(long id, CreateFeedbackDto feedbackDto);
 
     List<Feedback> getFeedbackByType(FeedbackType type);
 

@@ -1,14 +1,24 @@
 package com.fpt.cursus.service.impl;
 
+
+import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.entity.Course;
+import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.service.FirebaseStorageService;
+import com.fpt.cursus.service.AccountService;
+import com.fpt.cursus.service.CourseService;
+import com.fpt.cursus.service.FileService;
+import com.fpt.cursus.service.LessonService;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,15 +28,24 @@ import java.io.InputStream;
 import java.util.UUID;
 
 @Service
-public class FirebaseStorageServiceImpl implements FirebaseStorageService {
-
+public class FileServiceImpl implements FileService {
+    private final AccountService accountService;
+    private final CourseService courseService;
+    private final LessonService lessonService;
     @Value("${firebase.storage.bucket}")
     private String bucketName;
-
     @Value("${fcm.credentials.file.path}")
     private String credentialsFilePath;
     private Storage storage;
 
+    @Autowired
+    public FileServiceImpl(@Lazy AccountService accountService,
+                           @Lazy CourseService courseService,
+                           @Lazy LessonService lessonService) {
+        this.accountService = accountService;
+        this.courseService = courseService;
+        this.lessonService = lessonService;
+    }
 
     @PostConstruct
     private void initializeStorage() {
@@ -48,6 +67,39 @@ public class FirebaseStorageServiceImpl implements FirebaseStorageService {
         } catch (StorageException e) {
             throw new IOException(e);
         }
+    }
+
+    @Async
+    public void setAvatar(MultipartFile file, Account account) {
+        try {
+            String link = uploadFile(file);
+            account.setAvatar(link);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        accountService.saveAccount(account);
+    }
+
+    @Async
+    public void setPicture(MultipartFile file, Course course) {
+        try {
+            String link = uploadFile(file);
+            course.setPictureLink(link);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        courseService.saveCourse(course);
+    }
+
+    @Async
+    public void setVideo(MultipartFile file, Lesson lesson) {
+        try {
+            String link = uploadFile(file);
+            lesson.setVideoLink(link);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        lessonService.save(lesson);
     }
 
     private String generateDownloadUrl(String fileName) {

@@ -1,10 +1,17 @@
 package com.fpt.cursus.service;
 
-import com.fpt.cursus.dto.request.*;
+import com.fpt.cursus.dto.request.ChangePasswordDto;
+import com.fpt.cursus.dto.request.LoginReqDto;
+import com.fpt.cursus.dto.request.RegisterReqDto;
+import com.fpt.cursus.dto.request.ResetPasswordDto;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.enums.type.InstructorStatus;
+import com.fpt.cursus.enums.InstructorStatus;
+import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.UserStatus;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,19 +24,21 @@ public interface AccountService {
 
     LoginResDto loginGoogle(String token);
 
-    void verifyAccount(String email, String otp);
+    Account authenticateAccount(String email, String otp);
 
-    void verifyInstructorById(Long id, InstructorStatus status);
+    Account approveInstructorById(Long id, InstructorStatus status);
 
-    void sendVerifyInstructor(CvLinkDto cvLinkdto);
+    Account sendCv(MultipartFile file);
 
     List<Account> getInstructorByInstStatus(InstructorStatus status);
 
-    void regenerateOtp(String email);
+    List<Account> getInstructorByName(String name);
 
-    void deleteAccount(String username);
+    String regenerateOtp(String email);
 
-    void setAdmin(String username);
+    Account setStatusAccount(String username, UserStatus status);
+
+    Account setAdmin(String username);
 
     void changePassword(ChangePasswordDto changePasswordDto);
 
@@ -37,9 +46,9 @@ public interface AccountService {
 
     void forgotPassword(String email);
 
-    void saveAccount(Account account);
+    Page<Account> getListOfStudentAndInstructor(Role role, int offset, int pageSize, String sortBy);
 
-    boolean existAdmin(String username);
+    void saveAccount(Account account);
 
     Account getAccountByUsername(String username);
 }

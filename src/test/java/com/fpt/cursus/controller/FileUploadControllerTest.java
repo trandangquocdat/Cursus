@@ -3,7 +3,7 @@ package com.fpt.cursus.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.service.FirebaseStorageService;
+import com.fpt.cursus.service.impl.FileServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,12 +33,12 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(FileUploadController.class)
 @ContextConfiguration(classes = {
-        FirebaseStorageService.class
+        FileServiceImpl.class
 })
 class FileUploadControllerTest {
 
     @MockBean
-    private FirebaseStorageService storageService;
+    private FileServiceImpl storageService;
 
     @Autowired
     private MockMvc mockMvc;

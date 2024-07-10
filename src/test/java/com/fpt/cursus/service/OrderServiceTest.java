@@ -5,7 +5,7 @@ import com.fpt.cursus.dto.request.PaymentDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Orders;
-import com.fpt.cursus.enums.status.OrderStatus;
+import com.fpt.cursus.enums.OrderStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.OrdersRepo;

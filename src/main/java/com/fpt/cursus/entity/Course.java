@@ -1,7 +1,9 @@
 package com.fpt.cursus.entity;
 
-import com.fpt.cursus.enums.status.CourseStatus;
-import com.fpt.cursus.enums.type.Category;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fpt.cursus.enums.Category;
+import com.fpt.cursus.enums.CourseStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +14,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,11 +29,13 @@ public class Course {
     private Category category;
     @Enumerated(EnumType.STRING)
     private CourseStatus status;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date createdDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date updatedDate;
     private String createdBy;
     private String updatedBy;
-    private float version = 1.0f;
+    private float version;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     private List<Chapter> chapter;

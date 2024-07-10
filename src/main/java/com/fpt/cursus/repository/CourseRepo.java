@@ -1,8 +1,8 @@
 package com.fpt.cursus.repository;
 
 import com.fpt.cursus.entity.Course;
-import com.fpt.cursus.enums.status.CourseStatus;
-import com.fpt.cursus.enums.type.Category;
+import com.fpt.cursus.enums.Category;
+import com.fpt.cursus.enums.CourseStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,14 +12,17 @@ import java.util.List;
 
 
 @Repository
+
 public interface CourseRepo extends JpaRepository<Course, Long> {
 
 
     Page<Course> findAllByStatus(CourseStatus status, Pageable pageable);
 
-    Page<Course> findByIdIn(List<Long> id, Pageable pageable);
+    Page<Course> findByIdInAndStatus(List<Long> id, CourseStatus status, Pageable pageable);
 
     List<Course> findByIdIn(List<Long> id);
+
+    List<Course> findCourseByNameLike(String partialName);
 
     boolean existsByName(String name);
 

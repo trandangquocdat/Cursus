@@ -1,31 +1,31 @@
 package com.fpt.cursus.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.dto.request.CreateCourseDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.entity.Account;
-import org.junit.jupiter.api.Test;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Feedback;
-import com.fpt.cursus.repository.AccountRepo;
 import com.fpt.cursus.enums.status.CourseStatus;
 import com.fpt.cursus.enums.type.Category;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
+import com.fpt.cursus.repository.AccountRepo;
 import com.fpt.cursus.repository.CourseRepo;
 import com.fpt.cursus.repository.FeedbackRepo;
-import com.fpt.cursus.util.AccountUtil;
 import com.fpt.cursus.service.impl.CourseServiceImpl;
+import com.fpt.cursus.util.AccountUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
@@ -356,7 +356,7 @@ class CourseServiceTest {
     }
 
     @Test
-    void testAddStudiedLesson_Success(){
+    void testAddStudiedLesson_Success() {
         Long courseId = 1L;
         Long lessonId = 1L;
         Account account = new Account();
@@ -375,7 +375,7 @@ class CourseServiceTest {
     }
 
     @Test
-    void testAddStudiedLesson_StudiedCourseIsNull(){
+    void testAddStudiedLesson_StudiedCourseIsNull() {
         Long courseId = 1L;
         Long lessonId = 2L;
 
@@ -400,7 +400,7 @@ class CourseServiceTest {
     }
 
     @Test
-    void testAddStudiedLesson_ExistingStudiedCourse(){
+    void testAddStudiedLesson_ExistingStudiedCourse() {
         Long courseId = 1L;
         Long lessonId1 = 2L;
         Long lessonId2 = 3L;
@@ -518,7 +518,7 @@ class CourseServiceTest {
     }
 
     @Test
-    void testPercentDoneCourse_StudiedCourseNotFound(){
+    void testPercentDoneCourse_StudiedCourseNotFound() {
         Long courseId = 1L;
 
         Course course = new Course();

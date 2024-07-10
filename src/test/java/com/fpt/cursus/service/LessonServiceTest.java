@@ -8,8 +8,6 @@ import com.fpt.cursus.enums.status.LessonStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.LessonRepo;
-import com.fpt.cursus.service.impl.ChapterServiceImpl;
-import com.fpt.cursus.service.impl.LessonServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

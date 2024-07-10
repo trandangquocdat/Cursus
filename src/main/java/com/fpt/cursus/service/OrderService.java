@@ -9,7 +9,7 @@ import java.util.List;
 public interface OrderService {
     ResponseEntity<String> createUrl(PaymentDto request);
 
-    void orderSuccess(String txnRef, String responseCode);
+    Orders orderSuccess(String txnRef, String responseCode);
 
     void setOrder(Orders order, List<Long> ids, double price);
 }

@@ -13,14 +13,18 @@ import java.util.Map;
 
 @Component
 public class TokenHandler {
-    @Autowired
-    private AccountRepo accountRepo;
+    private final AccountRepo accountRepo;
     @Value("${spring.security.jwt.secret-key}")
     private String secretKey;
     @Value("${spring.security.jwt.access-token-expiration}")
     private long accessTokenExpiration;
     @Value("${spring.security.jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
+
+    @Autowired
+    public TokenHandler(AccountRepo accountRepo) {
+        this.accountRepo = accountRepo;
+    }
 
     // create token (encode)
     public String generateAccessToken(Account account) {

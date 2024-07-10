@@ -1,13 +1,16 @@
 package com.fpt.cursus.service;
 
-import com.fpt.cursus.dto.request.*;
+import com.fpt.cursus.dto.request.ChangePasswordDto;
+import com.fpt.cursus.dto.request.LoginReqDto;
+import com.fpt.cursus.dto.request.RegisterReqDto;
+import com.fpt.cursus.dto.request.ResetPasswordDto;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Otp;
-import com.fpt.cursus.enums.status.UserStatus;
-import com.fpt.cursus.enums.type.Gender;
-import com.fpt.cursus.enums.type.InstructorStatus;
-import com.fpt.cursus.enums.type.Role;
+import com.fpt.cursus.enums.Gender;
+import com.fpt.cursus.enums.InstructorStatus;
+import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
