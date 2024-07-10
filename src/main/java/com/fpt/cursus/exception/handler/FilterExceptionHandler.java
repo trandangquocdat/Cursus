@@ -15,9 +15,12 @@ import java.io.IOException;
 @Component
 public class FilterExceptionHandler implements AuthenticationEntryPoint {
 
+    private final HandlerExceptionResolver resolver;
+
     @Autowired
-    @Qualifier("handlerExceptionResolver")
-    private HandlerExceptionResolver resolver;
+    public FilterExceptionHandler(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+        this.resolver = resolver;
+    }
 
 
     @Override

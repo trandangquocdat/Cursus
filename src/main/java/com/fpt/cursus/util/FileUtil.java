@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
 @Component
 public class FileUtil {
 
@@ -23,6 +24,7 @@ public class FileUtil {
             return null;
         }
     }
+
     public boolean isImage(MultipartFile file) {
         try {
             // Xác định loại file dựa trên nội dung của file
@@ -34,6 +36,7 @@ public class FileUtil {
             return false;
         }
     }
+
     public boolean isPDF(MultipartFile file) {
         try {
             // Xác định loại file dựa trên nội dung của file
@@ -46,6 +49,7 @@ public class FileUtil {
             return false;
         }
     }
+
     public boolean isVideo(MultipartFile file) {
         try {
             // Xác định loại file dựa trên nội dung của file

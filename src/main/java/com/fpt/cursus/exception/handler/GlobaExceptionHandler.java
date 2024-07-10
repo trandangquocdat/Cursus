@@ -18,9 +18,14 @@ import java.io.IOException;
 
 @ControllerAdvice
 public class GlobaExceptionHandler {
+    private final ApiResUtil apiResUtil;
+
     @Autowired
-    private ApiResUtil apiResUtil;
-//    @ExceptionHandler(Exception.class)
+    public GlobaExceptionHandler(ApiResUtil apiResUtil) {
+        this.apiResUtil = apiResUtil;
+    }
+
+    //    @ExceptionHandler(Exception.class)
 //    public ResponseEntity<?> handleRuntimeException(Exception exception) {
 //        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, ErrorCode.UNCATEGORIZED_ERROR.getCode(), ErrorCode.UNCATEGORIZED_ERROR.getMessage(), null);
 //        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
@@ -41,12 +46,13 @@ public class GlobaExceptionHandler {
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidation(MethodArgumentNotValidException exception) {
-       String enumKey = exception.getFieldError().getDefaultMessage();
-       ErrorCode errorCode = ErrorCode.valueOf(enumKey);
-       String message = errorCode.getMessage();
-       ApiRes<?> apiRes = apiResUtil.returnApiRes(false, errorCode.getCode(), message, null);
-       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
+        String enumKey = exception.getFieldError().getDefaultMessage();
+        ErrorCode errorCode = ErrorCode.valueOf(enumKey);
+        String message = errorCode.getMessage();
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, errorCode.getCode(), message, null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
+
     @ExceptionHandler(value = FirebaseAuthException.class)
     public ResponseEntity<ApiRes<?>> handleFirebaseAuthException(FirebaseAuthException exception) {
         String message = exception.getMessage();

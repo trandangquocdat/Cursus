@@ -3,6 +3,7 @@ package com.fpt.cursus.config;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.AccountRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,21 +24,20 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    final
-    AccountRepo accountRepo;
-    final
-    Filter filter;
+    final AccountRepo accountRepo;
+    final Filter filter;
 
+    @Autowired
     public SecurityConfig(AccountRepo accountRepo, Filter filter) {
         this.accountRepo = accountRepo;
         this.filter = filter;
     }
 
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         System.err.println(Customizer.withDefaults());
@@ -47,11 +47,12 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults()).csrf(AbstractHttpConfigurer::disable).addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
-    @Bean
 
+    @Bean
     public UserDetailsService userDetailsService() {
         return username -> accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
+
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
@@ -59,6 +60,7 @@ public class SecurityConfig {
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         return daoAuthenticationProvider;
     }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

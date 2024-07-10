@@ -5,15 +5,14 @@ import com.fpt.cursus.dto.request.UpdateCourseDto;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.Category;
 import com.fpt.cursus.service.CourseService;
-import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 
 
 @RestController
@@ -24,7 +23,7 @@ public class CourseController {
 
     private final CourseService courseService;
 
-
+    @Autowired
     public CourseController(CourseService courseService) {
         this.courseService = courseService;
     }
@@ -42,6 +41,7 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.updateCourse(id, request));
 
     }
+
     @DeleteMapping("/course/delete")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> deleteCourse(@RequestParam Long id) {
@@ -51,31 +51,31 @@ public class CourseController {
 
     @GetMapping("/course/view-all-general")
     public ResponseEntity<Object> viewAllGeneralCourse(@RequestParam(required = false) String sortBy,
-                                  @RequestParam(defaultValue = "1", required = false) int offset,
-                                  @RequestParam(defaultValue = "10", required = false) int pageSize) {
+                                                       @RequestParam(defaultValue = "1", required = false) int offset,
+                                                       @RequestParam(defaultValue = "10", required = false) int pageSize) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getAllGeneralCourses(sortBy, offset, pageSize));
     }
 
 
-
     @GetMapping("/course/view-general-by-category")
     public ResponseEntity<Object> viewCourseByCategory(@RequestParam(defaultValue = "ALL") Category category,
-                                         @RequestParam(required = false) String sortBy,
-                                         @RequestParam(defaultValue = "1", required = false) int offset,
-                                         @RequestParam(defaultValue = "10", required = false) int pageSize) {
+                                                       @RequestParam(required = false) String sortBy,
+                                                       @RequestParam(defaultValue = "1", required = false) int offset,
+                                                       @RequestParam(defaultValue = "10", required = false) int pageSize) {
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(courseService.getCourseByCategory(category,offset, pageSize, sortBy));
+                .body(courseService.getCourseByCategory(category, offset, pageSize, sortBy));
     }
+
     @GetMapping("/course/view-general-by-name")
     public ResponseEntity<Object> viewCourseByName(@RequestParam String name,
-                                           @RequestParam(required = false) String sortBy,
-                                           @RequestParam(defaultValue = "1", required = false) int offset,
-                                           @RequestParam(defaultValue = "10", required = false) int pageSize){
+                                                   @RequestParam(required = false) String sortBy,
+                                                   @RequestParam(defaultValue = "1", required = false) int offset,
+                                                   @RequestParam(defaultValue = "10", required = false) int pageSize) {
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(courseService.getGeneralCourseByName(name,offset, pageSize, sortBy));
+                .body(courseService.getGeneralCourseByName(name, offset, pageSize, sortBy));
     }
 
 }

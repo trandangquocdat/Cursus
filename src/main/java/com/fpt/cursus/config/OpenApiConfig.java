@@ -21,10 +21,11 @@ public class OpenApiConfig {
     public OpenAPI openAPI(@Value("${open.api.server.url}") String url,
                            @Value("${open.api.server.description}") String description) {
         return new OpenAPI().info(new Info().title("Cursus API").version("1.0")
-                .contact(new Contact().name("Cursus education").email("cursusedu@gmail.com"))
-                .license(new License().name("Apache 2.0").url("http://www.apache.org/licenses/LICENSE-2.0")))
+                        .contact(new Contact().name("Cursus education").email("cursusedu@gmail.com"))
+                        .license(new License().name("Apache 2.0").url("http://www.apache.org/licenses/LICENSE-2.0")))
                 .servers(List.of(new Server().url(url).description(description)));
     }
+
     @Bean
     public GroupedOpenApi userGroupedOpenApi() {
         return GroupedOpenApi.builder()
@@ -32,6 +33,5 @@ public class OpenApiConfig {
                 .pathsToMatch("/**")
                 .build();
     }
-
 
 }
