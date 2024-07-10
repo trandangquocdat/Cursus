@@ -2,18 +2,17 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.dto.request.UpdateCourseDto;
-import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.enums.Category;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 
 @RestController
@@ -23,22 +22,21 @@ import java.util.List;
 public class CourseController {
 
     private final CourseService courseService;
-    private final ApiResUtil apiResUtil;
 
-    public CourseController(CourseService courseService, ApiResUtil apiResUtil) {
+
+    public CourseController(CourseService courseService) {
         this.courseService = courseService;
-        this.apiResUtil = apiResUtil;
     }
 
-    @PostMapping("/course/create")
+    @PostMapping(value = "/course/create", consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
-    public ResponseEntity<Object> createCourse(@RequestBody CreateCourseDto createCourseDto) {
+    public ResponseEntity<Object> createCourse(@RequestBody @Valid CreateCourseDto createCourseDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(courseService.createCourse(createCourseDto));
     }
 
-    @PutMapping("/course/update")
+    @PutMapping(value = "/course/update", consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
-    public ResponseEntity<Object> updateCourse(@RequestParam Long id, @RequestBody UpdateCourseDto request) {
+    public ResponseEntity<Object> updateCourse(@RequestParam Long id, @RequestBody @Valid UpdateCourseDto request) {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.updateCourse(id, request));
 
     }

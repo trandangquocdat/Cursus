@@ -40,6 +40,7 @@ public enum ErrorCode {
     EMAIL_INVALID(652, "Email invalid"),
     EMAIL_EXISTS(654, "Email already exists"),
     EMAIL_CAN_NOT_SEND(655, "Email can not send"),
+    EMAIL_NULL(656, "Email can not be null"),
     //OTP error - 66X
     OTP_INVALID(660,"Wrong OTP"),
     OTP_EXPIRED(661, "OTP expired"),

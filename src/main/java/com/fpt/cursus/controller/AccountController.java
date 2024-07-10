@@ -33,17 +33,17 @@ public class AccountController {
     }
 
     @Operation(summary = "Register new account", description = "API Register new account, auto send otp to email")
-    @PostMapping("/register")
+    @PostMapping(value = "/register", consumes = "multipart/form-data")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Account created"),
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    public ResponseEntity<Object> register(@Valid @RequestBody RegisterReqDto account) {
-        Account newAccount = accountService.register(account);
+    public ResponseEntity<Object> register(@Valid @ModelAttribute RegisterReqDto registerReqDto) {
+        Account newAccount = accountService.register(registerReqDto);
         String otp = otpService.generateOtp();
-        otpService.updateOldOtps(account.getEmail());
-        otpService.sendOtpEmail(account.getEmail(), otp);
-        otpService.saveOtp(account.getEmail(), otp);
+        otpService.updateOldOtps(registerReqDto.getEmail());
+        otpService.sendOtpEmail(registerReqDto.getEmail(), otp);
+        otpService.saveOtp(registerReqDto.getEmail(), otp);
         return ResponseEntity.status(HttpStatus.CREATED).body(newAccount);
     }
 

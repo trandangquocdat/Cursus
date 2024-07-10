@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import jakarta.servlet.http.HttpServletRequest;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -50,7 +51,8 @@ public class AccountService {
 
     @Value("${spring.security.jwt.access-token-expiration}")
     private long accessTokenExpiration;
-
+    @Value("${spring.otp.expiration}")
+    private long otpExpiration;
     public AccountService(AccountRepo accountRepo, PasswordEncoder passwordEncoder,
                           AuthenticationManager authenticationManager, TokenHandler tokenHandler,
                           AccountUtil accountUtil, Regex regex, OtpService otpService,
@@ -68,6 +70,7 @@ public class AccountService {
 
 
     public Account register(RegisterReqDto registerReqDTO) {
+        ModelMapper modelMapper = new ModelMapper();
         //validate
         if (!regex.isPhoneValid(registerReqDTO.getPhone())) {
             throw new AppException(ErrorCode.PHONE_NOT_VALID);
@@ -79,25 +82,20 @@ public class AccountService {
             throw new AppException(ErrorCode.EMAIL_EXISTS);
         }
         //set account
-        Account account = new Account();
-        account.setUsername(registerReqDTO.getUsername());
-        account.setEmail(registerReqDTO.getEmail());
-        account.setFullName(registerReqDTO.getFullName());
-        account.setPhone(registerReqDTO.getPhone());
-        account.setGender(registerReqDTO.getGender());
+        Account account = modelMapper.map(registerReqDTO, Account.class);
         account.setCreatedDate(new Date());
         //set password with password encoder
         account.setPassword(passwordEncoder.encode(registerReqDTO.getPassword()));
         //set default role as "STUDENT"
         account.setRole(Role.STUDENT);
-        //need to get link first, get from File Api
-        account.setAvatar(registerReqDTO.getAvatar());
+        //
+        fileService.setAvatar(registerReqDTO.getAvatar(),account);
         //set default status as "INACTIVE"
         account.setStatus(UserStatus.INACTIVE);
         //save
         return accountRepo.save(account);
-
     }
+
 
     public LoginResDto login(LoginReqDto loginReqDto) {
         try {
@@ -284,7 +282,7 @@ public class AccountService {
     }
 
     private boolean validateOtp(Otp userOtp, String otp) {
-        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (10 * 60)) {
+        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (otpExpiration)) {
             return userOtp.getOtp().equals(otp);
         } else {
             userOtp.setValid(false);
@@ -313,10 +311,6 @@ public class AccountService {
 
     public void saveAccount(Account account) {
         accountRepo.save(account);
-    }
-
-    public boolean existAdmin(String username) {
-        return accountRepo.existsByUsername(username);
     }
 
     public Account getAccountByUsername(String username) {

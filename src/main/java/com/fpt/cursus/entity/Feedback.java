@@ -1,5 +1,6 @@
 package com.fpt.cursus.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fpt.cursus.enums.FeedbackType;
@@ -20,7 +21,9 @@ public class Feedback {
     private float rating;
     private String content;
     private String createdBy;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date createdDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date updatedDate;
     @Enumerated(EnumType.STRING)
     private FeedbackType type;

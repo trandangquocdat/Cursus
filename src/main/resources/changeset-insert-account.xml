@@ -5,13 +5,13 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="2" author="yourname">
+    <changeSet id="5" author="Cursus">
         <insert tableName="account">
-            <column name="username" value="admin1"/>
-            <column name="email" value="admin1@gmail.com"/>
+            <column name="username" value="admin01"/>
+            <column name="email" value="admin01@gmail.com"/>
             <column name="created_date" valueDate="CURRENT_TIMESTAMP"/>
-            <column name="full_name" value="Administrator One"/>
-            <column name="phone" value="0972340212"/>
+            <column name="full_name" value="Administrator CRS01"/>
+            <column name="phone" value="0971111111"/>
             <column name="password" value="$2a$10$5FhN2ZZy.zfGi5XTgngTmufzAGVUeg8n3W4bUxIye9Ri3kBx1FA72"/> <!-- Thay bằng mật khẩu đã mã hóa -->
             <column name="role" value="ADMIN"/>
             <column name="status" value="ACTIVE"/>
@@ -19,100 +19,96 @@
         </insert>
 
         <insert tableName="account">
-            <column name="username" value="admin2"/>
-            <column name="email" value="admin2@gmail.com"/>
+            <column name="username" value="admin02"/>
+            <column name="email" value="admin02@gmail.com"/>
             <column name="created_date" valueDate="CURRENT_TIMESTAMP"/>
-            <column name="full_name" value="Administrator Two"/>
-            <column name="phone" value="0972340215"/>
+            <column name="full_name" value="Administrator CRS02"/>
+            <column name="phone" value="0972222222"/>
             <column name="password" value="$2a$10$5FhN2ZZy.zfGi5XTgngTmufzAGVUeg8n3W4bUxIye9Ri3kBx1FA72"/> <!-- Thay bằng mật khẩu đã mã hóa -->
             <column name="role" value="ADMIN"/>
             <column name="status" value="ACTIVE"/>
-            <column name="avatar" value=""/>
         </insert>
 
 
         <insert tableName="account">
-            <column name="username" value="admin3"/>
-            <column name="email" value="admin3@gmail.com"/>
+            <column name="username" value="admin03"/>
+            <column name="email" value="admin03@gmail.com"/>
             <column name="created_date" valueDate="CURRENT_TIMESTAMP"/>
-            <column name="full_name" value="Administrator Ba"/>
+            <column name="full_name" value="Administrator CRS03"/>
             <column name="phone" value="0972340216"/>
             <column name="password" value="$2a$10$5FhN2ZZy.zfGi5XTgngTmufzAGVUeg8n3W4bUxIye9Ri3kBx1FA72"/> <!-- Thay bằng mật khẩu đã mã hóa -->
             <column name="role" value="ADMIN"/>
             <column name="status" value="ACTIVE"/>
-            <column name="avatar" value=""/>
         </insert>
 
 
         <insert tableName="account">
-            <column name="username" value="student1"/>
-            <column name="email" value="student1@gmail.com"/>
+            <column name="username" value="student01"/>
+            <column name="email" value="student01@gmail.com"/>
             <column name="created_date" valueDate="CURRENT_TIMESTAMP"/>
-            <column name="full_name" value="student"/>
+            <column name="full_name" value="Student CRS01"/>
             <column name="phone" value="0972340213"/>
             <column name="password" value="$2a$10$aHo909NRhGcWrBWF3who5.BQPXZEEYnRRyJc82R1lXcqR0kPUjXCa"/> <!-- Thay bằng mật khẩu đã mã hóa -->
             <column name="role" value="STUDENT"/>
             <column name="status" value="ACTIVE"/>
-            <column name="avatar" value=""/>
         </insert>
 
         <insert tableName="account">
-            <column name="username" value="student2"/>
-            <column name="email" value="student2@gmail.com"/>
+            <column name="username" value="student02"/>
+            <column name="email" value="student02@gmail.com"/>
             <column name="created_date" valueDate="CURRENT_TIMESTAMP"/>
-            <column name="full_name" value="student Two"/>
+            <column name="full_name" value="Student CRS02"/>
             <column name="phone" value="0972340217"/>
             <column name="password" value="$2a$10$aHo909NRhGcWrBWF3who5.BQPXZEEYnRRyJc82R1lXcqR0kPUjXCa"/> <!-- Thay bằng mật khẩu đã mã hóa -->
             <column name="role" value="STUDENT"/>
             <column name="status" value="ACTIVE"/>
-            <column name="avatar" value=""/>
         </insert>
         <insert tableName="account">
-            <column name="username" value="student3"/>
-            <column name="email" value="student3@gmail.com"/>
+            <column name="username" value="student03"/>
+            <column name="email" value="student03@gmail.com"/>
             <column name="created_date" valueDate="CURRENT_TIMESTAMP"/>
-            <column name="full_name" value="student Ba"/>
+            <column name="full_name" value="Student CRS03"/>
             <column name="phone" value="0972340218"/>
             <column name="password" value="$2a$10$aHo909NRhGcWrBWF3who5.BQPXZEEYnRRyJc82R1lXcqR0kPUjXCa"/> <!-- Thay bằng mật khẩu đã mã hóa -->
             <column name="role" value="STUDENT"/>
             <column name="status" value="ACTIVE"/>
-            <column name="avatar" value=""/>
         </insert>
 
         <insert tableName="account">
-            <column name="username" value="instructor1"/>
-            <column name="email" value="instructor1@gmail.com"/>
+            <column name="username" value="instructor01"/>
+            <column name="email" value="instructor01@gmail.com"/>
             <column name="created_date" valueDate="CURRENT_TIMESTAMP"/>
-            <column name="full_name" value="instructor"/>
+            <column name="full_name" value="Instructor CRS01"/>
             <column name="phone" value="0972340214"/>
             <column name="password" value="$2a$10$35MOYwlJNTj6iDNt7e5XKOf//gLTacdemQ/x0ml.GwCCARMAJ.J3K"/> <!-- Thay bằng mật khẩu đã mã hóa -->
             <column name="role" value="INSTRUCTOR"/>
             <column name="status" value="ACTIVE"/>
-            <column name="avatar" value=""/>
+            <column name="instructor_status" value="APPROVED"/>
         </insert>
 
         <insert tableName="account">
-            <column name="username" value="instructor2"/>
-            <column name="email" value="instructor2@gmail.com"/>
+            <column name="username" value="instructor02"/>
+            <column name="email" value="instructor02@gmail.com"/>
             <column name="created_date" valueDate="CURRENT_TIMESTAMP"/>
-            <column name="full_name" value="instructor Two"/>
+            <column name="full_name" value="Instructor CRS02"/>
             <column name="phone" value="0972340218"/>
             <column name="password" value="$2a$10$35MOYwlJNTj6iDNt7e5XKOf//gLTacdemQ/x0ml.GwCCARMAJ.J3K"/> <!-- Thay bằng mật khẩu đã mã hóa -->
             <column name="role" value="INSTRUCTOR"/>
             <column name="status" value="ACTIVE"/>
-            <column name="avatar" value=""/>
+            <column name="instructor_status" value="APPROVED"/>
+
         </insert>
 
         <insert tableName="account">
-            <column name="username" value="instructor3"/>
-            <column name="email" value="instructor3@gmail.com"/>
+            <column name="username" value="instructor03"/>
+            <column name="email" value="instructor03@gmail.com"/>
             <column name="created_date" valueDate="CURRENT_TIMESTAMP"/>
-            <column name="full_name" value="instructor Ba"/>
+            <column name="full_name" value="Instructor CRS03"/>
             <column name="phone" value="0972340219"/>
             <column name="password" value="$2a$10$35MOYwlJNTj6iDNt7e5XKOf//gLTacdemQ/x0ml.GwCCARMAJ.J3K"/> <!-- Thay bằng mật khẩu đã mã hóa -->
             <column name="role" value="INSTRUCTOR"/>
             <column name="status" value="ACTIVE"/>
-            <column name="avatar" value=""/>
+            <column name="instructor_status" value="APPROVED"/>
         </insert>
     </changeSet>
 </databaseChangeLog>

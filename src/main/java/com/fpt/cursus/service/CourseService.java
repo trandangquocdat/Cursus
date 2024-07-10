@@ -36,11 +36,12 @@ public class CourseService {
     private final LessonService lessonService;
     private final PageUtil pageUtil;
     private final ModelMapper modelMapper;
+    private final FileService fileService;
 
     public CourseService(AccountUtil accountUtil, AccountService accountService,
                          CourseRepo courseRepo, ObjectMapper objectMapper,
                          LessonService lessonService, PageUtil pageUtil,
-                         ModelMapper modelMapper) {
+                         ModelMapper modelMapper, FileService fileService) {
         this.accountUtil = accountUtil;
         this.accountService = accountService;
         this.courseRepo = courseRepo;
@@ -48,13 +49,16 @@ public class CourseService {
         this.lessonService = lessonService;
         this.pageUtil = pageUtil;
         this.modelMapper = modelMapper;
+        this.fileService = fileService;
     }
 
     public Course createCourse(CreateCourseDto createCourseDto) {
         validateCourseDto(createCourseDto);
         Course course = modelMapper.map(createCourseDto, Course.class);
-        course.setCreatedDate(new Date());
+        Date date = new Date();
+        course.setCreatedDate(date);
         course.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
+        fileService.setPicture(createCourseDto.getPictureLink(),course);
         course.setStatus(CourseStatus.DRAFT);
         course.setVersion(1f);
         return courseRepo.save(course);
@@ -88,6 +92,9 @@ public class CourseService {
             throw new AppException(ErrorCode.COURSE_PRICE_INVALID);
         }
         mapper.map(request, existingCourse);
+        if(request.getPictureLink() != null){
+            fileService.setPicture(request.getPictureLink(),existingCourse);
+        }
         existingCourse.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         existingCourse.setStatus(CourseStatus.DRAFT);
         existingCourse.setVersion(Math.round((existingCourse.getVersion() + 0.1f) * 10) / 10.0f);

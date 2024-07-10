@@ -1,10 +1,14 @@
 package com.fpt.cursus.service;
 
 
+import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.*;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.*;
@@ -17,7 +21,12 @@ import java.util.UUID;
 
 @Service
 public class FileService {
-
+    private final AccountService accountService;
+    private final CourseService courseService;
+    public FileService(@Lazy AccountService accountService, @Lazy CourseService courseService) {
+        this.accountService = accountService;
+        this.courseService = courseService;
+    }
 
     @Value("${firebase.storage.bucket}")
     private String bucketName;
@@ -49,6 +58,26 @@ public class FileService {
         }
     }
 
+    @Async
+    public void setAvatar(MultipartFile file, Account account) {
+        try {
+            String link = uploadFile(file);
+            account.setAvatar(link);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        accountService.saveAccount(account);
+    }
+    @Async
+    public void setPicture(MultipartFile file, Course course) {
+        try {
+            String link = uploadFile(file);
+            course.setPictureLink(link);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        courseService.saveCourse(course);
+    }
     private String generateDownloadUrl(String fileName) {
         return String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media", bucketName, fileName);
     }
