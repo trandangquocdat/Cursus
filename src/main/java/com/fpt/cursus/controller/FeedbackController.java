@@ -25,7 +25,8 @@ public class FeedbackController {
 
     @PostMapping("/feedback/")
     public ApiRes<?> createFeedback(@RequestParam Long courseId, @RequestParam FeedbackType type, @RequestBody CreateFeedbackDto feedbackDto) {
-        return apiResUtil.returnApiRes(null, null, null,
+        String successMessage = "Create feedback successfully";
+        return apiResUtil.returnApiRes(null, null, successMessage,
                 feedbackService.createFeedback(courseId, type, feedbackDto));
     }
 
