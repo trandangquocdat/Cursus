@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.entity.Feedback;
-import com.fpt.cursus.enums.type.FeedbackType;
+import com.fpt.cursus.enums.FeedbackType;
 import com.fpt.cursus.service.FeedbackService;
 import com.fpt.cursus.util.ApiResUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +50,7 @@ class FeedbackControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = standaloneSetup(new FeedbackController(apiResUtil, feedbackService))
+        mockMvc = standaloneSetup(new FeedbackController(feedbackService))
                 .alwaysDo(print())
                 .build();
     }

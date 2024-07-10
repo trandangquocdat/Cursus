@@ -10,9 +10,6 @@ import com.fpt.cursus.enums.Category;
 import com.fpt.cursus.enums.CourseStatus;
 import org.springframework.data.domain.Page;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 public interface CourseService {

@@ -5,9 +5,9 @@ import com.fpt.cursus.dto.request.*;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.enums.status.UserStatus;
-import com.fpt.cursus.enums.type.Gender;
-import com.fpt.cursus.enums.type.Role;
+import com.fpt.cursus.enums.Gender;
+import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.OtpService;
 import com.fpt.cursus.util.ApiResUtil;
@@ -57,7 +57,7 @@ class AccountControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = standaloneSetup(new AccountController(accountService, otpService, apiResUtil))
+        mockMvc = standaloneSetup(new AccountController(accountService, otpService))
                 .alwaysDo(print())
                 .build();
     }

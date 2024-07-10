@@ -2,9 +2,10 @@ package com.fpt.cursus.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.CreateChapterRequest;
+import com.fpt.cursus.dto.request.UpdateChapterDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.entity.Chapter;
-import com.fpt.cursus.enums.status.ChapterStatus;
+import com.fpt.cursus.enums.ChapterStatus;
 import com.fpt.cursus.service.ChapterService;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.util.AccountUtil;
@@ -58,7 +59,7 @@ class ChapterControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = standaloneSetup(new ChapterController(chapterService, apiResUtil))
+        mockMvc = standaloneSetup(new ChapterController(chapterService))
                 .alwaysDo(print())
                 .build();
     }
@@ -125,7 +126,7 @@ class ChapterControllerTest {
         ApiRes<Object> apiRes = new ApiRes<>();
         apiRes.setMessage(successMessage);
         //when
-        doNothing().when(chapterService).updateChapter(anyLong(), any(CreateChapterRequest.class));
+        doNothing().when(chapterService).updateChapter(anyLong(), any(UpdateChapterDto.class));
         when(apiResUtil.returnApiRes(any(), any(), any(), any()))
                 .thenReturn(apiRes);
         //then

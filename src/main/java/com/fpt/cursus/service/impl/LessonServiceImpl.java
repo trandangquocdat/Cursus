@@ -115,9 +115,9 @@ public class LessonServiceImpl implements LessonService {
         lesson.setCreatedDate(date);
         lesson.setCreatedBy(account.getUsername());
         lesson.setStatus(LessonStatus.ACTIVE);
-        if(fileUtil.isVideo(request.getVideoLink())) {
+        if (fileUtil.isVideo(request.getVideoLink())) {
             fileService.setVideo(request.getVideoLink(), lesson);
-        }else{
+        } else {
             throw new AppException(ErrorCode.FILE_INVALID_VIDEO);
         }
         return lessonRepo.save(lesson);
