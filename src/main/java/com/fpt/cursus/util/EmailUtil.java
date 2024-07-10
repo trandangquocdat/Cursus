@@ -27,7 +27,7 @@ public class EmailUtil {
 
     public void sendOtpEmail(String email, String otp) throws MessagingException {
         String subject = "[Cursus] Email verification";
-        String url = "http://" + host + ":8080/auth/verify-account?email=" + email + "&otp=" + otp;
+        String url = "http://" + host + ":8080/auth/authenticate-account?email=" + email + "&otp=" + otp;
         String content = """
             <div>
               Dear %s,<br>

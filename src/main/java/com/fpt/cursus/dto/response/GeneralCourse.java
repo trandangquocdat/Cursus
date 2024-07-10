@@ -1,7 +1,7 @@
 package com.fpt.cursus.dto.response;
 
-import com.fpt.cursus.enums.status.CourseStatus;
-import com.fpt.cursus.enums.type.Category;
+import com.fpt.cursus.enums.CourseStatus;
+import com.fpt.cursus.enums.Category;
 
 import lombok.Data;
 

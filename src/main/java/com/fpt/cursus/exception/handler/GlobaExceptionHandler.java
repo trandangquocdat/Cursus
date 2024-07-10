@@ -20,11 +20,11 @@ import java.io.IOException;
 public class GlobaExceptionHandler {
     @Autowired
     private ApiResUtil apiResUtil;
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleRuntimeException(Exception exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, ErrorCode.UNCATEGORIZED_ERROR.getCode(), ErrorCode.UNCATEGORIZED_ERROR.getMessage(), null);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<?> handleRuntimeException(Exception exception) {
+//        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, ErrorCode.UNCATEGORIZED_ERROR.getCode(), ErrorCode.UNCATEGORIZED_ERROR.getMessage(), null);
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
+//    }
     @ExceptionHandler(AppException.class)
     public ResponseEntity<?> handleAppException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();

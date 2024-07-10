@@ -5,9 +5,9 @@
 //import com.fasterxml.jackson.databind.ObjectMapper;
 //import com.fpt.cursus.dto.request.RegisterReqDto;
 //import com.fpt.cursus.entity.Account;
-//import com.fpt.cursus.enums.type.Gender;
-//import com.fpt.cursus.enums.type.Role;
-//import com.fpt.cursus.enums.status.UserStatus;
+//import com.fpt.cursus.enums.Gender;
+//import com.fpt.cursus.enums.Role;
+//import com.fpt.cursus.enums.UserStatus;
 //import com.fpt.cursus.service.AccountService;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;

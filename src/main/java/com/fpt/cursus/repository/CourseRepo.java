@@ -1,10 +1,10 @@
 package com.fpt.cursus.repository;
 
 import com.fpt.cursus.entity.Course;
-import com.fpt.cursus.enums.type.Category;
+import com.fpt.cursus.enums.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.fpt.cursus.enums.status.CourseStatus;
+import com.fpt.cursus.enums.CourseStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.util.List;

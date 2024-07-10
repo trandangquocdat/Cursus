@@ -2,7 +2,7 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.service.FirebaseStorageService;
+import com.fpt.cursus.service.FileService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,25 +23,22 @@ import java.util.List;
 @Tag(name = "File Controller")
 public class FileUploadController {
 
-    private final FirebaseStorageService storageService;
+    private final FileService storageService;
 
     @Autowired
-    public FileUploadController(FirebaseStorageService storageService) {
+    public FileUploadController(FileService storageService) {
         this.storageService = storageService;
     }
 
     @PostMapping("/files/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            return storageService.uploadFile(file);
+            return ResponseEntity.ok().body(storageService.uploadFile(file));
         } catch (IOException e) {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
         }
     }
-    @PostMapping("/upload-excel")
-    public List<String> uploadExcelFile(@RequestParam Long chapterId,@RequestParam("file") MultipartFile file) throws IOException {
-        return storageService.uploadFilesFromExcel(chapterId,file);
-    }
+
     @GetMapping("/files/download/{fileName}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {
         String bucketName = "cursus-b6cde.appspot.com"; // Replace with your Firebase Storage bucket name

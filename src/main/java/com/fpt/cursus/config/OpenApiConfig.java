@@ -33,26 +33,5 @@ public class OpenApiConfig {
                 .build();
     }
 
-    @Bean
-    public GroupedOpenApi adminGroupedOpenApi() {
-        return GroupedOpenApi.builder()
-                .group("user")
-                .pathsToMatch("/admin/**","/auth/**","/token/**","/files/**")
-                .build();
-    }
-    @Bean
-    public GroupedOpenApi courseGroupedOpenApi() {
-        return GroupedOpenApi.builder()
-                .group("course")
-                .pathsToMatch("/course/**", "/lesson/**", "/chapter/**","/process/**,/feedback/**","/files/**")
-                .build();
-    }
-    @Bean
-    public GroupedOpenApi orderGroupedOpenApi() {
-        return GroupedOpenApi.builder()
-                .group("order")
-                .pathsToMatch("/order/**")
-                .build();
-    }
 
 }

@@ -1,18 +1,21 @@
 package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.*;
-import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.service.OtpService;
 import com.fpt.cursus.service.AccountService;
-import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin("*")
@@ -23,85 +26,70 @@ public class AccountController {
 
     private final AccountService accountService;
     private final OtpService otpService;
-    private final ApiResUtil apiResUtil;
 
-    public AccountController(AccountService accountService, OtpService otpService, ApiResUtil apiResUtil) {
+    public AccountController(AccountService accountService, OtpService otpService) {
         this.accountService = accountService;
         this.otpService = otpService;
-        this.apiResUtil = apiResUtil;
-    }
-    @Operation(summary = "Register new account", description = "API Register new account, auto send otp to email")
-    @PostMapping("/auth/register")
-    public ApiRes<Object> register(@Valid @RequestBody RegisterReqDto account) {
-        Account newAccount = accountService.register(account);
-        String otp = otpService.generateOtp();
-        otpService.updateOldOtps(account.getEmail());
-        otpService.sendOtpEmail(account.getEmail(), otp);
-        otpService.saveOtp(account.getEmail(), otp);
-        return apiResUtil.returnApiRes(null, null, null, newAccount);
-    }
-    @Operation(summary = "Login")
-    @PostMapping("/auth/login")
-    public ApiRes<Object> login(@RequestBody @Valid LoginReqDto account) {
-        LoginResDto newAccount = accountService.login(account);
-        return apiResUtil.returnApiRes(null, null, null, newAccount);
     }
 
-    @PostMapping("/auth/login-google-firebase")
-    public ApiRes<Object> loginGoogle(@RequestBody LoginGoogleReq loginGoogleReq) {
-        LoginResDto newAccount = accountService.loginGoogle(loginGoogleReq.getToken());
-        return apiResUtil.returnApiRes(null, null, null, newAccount);
+    @Operation(summary = "Register new account", description = "API Register new account, auto send otp to email")
+    @PostMapping(value = "/register", consumes = "multipart/form-data")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Account created"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
+    public ResponseEntity<Object> register(@Valid @ModelAttribute RegisterReqDto registerReqDto) {
+        Account newAccount = accountService.register(registerReqDto);
+        String otp = otpService.generateOtp();
+        otpService.updateOldOtps(registerReqDto.getEmail());
+        otpService.sendOtpEmail(registerReqDto.getEmail(), otp);
+        otpService.saveOtp(registerReqDto.getEmail(), otp);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newAccount);
     }
+
+    @Operation(summary = "Login")
+    @PostMapping("/login")
+    public ResponseEntity<Object> login(@RequestBody @Valid LoginReqDto loginAccountDto) {
+        LoginResDto account = accountService.login(loginAccountDto);
+        return ResponseEntity.status(HttpStatus.OK).body(account);
+    }
+
+    @PostMapping("/login-google-firebase")
+    public ResponseEntity<Object> loginGoogle(@RequestBody LoginGoogleReq loginGoogleReq) {
+        LoginResDto account = accountService.loginGoogle(loginGoogleReq.getToken());
+        return ResponseEntity.status(HttpStatus.OK).body(account);
+    }
+
     @Operation(summary = "Verify Otp from email register", description = "Run after user click on link in email")
-    @GetMapping("/auth/verify-account")
-    public ApiRes<Object> verifyAccount(@RequestParam String email, @RequestParam String otp) {
-        accountService.verifyAccount(email, otp);
-        String successMessage = "Verify account successfully. You can now login with your email and password.";
-        return apiResUtil.returnApiRes(null, null, successMessage, null);
+    @GetMapping("/auth/authenticate-account")
+    public ResponseEntity<Object> authenticateAccount(@RequestParam String email, @RequestParam String otp) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.authenticateAccount(email, otp));
     }
-    @Operation(summary = "Send verifying instructor to admin",
-            description = "Role default is STUDENT, need to call this Api to be INSTRUCTOR\n"
-                    + "cvLink must to be generated by File Controller")
-    @PatchMapping("/auth/send-verify-instructor")
-    public ApiRes<Object> verifyInstructor(@RequestBody @Valid CvLinkDto cvLink) {
-        accountService.sendVerifyInstructor(cvLink);
-        String successMessage = "Your CV has been submitted";
-        return apiResUtil.returnApiRes(null, null, successMessage, null);
-    }
+
     @Operation(summary = "Regenerate Otp for email register")
     @PutMapping("/auth/regenerate-otp")
-    public ApiRes<Object> regenerateOtp(@RequestParam String email) {
-        accountService.regenerateOtp(email);
-        String successMessage = "Regenerate OTP successfully. Please check your email to verify your account.";
-        return apiResUtil.returnApiRes(null, null, successMessage, null);
+    public ResponseEntity<Object> regenerateOtp(@RequestParam String email) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.regenerateOtp(email));
     }
 
-
-    @PatchMapping("/auth/change-password")
-    public ApiRes<Object> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
+    @PatchMapping("/change-password")
+    public ResponseEntity<Object> changePassword(@RequestBody @Valid ChangePasswordDto changePasswordDto) {
         accountService.changePassword(changePasswordDto);
-        String successMessage = "Change password successfully.";
-        return apiResUtil.returnApiRes(null, null, successMessage, null);
+        return ResponseEntity.status(HttpStatus.OK).body("Change password successfully");
     }
 
     @GetMapping("/auth/forgot-password")
-    public ApiRes<Object> forgotPassword(@RequestParam String email) {
+    public ResponseEntity<Object> forgotPassword(@RequestParam String email) {
         accountService.forgotPassword(email);
-        String successMessage = "Please check your email to reset your password.";
-        return apiResUtil.returnApiRes(null, null, successMessage, null);
+        return ResponseEntity.status(HttpStatus.OK).body("Check your email to reset password");
     }
 
     @PutMapping("/auth/reset-password")
-    public ApiRes<Object> resetPassword(@RequestParam String email, @RequestParam String otp, @RequestBody @Valid ResetPasswordDto resetPasswordDto) {
+    public ResponseEntity<Object> resetPassword(@RequestParam String email, @RequestParam String otp, @RequestBody @Valid ResetPasswordDto resetPasswordDto) {
         accountService.resetPassword(email, otp, resetPasswordDto);
-        String successMessage = "Reset password successfully. Please login with your new password.";
-        return apiResUtil.returnApiRes(null, null, successMessage, null);
+        return ResponseEntity.status(HttpStatus.OK).body("Reset password successfully");
     }
-    @Operation(summary = "view instructor by name", description = "input a partial name of instructor")
-    @GetMapping("/view-instructor")
-    public ApiRes<Object> getInstructor(@RequestParam String name) {
-        return apiResUtil.returnApiRes(null, null, null, accountService.getInstructorByName(name));
-    }
+
 }
 
 
