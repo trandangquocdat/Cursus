@@ -36,7 +36,7 @@ paths:
                   description: Avatar file (image/png, image/jpeg, etc.)
                 gender:
                   type: string
-                  enum: [MALE, FEMALE, OTHER]
+                  enum: [ MALE, FEMALE, OTHER ]
                   description: Gender
       responses:
         '200':

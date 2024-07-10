@@ -1,13 +1,14 @@
 package com.fpt.cursus.controller;
 
 import com.fpt.cursus.enums.CourseStatus;
-import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.enums.InstructorStatus;
 import com.fpt.cursus.enums.Role;
-import com.fpt.cursus.service.CourseService;
+import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.service.AccountService;
+import com.fpt.cursus.service.CourseService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +22,9 @@ public class AdminController {
     private final AccountService accountService;
     private final CourseService courseService;
 
-    public AdminController(AccountService accountService, CourseService courseService) {
+    @Autowired
+    public AdminController(AccountService accountService,
+                           CourseService courseService) {
 
         this.accountService = accountService;
         this.courseService = courseService;
@@ -36,8 +39,8 @@ public class AdminController {
     @GetMapping("/admin/view-draft-course")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Object> viewDraftCourse(@RequestParam(required = false) String sortBy,
-                                          @RequestParam(defaultValue = "1", required = false) int offset,
-                                          @RequestParam(defaultValue = "10", required = false) int pageSize) {
+                                                  @RequestParam(defaultValue = "1", required = false) int offset,
+                                                  @RequestParam(defaultValue = "10", required = false) int pageSize) {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getCourseByStatus(CourseStatus.DRAFT, offset, pageSize, sortBy));
@@ -46,8 +49,8 @@ public class AdminController {
     @GetMapping("/admin/view-all-course")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Object> viewAllCourse(@RequestParam(required = false) String sortBy,
-                                        @RequestParam(defaultValue = "1", required = false) int offset,
-                                        @RequestParam(defaultValue = "10", required = false) int pageSize) {
+                                                @RequestParam(defaultValue = "1", required = false) int offset,
+                                                @RequestParam(defaultValue = "10", required = false) int pageSize) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getAllCourse(offset, pageSize, sortBy));
     }
@@ -67,9 +70,9 @@ public class AdminController {
     @GetMapping("/admin/view-instructor-and-student")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Object> viewList(@RequestParam(required = false) Role role,
-                                   @RequestParam(required = false) String sortBy,
-                                   @RequestParam(defaultValue = "1", required = false) int offset,
-                                   @RequestParam(defaultValue = "10", required = false) int pageSize) {
+                                           @RequestParam(required = false) String sortBy,
+                                           @RequestParam(defaultValue = "1", required = false) int offset,
+                                           @RequestParam(defaultValue = "10", required = false) int pageSize) {
         return ResponseEntity.ok(accountService.getListOfStudentAndInstructor(role, offset, pageSize, sortBy));
     }
 

@@ -2,10 +2,10 @@ package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
 import com.fpt.cursus.enums.FeedbackType;
-import com.fpt.cursus.util.ApiResUtil;
 import com.fpt.cursus.service.FeedbackService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +19,7 @@ public class FeedbackController {
 
     private final FeedbackService feedbackService;
 
+    @Autowired
     public FeedbackController(FeedbackService feedbackService) {
         this.feedbackService = feedbackService;
     }

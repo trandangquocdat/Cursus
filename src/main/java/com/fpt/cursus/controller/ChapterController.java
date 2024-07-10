@@ -6,6 +6,7 @@ import com.fpt.cursus.service.ChapterService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class ChapterController {
     private final ChapterService chapterService;
 
+    @Autowired
     public ChapterController(ChapterService chapterService) {
         this.chapterService = chapterService;
     }
@@ -27,11 +29,13 @@ public class ChapterController {
     public ResponseEntity<Object> createChapter(@RequestParam Long courseId, @RequestBody @Valid CreateChapterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(chapterService.createChapter(courseId, request));
     }
+
     @DeleteMapping("/chapter/delete")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> deleteChapter(@RequestParam Long chapterId) {
         return ResponseEntity.ok(chapterService.deleteChapterById(chapterId));
     }
+
     @PutMapping("/chapter/update-by-id")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> updateChapter(@RequestParam Long chapterId, @RequestBody @Valid UpdateChapterDto request) {

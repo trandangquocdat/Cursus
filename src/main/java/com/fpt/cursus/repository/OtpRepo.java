@@ -10,13 +10,16 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+
 @Repository
 public interface OtpRepo extends JpaRepository<Otp, Long> {
 
     Optional<Otp> findByEmail(String email);
 
     Optional<Otp> findByEmailAndValidTrue(String email);
+
     Otp findOtpByEmailAndValid(String email, Boolean valid);
+
     Otp findMailByEmail(String email);
 
     @Transactional

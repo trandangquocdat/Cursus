@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.enums.Gender;
-import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.enums.InstructorStatus;
 import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.UserStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
@@ -104,6 +104,7 @@ public class Account implements UserDetails {
     public boolean isCredentialsNonExpired() {
         return true;
     }
+
     @Override
     @JsonIgnore
     public boolean isEnabled() {

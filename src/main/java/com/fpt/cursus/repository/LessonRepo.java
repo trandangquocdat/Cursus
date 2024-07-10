@@ -12,5 +12,6 @@ public interface LessonRepo extends JpaRepository<Lesson, Long> {
     Lesson findLessonById(Long id);
 
     List<Lesson> findAllByChapterId(Long id);
+
     List<Lesson> findAll();
 }

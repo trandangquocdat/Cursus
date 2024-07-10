@@ -5,6 +5,7 @@ import com.fpt.cursus.service.LessonService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,22 +23,24 @@ public class LessonController {
 
     private final LessonService lessonService;
 
+    @Autowired
     public LessonController(LessonService lessonService) {
-
         this.lessonService = lessonService;
     }
 
-    @PostMapping(value ="/lesson/create", consumes = "multipart/form-data")
+    @PostMapping(value = "/lesson/create", consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> createLesson(@RequestParam Long chapterId,
                                                @ModelAttribute @Valid CreateLessonDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(lessonService.createLesson(chapterId, request));
     }
+
     @PostMapping("/lesson/upload-excel")
     public ResponseEntity<List<String>> uploadExcelFile(@RequestParam Long chapterId,
                                                         @RequestParam("file") MultipartFile file) throws IOException {
-        return ResponseEntity.ok().body(lessonService.uploadLessonFromExcel(chapterId,file));
+        return ResponseEntity.ok().body(lessonService.uploadLessonFromExcel(chapterId, file));
     }
+
     @PutMapping("/lesson/update")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> updateLesson(@RequestParam Long lessonId,
@@ -56,9 +59,10 @@ public class LessonController {
     public ResponseEntity<Object> findAll() {
         return ResponseEntity.status(HttpStatus.OK).body(lessonService.findAll());
     }
+
     @GetMapping("/lesson/get-by-chapter")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
-    public ResponseEntity<Object> findById(@RequestParam  Long chapterId) {
+    public ResponseEntity<Object> findById(@RequestParam Long chapterId) {
         return ResponseEntity.status(HttpStatus.OK).body(lessonService.findAllByChapterId(chapterId));
     }
 }

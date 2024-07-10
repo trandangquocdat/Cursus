@@ -13,23 +13,28 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class AuthExceptionHandler {
+    private final ApiResUtil apiResUtil;
+
     @Autowired
-    private ApiResUtil apiResUtil;
+    public AuthExceptionHandler(ApiResUtil apiResUtil) {
+        this.apiResUtil = apiResUtil;
+    }
+
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<?> duplicate(AuthException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.UNAUTHORIZED.value(), exception.getMessage(),null );
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.UNAUTHORIZED.value(), exception.getMessage(), null);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 
     @ExceptionHandler(InternalAuthenticationServiceException.class)
     public ResponseEntity<?> handleException(InternalAuthenticationServiceException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(),null );
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiRes);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> handleException(AccessDeniedException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false,HttpStatus.FORBIDDEN.value(), "Forbidden",null );
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.FORBIDDEN.value(), "Forbidden", null);
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiRes);
     }
 
