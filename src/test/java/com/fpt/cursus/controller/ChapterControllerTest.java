@@ -46,10 +46,7 @@ class ChapterControllerTest {
 
     @MockBean
     private ChapterService chapterService;
-    @MockBean
-    private CourseService courseService;
-    @MockBean
-    private AccountUtil accountUtil;
+
     @MockBean
     private ApiResUtil apiResUtil;
 
@@ -189,7 +186,7 @@ class ChapterControllerTest {
     }
 
     @Test
-    void testFindAllByCourseId_Success() throws Exception {
+    void testGetFeedbackByCourseIdAndType_Success() throws Exception {
         //given
         Chapter chapter = new Chapter();
         chapter.setId(1L);
