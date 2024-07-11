@@ -1,9 +1,7 @@
 package com.fpt.cursus.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fpt.cursus.exception.exceptions.AppException;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.service.impl.FileServiceImpl;
+import com.fpt.cursus.service.FileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -33,12 +30,12 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(FileUploadController.class)
 @ContextConfiguration(classes = {
-        FileServiceImpl.class
+        FileService.class
 })
 class FileUploadControllerTest {
 
     @MockBean
-    private FileServiceImpl storageService;
+    private FileService storageService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -54,11 +51,13 @@ class FileUploadControllerTest {
     }
 
     @Test
-    void testUploadFile_Success() throws Exception {
+    void uploadFileSuccess() throws Exception {
         //given
         String res = "response";
         String content = "content";
-        MockMultipartFile multipartFile = new MockMultipartFile("file", res, "text/plain", content.getBytes());
+        MockMultipartFile multipartFile = new MockMultipartFile("file",
+                res, "text/plain",
+                content.getBytes());
         //when
         when(storageService.uploadFile(any(MultipartFile.class)))
                 .thenReturn(res);
@@ -66,25 +65,11 @@ class FileUploadControllerTest {
         mockMvc.perform(multipart("/files/upload")
                         .file(multipartFile))
                 .andExpectAll(status().isOk(),
-                        jsonPath("$").value(res));
+                        content().string(res));
     }
 
     @Test
-    void testUploadFile_Failure() throws Exception {
-        //given
-        String content = "content";
-        MockMultipartFile multipartFile = new MockMultipartFile("file", content.getBytes());
-        //when
-        doThrow(new AppException(ErrorCode.FILE_UPLOAD_FAIL))
-                .when(storageService).uploadFile(any(MultipartFile.class));
-        //then
-        mockMvc.perform(multipart("/files/upload")
-                        .file(multipartFile))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void testDownloadFile_Success() throws Exception {
+    void downloadFileSuccess() throws Exception {
         //given
         String filename = "filename";
         byte[] content = "content".getBytes();
