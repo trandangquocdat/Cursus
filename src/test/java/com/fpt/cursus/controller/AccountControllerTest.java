@@ -2,15 +2,12 @@ package com.fpt.cursus.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.*;
-import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.enums.Gender;
 import com.fpt.cursus.enums.Role;
-import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.OtpService;
-import com.fpt.cursus.util.ApiResUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,7 +27,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
@@ -37,8 +35,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 @WebMvcTest(AccountController.class)
 @ContextConfiguration(classes = {
         AccountService.class,
-        OtpService.class,
-        ApiResUtil.class
+        OtpService.class
 })
 class AccountControllerTest {
 
@@ -46,8 +43,6 @@ class AccountControllerTest {
     private AccountService accountService;
     @MockBean
     private OtpService otpService;
-    @MockBean
-    private ApiResUtil apiResUtil;
 
     @Autowired
     private MockMvc mockMvc;
@@ -55,288 +50,192 @@ class AccountControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private String username;
+    private String password;
+    private String email;
+    private String fullName;
+    private String phone;
+    private MockMultipartFile avatar;
+    private Gender gender;
+
     @BeforeEach
     void setUp() {
         mockMvc = standaloneSetup(new AccountController(accountService, otpService))
                 .alwaysDo(print())
                 .build();
+
+        username = "username";
+        password = "password";
+        email = "test@test.com";
+        fullName = "fullName";
+        phone = "0123456789";
+        avatar = new MockMultipartFile("avatar",
+                "avatar.jpg",
+                "image/jpeg",
+                "avatar".getBytes());
+        gender = Gender.MALE;
     }
 
     @Test
-    void testRegister_Success() throws Exception {
+    void registerSuccess() throws Exception {
         //given
-        RegisterReqDto reqDto = RegisterReqDto.builder()
-                .username("tester")
-                .password("123456")
-                .email("test@test.com")
-                .fullName("tester")
-                .phone("123456789")
-                .gender(Gender.MALE)
-                .avatar("avatar.png")
+        Account newAccount = Account.builder()
+                .id(1L)
+                .username(username)
+                .password(password)
+                .email(email)
+                .fullName(fullName)
+                .phone(phone)
+                .role(Role.STUDENT)
+                .avatar(avatar.getOriginalFilename())
+                .gender(gender)
                 .build();
-
-        String json = objectMapper.writeValueAsString(reqDto);
-
-        Account account = getAccount(reqDto);
-
         String otp = "otp";
-
-        ApiRes<Object> apiRes = new ApiRes<>();
-        apiRes.setCode(null);
-        apiRes.setStatus(null);
-        apiRes.setMessage(null);
-        apiRes.setData(account);
         //when
         when(accountService.register(any(RegisterReqDto.class)))
-                .thenReturn(account);
+                .thenReturn(newAccount);
         when(otpService.generateOtp())
                 .thenReturn(otp);
-        when(apiResUtil.returnApiRes(any(), any(), any(), any()))
-                .thenReturn(apiRes);
         //then
-        mockMvc.perform(post("/auth/register")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpectAll(status().isOk(),
-                        jsonPath("$.data.username").value(account.getUsername()),
-                        jsonPath("$.data.email").value(account.getEmail()),
-                        jsonPath("$.data.fullName").value(account.getFullName()),
-                        jsonPath("$.data.phone").value(account.getPhone()),
-                        jsonPath("$.data.gender").value(account.getGender().toString()),
-                        jsonPath("$.data.role").value(account.getRole().toString()),
-                        jsonPath("$.data.avatar").value(account.getAvatar()),
-                        jsonPath("$.data.status").value(account.getStatus().toString()));
+        mockMvc.perform(multipart("/register")
+                        .file(avatar)
+                        .param("username", username)
+                        .param("password", password)
+                        .param("email", email)
+                        .param("fullName", fullName)
+                        .param("phone", phone)
+                        .param("gender", gender.name())
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpectAll(status().isCreated(),
+                        content().json(objectMapper.writeValueAsString(newAccount)));
         verify(otpService, times(1))
-                .updateOldOtps(anyString());
+                .updateOldOtps(email);
         verify(otpService, times(1))
-                .sendOtpEmail(anyString(), anyString());
+                .sendOtpEmail(email, otp);
         verify(otpService, times(1))
-                .saveOtp(anyString(), anyString());
-    }
-
-    private static Account getAccount(RegisterReqDto reqDto) {
-        Account account = new Account();
-        account.setUsername(reqDto.getUsername());
-        account.setEmail(reqDto.getEmail());
-        account.setFullName(reqDto.getFullName());
-        account.setPhone(reqDto.getPhone());
-        account.setGender(reqDto.getGender());
-        account.setCreatedDate(new Date());
-        account.setPassword(reqDto.getPassword());
-        account.setRole(Role.STUDENT);
-        account.setAvatar(reqDto.getAvatar());
-        account.setStatus(UserStatus.INACTIVE);
-        return account;
+                .saveOtp(email, otp);
     }
 
     @Test
-    void testLogin_Success() throws Exception {
+    void loginSuccess() throws Exception {
         //given
-        LoginReqDto reqDto = new LoginReqDto();
-        reqDto.setUsername("tester");
-        reqDto.setPassword("123456");
+        LoginReqDto loginReqDto = new LoginReqDto();
+        loginReqDto.setUsername(username);
+        loginReqDto.setPassword(password);
 
-        String json = objectMapper.writeValueAsString(reqDto);
-
-        LoginResDto resDto = new LoginResDto();
-        resDto.setAccessToken("access_token");
-        resDto.setRefreshToken("refresh_token");
-        resDto.setExpire(5000);
-
-        ApiRes<Object> apiRes = new ApiRes<>();
-        apiRes.setCode(null);
-        apiRes.setStatus(null);
-        apiRes.setMessage(null);
-        apiRes.setData(resDto);
+        LoginResDto loginResDto = new LoginResDto();
+        loginResDto.setAccessToken("accessToken");
+        loginResDto.setRefreshToken("refreshToken");
+        loginResDto.setExpire(new Date().getTime());
         //when
         when(accountService.login(any(LoginReqDto.class)))
-                .thenReturn(resDto);
-        when(apiResUtil.returnApiRes(any(), any(), any(), any()))
-                .thenReturn(apiRes);
+                .thenReturn(loginResDto);
         //then
-        mockMvc.perform(post("/auth/login")
-                        .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+                        .content(objectMapper.writeValueAsString(loginReqDto)))
                 .andExpectAll(status().isOk(),
-                        jsonPath("$.data.accessToken").value(resDto.getAccessToken()),
-                        jsonPath("$.data.refreshToken").value(resDto.getRefreshToken()),
-                        jsonPath("$.data.expire").value(resDto.getExpire()));
+                        content().json(objectMapper.writeValueAsString(loginResDto)));
     }
 
     @Test
-    void testLoginGoogle_Success() throws Exception {
+    void loginGoogleSuccess() throws Exception {
         //given
-        LoginGoogleReq req = new LoginGoogleReq();
-        req.setToken("token");
-        String json = objectMapper.writeValueAsString(req);
+        LoginGoogleReq loginGoogleReq = new LoginGoogleReq();
+        loginGoogleReq.setToken("token");
 
-        LoginResDto resDto = new LoginResDto();
-        resDto.setAccessToken("access_token");
-        resDto.setRefreshToken("refresh_token");
-        resDto.setExpire(5000);
-
-        ApiRes<Object> apiRes = new ApiRes<>();
-        apiRes.setCode(null);
-        apiRes.setStatus(null);
-        apiRes.setMessage(null);
-        apiRes.setData(resDto);
+        LoginResDto loginResDto = new LoginResDto();
+        loginResDto.setAccessToken("accessToken");
+        loginResDto.setRefreshToken("refreshToken");
+        loginResDto.setExpire(new Date().getTime());
         //when
         when(accountService.loginGoogle(anyString()))
-                .thenReturn(resDto);
-        when(apiResUtil.returnApiRes(any(), any(), any(), any()))
-                .thenReturn(apiRes);
+                .thenReturn(loginResDto);
         //then
-        mockMvc.perform(post("/auth/login-google-firebase")
-                        .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/login-google-firebase")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+                        .content(objectMapper.writeValueAsString(loginGoogleReq)))
                 .andExpectAll(status().isOk(),
-                        jsonPath("$.data.accessToken").value(resDto.getAccessToken()),
-                        jsonPath("$.data.refreshToken").value(resDto.getRefreshToken()),
-                        jsonPath("$.data.expire").value(resDto.getExpire()));
+                        content().json(objectMapper.writeValueAsString(loginResDto)));
     }
 
-
     @Test
-    void testVerifyAccount_Success() throws Exception {
+    void authenticateAccountSuccess() throws Exception {
         //given
-        String successMessage = "Verify account successfully. You can now login with your email and password.";
-        ApiRes<Object> apiRes = new ApiRes<>();
-        apiRes.setCode(null);
-        apiRes.setStatus(null);
-        apiRes.setMessage(successMessage);
-        apiRes.setData(null);
+        Account account = Account.builder()
+                .id(1L)
+                .username(username)
+                .password(password)
+                .email(email)
+                .fullName(fullName)
+                .phone(phone)
+                .role(Role.STUDENT)
+                .avatar(avatar.getOriginalFilename())
+                .gender(gender)
+                .build();
         //when
-        when(apiResUtil.returnApiRes(any(), any(), any(), any()))
-                .thenReturn(apiRes);
+        when(accountService.authenticateAccount(anyString(), anyString()))
+                .thenReturn(account);
         //then
-        mockMvc.perform(get("/auth/verify-account")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("email", "test@test.com")
+        mockMvc.perform(get("/auth/authenticate-account")
+                        .param("email", email)
                         .param("otp", "otp"))
                 .andExpectAll(status().isOk(),
-                        jsonPath("$.message").value(successMessage));
+                        content().json(objectMapper.writeValueAsString(account)));
     }
 
     @Test
-    void testVerifyInstructor() throws Exception {
+    void regenerateOtpSuccess() throws Exception {
         //given
-        CvLinkDto cvLinkDto = new CvLinkDto();
-        cvLinkDto.setCvLink("https://www.google.com");
-        String json = objectMapper.writeValueAsString(cvLinkDto);
-
-        String successMessage = "Your CV has been submitted";
-        ApiRes<Object> apiRes = new ApiRes<>();
-        apiRes.setCode(null);
-        apiRes.setStatus(null);
-        apiRes.setMessage(successMessage);
-        apiRes.setData(null);
+        String message = "otp";
         //when
-        when(apiResUtil.returnApiRes(any(), any(), any(), any()))
-                .thenReturn(apiRes);
-        //then
-        mockMvc.perform(patch("/auth/send-verify-instructor")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpectAll(status().isOk(),
-                        jsonPath("$.message").value(successMessage));
-    }
-
-    @Test
-    void testRegenerateOtp_Success() throws Exception {
-        //given
-        String successMessage = "Regenerate OTP successfully. Please check your email to verify your account.";
-        ApiRes<Object> apiRes = new ApiRes<>();
-        apiRes.setCode(null);
-        apiRes.setStatus(null);
-        apiRes.setMessage(successMessage);
-        apiRes.setData(null);
-        //when
-        when(apiResUtil.returnApiRes(any(), any(), any(), any()))
-                .thenReturn(apiRes);
+        when(accountService.regenerateOtp(anyString()))
+                .thenReturn("otp");
         //then
         mockMvc.perform(put("/auth/regenerate-otp")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("email", "test@test.com"))
+                        .param("email", email))
                 .andExpectAll(status().isOk(),
-                        jsonPath("$.message").value(successMessage));
+                        content().string(message));
     }
 
     @Test
-    void testChangePassword_Success() throws Exception {
+    void changePasswordSuccess() throws Exception {
         //given
         ChangePasswordDto changePasswordDto = new ChangePasswordDto();
-        changePasswordDto.setCurrentPassword("123456");
-        changePasswordDto.setNewPassword("654321");
-        changePasswordDto.setConfirmNewPassword("654321");
-        String json = objectMapper.writeValueAsString(changePasswordDto);
-
-        String successMessage = "Change password successfully.";
-        ApiRes<Object> apiRes = new ApiRes<>();
-        apiRes.setCode(null);
-        apiRes.setStatus(null);
-        apiRes.setMessage(successMessage);
-        apiRes.setData(null);
-        //when
-        when(apiResUtil.returnApiRes(any(), any(), any(), any()))
-                .thenReturn(apiRes);
+        changePasswordDto.setCurrentPassword("currentPassword");
+        changePasswordDto.setNewPassword("newPassword");
+        changePasswordDto.setConfirmNewPassword("newPassword");
         //then
-        mockMvc.perform(patch("/auth/change-password")
-                        .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(patch("/change-password")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+                        .content(objectMapper.writeValueAsString(changePasswordDto)))
                 .andExpectAll(status().isOk(),
-                        jsonPath("$.message").value(successMessage));
+                        content().string("Change password successfully"));
     }
 
     @Test
-    void testForgetPassword_Success() throws Exception {
-        //given
-        String successMessage = "Please check your email to reset your password.";
-        ApiRes<Object> apiRes = new ApiRes<>();
-        apiRes.setCode(null);
-        apiRes.setStatus(null);
-        apiRes.setMessage(successMessage);
-        apiRes.setData(null);
-        //when
-        when(apiResUtil.returnApiRes(any(), any(), any(), any()))
-                .thenReturn(apiRes);
+    void forgotPasswordSuccess() throws Exception {
         //then
         mockMvc.perform(get("/auth/forgot-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("email", "test@test.com"))
+                        .param("email", email))
                 .andExpectAll(status().isOk(),
-                        jsonPath("$.message").value(successMessage));
+                        content().string("Check your email to reset password"));
     }
 
     @Test
-    void testResetPassword_Success() throws Exception {
+    void resetPasswordSuccess() throws Exception {
         //given
         ResetPasswordDto resetPasswordDto = new ResetPasswordDto();
-        resetPasswordDto.setPassword("123456");
-        resetPasswordDto.setConfirmPassword("123456");
-        String json = objectMapper.writeValueAsString(resetPasswordDto);
-
-        String successMessage = "Reset password successfully. Please login with your new password.";
-        ApiRes<Object> apiRes = new ApiRes<>();
-        apiRes.setCode(null);
-        apiRes.setStatus(null);
-        apiRes.setMessage(successMessage);
-        apiRes.setData(null);
-        //when
-        when(apiResUtil.returnApiRes(any(), any(), any(), any()))
-                .thenReturn(apiRes);
+        resetPasswordDto.setPassword("password");
+        resetPasswordDto.setConfirmPassword("password");
+        String message = "Reset password successfully";
         //then
         mockMvc.perform(put("/auth/reset-password")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
+                        .param("email", email)
                         .param("otp", "otp")
-                        .param("email", "test@test.com"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(resetPasswordDto)))
                 .andExpectAll(status().isOk(),
-                        jsonPath("$.message").value(successMessage));
+                        content().string(message));
     }
 }
