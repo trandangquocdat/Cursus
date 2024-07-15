@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface OrderService {
-    ResponseEntity<String> createUrl(PaymentDto request);
+    ResponseEntity<String> createPaymentUrl(PaymentDto request);
 
     Orders orderSuccess(String txnRef, String responseCode);
 

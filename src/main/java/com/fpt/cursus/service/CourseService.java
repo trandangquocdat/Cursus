@@ -3,6 +3,7 @@ package com.fpt.cursus.service;
 import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.dto.request.UpdateCourseDto;
+import com.fpt.cursus.dto.response.CustomAccountResDto;
 import com.fpt.cursus.dto.response.GeneralCourse;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
@@ -27,11 +28,11 @@ public interface CourseService {
 
     Page<Course> getCourseByStatus(CourseStatus status, int offset, int pageSize, String sortBy);
 
-    Account addStudiedLesson(Long lessonId);
+    CustomAccountResDto addStudiedLesson(Long lessonId);
 
-    Account addToWishList(List<Long> ids);
+    CustomAccountResDto addToWishList(List<Long> ids);
 
-    Account removeFromWishList(Long id);
+    CustomAccountResDto removeFromWishList(Long id);
 
     Page<GeneralCourse> getWishListCourses(int offset, int pageSize, String sortBy);
 
@@ -54,4 +55,6 @@ public interface CourseService {
     StudiedCourse getCheckPoint();
 
     Page<Course> getAllCourse(int offset, int pageSize, String sortBy);
+
+    List<Course> getCourseByIdsIn(List<Long> courseIds);
 }

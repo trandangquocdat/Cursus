@@ -60,7 +60,8 @@ public class OrderServiceImpl implements OrderService {
         this.enroll = enroll;
     }
 
-    public ResponseEntity<String> createUrl(PaymentDto request) {
+    @Override
+    public ResponseEntity<String> createPaymentUrl(PaymentDto request) {
         List<Long> ids = request.getCourseId();
         if (ids == null || ids.isEmpty()) {
             throw new AppException(ErrorCode.ORDER_CART_NULL);
@@ -70,8 +71,8 @@ public class OrderServiceImpl implements OrderService {
         LocalDateTime createDate = LocalDateTime.now();
         String formattedCreateDate = createDate.format(formatter);
         double prices = 0;
-        for (Long idCourse : ids) {
-            Course course = courseService.getCourseById(idCourse);
+        List<Course> courses = courseService.getCourseByIdsIn(ids);
+        for (Course course : courses) {
             if (course == null) {
                 throw new AppException(ErrorCode.COURSE_NOT_FOUND);
             }
@@ -138,14 +139,13 @@ public class OrderServiceImpl implements OrderService {
         }
         return result.toString();
     }
-
+    @Override
     public Orders orderSuccess(String txnRef, String responseCode) {
         Long id = Long.parseLong(txnRef);
         Orders order = ordersRepo.findOrdersById(id);
         if (!responseCode.equals("00")) {
             order.setStatus(OrderStatus.FAIL);
-            ordersRepo.save(order);
-            throw new AppException(ErrorCode.ORDER_FAIL);
+            return ordersRepo.save(order);
         }
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -160,7 +160,7 @@ public class OrderServiceImpl implements OrderService {
         }
         return ordersRepo.save(order);
     }
-
+    @Override
     public void setOrder(Orders order, List<Long> ids, double price) {
         order.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
         order.setCreatedDate(new Date());

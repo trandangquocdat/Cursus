@@ -56,7 +56,7 @@ public class FileUtil {
             String contentType = tika.detect(file.getInputStream());
 
             // Kiểm tra contentType có phải là video hay không
-            return contentType.startsWith("video/");
+            return contentType.startsWith("video/") || contentType.equals("application/x-matroska");
         } catch (IOException e) {
             e.printStackTrace();
             return false;

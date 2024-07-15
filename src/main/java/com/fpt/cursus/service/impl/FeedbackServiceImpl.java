@@ -33,8 +33,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         this.courseService = courseService;
     }
 
-    //    @Resource
-//    private ratingService
+
     public Feedback createFeedback(Long courseId, FeedbackType type, CreateFeedbackDto feedbackDto) {
         Feedback feedback = new Feedback();
         feedback.setContent(feedbackDto.getContent());

@@ -17,11 +17,10 @@ import java.util.Set;
 
 @Service
 public class EnrollCourseServiceImpl implements EnrollCourseService {
-    private final AccountUtil accountUtil;
+   ;
     private final AccountService accountService;
 
-    public EnrollCourseServiceImpl(AccountUtil accountUtil, AccountService accountService) {
-        this.accountUtil = accountUtil;
+    public EnrollCourseServiceImpl(AccountService accountService) {
         this.accountService = accountService;
     }
 
@@ -36,10 +35,8 @@ public class EnrollCourseServiceImpl implements EnrollCourseService {
             Set<Long> enrolledCourseSet = new HashSet<>(enrolledCourse);
             enrolledCourseSet.addAll(ids);
             enrolledCourse = new ArrayList<>(enrolledCourseSet);
-            account.setEnrolledCourse(enrolledCourse);
             account.setEnrolledCourseJson(mapper.writeValueAsString(enrolledCourse));
         } else {
-            account.setEnrolledCourse(ids);
             account.setEnrolledCourseJson(mapper.writeValueAsString(ids));
         }
         accountService.saveAccount(account);

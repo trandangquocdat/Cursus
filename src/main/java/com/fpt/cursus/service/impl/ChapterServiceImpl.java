@@ -23,6 +23,7 @@ import java.util.List;
 
 @Service
 public class ChapterServiceImpl implements ChapterService {
+
     private final ChapterRepo chapterRepo;
     private final CourseService courseService;
     private final AccountUtil accountUtil;
@@ -39,59 +40,54 @@ public class ChapterServiceImpl implements ChapterService {
         this.modelMapper = modelMapper;
     }
 
+    @Override
     public Chapter createChapter(Long courseId, CreateChapterRequest request) {
         Course course = courseService.getCourseById(courseId);
         Account account = accountUtil.getCurrentAccount();
-        Date date = new Date();
         Chapter chapter = modelMapper.map(request, Chapter.class);
-        chapter.setCreatedDate(date);
+        chapter.setCreatedDate(new Date());
         chapter.setCourse(course);
         chapter.setStatus(ChapterStatus.ACTIVE);
         chapter.setCreatedBy(account.getUsername());
         return chapterRepo.save(chapter);
     }
 
+    @Override
     public Chapter deleteChapterById(Long id) {
-        Chapter chapter = this.findChapterById(id);
-        if (chapter == null) {
-            throw new AppException(ErrorCode.CHAPTER_NOT_FOUND);
-        }
+        Chapter chapter = findChapterById(id);
         chapter.setStatus(ChapterStatus.DELETED);
         chapter.setCourse(null);
         return chapterRepo.save(chapter);
     }
 
+    @Override
     public Chapter updateChapter(Long id, UpdateChapterDto request) {
-        ModelMapper mapper = new ModelMapper();
-        mapper.getConfiguration()
+        Chapter chapter = findChapterById(id);
+        modelMapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.STRICT)
                 .setSkipNullEnabled(true);
-        Chapter chapter = this.findChapterById(id);
-        mapper.map(request, chapter);
+        modelMapper.map(request, chapter);
         chapter.setUpdatedDate(new Date());
         chapter.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         return chapterRepo.save(chapter);
     }
 
-
+    @Override
     public Chapter findChapterById(Long id) {
-        Chapter chapter = chapterRepo.findChapterById(id);
-        if (chapter == null) {
-            throw new AppException(ErrorCode.CHAPTER_NOT_FOUND);
-        }
-        return chapter;
+        return chapterRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.CHAPTER_NOT_FOUND));
     }
 
+    @Override
     public List<Chapter> findAll() {
         return chapterRepo.findAll();
     }
 
-    public List<Chapter> findAllByCourseId(Long id) {
-        List<Chapter> chapters = chapterRepo.findAllByCourseId(id);
-        if (chapters == null) {
+    @Override
+    public List<Chapter> findAllByCourseId(Long courseId) {
+        List<Chapter> chapters = chapterRepo.findAllByCourseId(courseId);
+        if (chapters.isEmpty()) {
             throw new AppException(ErrorCode.CHAPTER_NOT_FOUND);
         }
         return chapters;
     }
 }
- 
