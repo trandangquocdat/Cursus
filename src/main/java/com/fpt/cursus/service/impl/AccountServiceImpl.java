@@ -198,15 +198,15 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account sendCv(MultipartFile file) {
         Account account = accountUtil.getCurrentAccount();
-//        try {
-//            if (!fileUtil.isPDF(file)) {
-//                throw new AppException(ErrorCode.FILE_INVALID_PDF);
-//            }
-//            fileService.uploadFile(file);
-//        } catch (IOException e) {
-//            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
-//        }
-//        account.setInstructorStatus(InstructorStatus.WAITING);
+        try {
+            if (!fileUtil.isPDF(file)) {
+                throw new AppException(ErrorCode.FILE_INVALID_PDF);
+            }
+            fileService.uploadFile(file);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        account.setInstructorStatus(InstructorStatus.WAITING);
         return accountRepo.save(account);
     }
 
