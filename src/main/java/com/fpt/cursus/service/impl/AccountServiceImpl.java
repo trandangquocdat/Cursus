@@ -1,5 +1,8 @@
 package com.fpt.cursus.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.ChangePasswordDto;
 import com.fpt.cursus.dto.request.LoginReqDto;
 import com.fpt.cursus.dto.request.RegisterReqDto;
@@ -39,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -56,6 +60,7 @@ public class AccountServiceImpl implements AccountService {
     private final FileService fileService;
     private final FileUtil fileUtil;
     private final ModelMapper modelMapper;
+    private final ObjectMapper objectMapper;
 
     @Value("${spring.security.jwt.access-token-expiration}")
     private long accessTokenExpiration;
@@ -73,7 +78,8 @@ public class AccountServiceImpl implements AccountService {
                               PageUtil pageUtil,
                               FileService fileService,
                               FileUtil fileUtil,
-                              ModelMapper modelMapper) {
+                              ModelMapper modelMapper,
+                              ObjectMapper objectMapper) {
         this.accountRepo = accountRepo;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -85,6 +91,7 @@ public class AccountServiceImpl implements AccountService {
         this.fileService = fileService;
         this.fileUtil = fileUtil;
         this.modelMapper = modelMapper;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -210,7 +217,41 @@ public class AccountServiceImpl implements AccountService {
         account.setInstructorStatus(InstructorStatus.WAITING);
         return accountRepo.save(account);
     }
+    @Override
+    public void subscribeInstructor(Long id) {
+        Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Account currentAccount = accountUtil.getCurrentAccount();
 
+        // save subscriber
+        List<Long> listSubscriber = getSubscribersUsers(account);
+        if (!listSubscriber.contains(currentAccount.getId())) {
+            listSubscriber.add(currentAccount.getId());
+            saveSubscribersUsers(account, listSubscriber);
+            accountRepo.save(account);
+
+            // save subscribing
+            List<Long> listSubscribing = getSubscribingsUsers(currentAccount);
+            listSubscribing.add(id);
+            saveSubscribingsUsers(currentAccount, listSubscribing);
+            accountRepo.save(currentAccount);
+        }
+    }
+    @Override
+    public void unsubscribeInstructor(Long id) {
+        Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Account currentAccount = accountUtil.getCurrentAccount();
+
+        List<Long> listSubscriber = getSubscribersUsers(account);
+        listSubscriber.remove(currentAccount.getId());
+        saveSubscribersUsers(account, listSubscriber);
+        accountRepo.save(account);
+
+        // save subscribing
+        List<Long> listSubscribing = getSubscribingsUsers(currentAccount);
+        listSubscribing.remove(id);
+        saveSubscribingsUsers(currentAccount, listSubscribing);
+        accountRepo.save(currentAccount);
+    }
     @Override
     public List<Account> getInstructorByInstStatus(InstructorStatus status) {
         List<Account> accounts = accountRepo.findAccountByInstructorStatus(status);
@@ -344,5 +385,44 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account getAccountByEmail(String email) {
         return accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private List<Long> getSubscribersUsers(Account account) {
+        if (account.getSubscribersJson() == null || account.getSubscribersJson().isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            return objectMapper.readValue(account.getSubscribersJson(), new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
+    }
+    private void saveSubscribersUsers(Account account, List<Long> subscribedsUsers) {
+        try {
+            account.setSubscribersJson(objectMapper.writeValueAsString(subscribedsUsers));
+            this.saveAccount(account);
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
+    }
+    private List<Long> getSubscribingsUsers(Account account) {
+        if (account.getSubscribingJson() == null || account.getSubscribingJson().isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            return objectMapper.readValue(account.getSubscribingJson(), new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
+    }
+    private void saveSubscribingsUsers(Account account, List<Long> subscribingsUsers) {
+        try {
+            account.setSubscribingJson(objectMapper.writeValueAsString(subscribingsUsers));
+            this.saveAccount(account);
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
     }
 }

@@ -63,6 +63,19 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getWishListCourses(offset, pageSize, sortBy));
     }
+    @PutMapping("/subscribe-instructor")
+    public ResponseEntity<Object> subscribeInstructor(@RequestParam Long id) {
+        accountService.subscribeInstructor(id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body("Subscribe successfully");
+    }
+
+    @PutMapping("/unsubscribe-instructor")
+    public ResponseEntity<Object> unsubscribeInstructor(@RequestParam Long id) {
+        accountService.unsubscribeInstructor(id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body("Unsubscribe successfully");
+    }
 
     @GetMapping("/enrolled-course/view-all-general")
     public ResponseEntity<Object> viewEnrolledCourses(@RequestParam(required = false) String sortBy,
