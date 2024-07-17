@@ -11,11 +11,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmailUtil {
 
-    @Autowired
-    private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
 
     @Value("${spring.host}")
     private String host;
+
+    @Autowired
+    public EmailUtil(JavaMailSender javaMailSender) {
+        this.javaMailSender = javaMailSender;
+    }
+
     public void sendEmail(String email, String subject, String content) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -29,17 +34,17 @@ public class EmailUtil {
         String subject = "[Cursus] Email verification";
         String url = "http://" + host + ":8080/auth/authenticate-account?email=" + email + "&otp=" + otp;
         String content = """
-            <div>
-              Dear %s,<br>
-              If you want to verify your email, please
-              <a href="%s" target="_blank">Click here</a>
-              <br><br>
-                          <div style="border-top:1px solid #eaeaea; padding-top:10px;">
-                            Best Regards,<br>
-                            Cursus team<br>
-                          </div>
-            </div>
-            """.formatted(email, url);
+                <div>
+                  Dear %s,<br>
+                  If you want to verify your email, please
+                  <a href="%s" target="_blank">Click here</a>
+                  <br><br>
+                              <div style="border-top:1px solid #eaeaea; padding-top:10px;">
+                                Best Regards,<br>
+                                Cursus team<br>
+                              </div>
+                </div>
+                """.formatted(email, url);
 
         sendEmail(email, subject, content);
     }

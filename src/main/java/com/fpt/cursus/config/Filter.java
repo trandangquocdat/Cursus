@@ -10,6 +10,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,7 +28,10 @@ public class Filter extends OncePerRequestFilter {
     private final TokenHandler tokenHandler;
     private final AccountRepo accountRepo;
 
-    public Filter(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver, TokenHandler tokenHandler, AccountRepo accountRepo) {
+    @Autowired
+    public Filter(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver,
+                  TokenHandler tokenHandler,
+                  AccountRepo accountRepo) {
         this.resolver = resolver;
         this.tokenHandler = tokenHandler;
         this.accountRepo = accountRepo;
@@ -38,17 +42,17 @@ public class Filter extends OncePerRequestFilter {
         String token = getToken(request);
         String uri = request.getRequestURI();
         if (uri.contains("login") || uri.contains("register") || uri.contains("swagger-ui") || uri.contains("v3")
-                || uri.contains("auth")  || uri.contains("token") || uri.contains("order/update-status")) {
+                || uri.contains("auth") || uri.contains("token") || uri.contains("order/update-status") ) {
             filterChain.doFilter(request, response);
-        }else{
-            if(token == null){
+        } else {
+            if (token == null) {
                 resolver.resolveException(request, response, null, new AuthException("Empty Token", HttpStatus.UNAUTHORIZED.value()));
                 return;
             }
             String username;
-            try{
+            try {
                 username = tokenHandler.getInfoByToken(token);
-            }catch (SignatureException | ExpiredJwtException e){
+            } catch (SignatureException | ExpiredJwtException e) {
                 resolver.resolveException(request, response, null, new AuthException(e.getMessage(), HttpStatus.UNAUTHORIZED.value()));
                 return;
             }
@@ -60,10 +64,10 @@ public class Filter extends OncePerRequestFilter {
         }
     }
 
-    public String getToken(HttpServletRequest request){
-        try{
+    public String getToken(HttpServletRequest request) {
+        try {
             return request.getHeader("Authorization").split(" ")[1];
-        }catch(Exception e){
+        } catch (Exception e) {
             return null;
         }
     }

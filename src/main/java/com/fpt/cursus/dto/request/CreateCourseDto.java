@@ -2,6 +2,7 @@ package com.fpt.cursus.dto.request;
 
 import com.fpt.cursus.enums.Category;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,8 +14,8 @@ public class CreateCourseDto {
     private String name;
     private String description;
     private MultipartFile pictureLink;
-    @NotBlank(message = "COURSE_PRICE_NULL")
+    @NotNull(message = "COURSE_PRICE_NULL")
     private Double price;
-    @NotBlank(message = "COURSE_CATEGORY_NULL")
+    @NotNull(message = "COURSE_CATEGORY_NULL")
     private Category category;
 }

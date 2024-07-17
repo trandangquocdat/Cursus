@@ -3,19 +3,19 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.dto.request.*;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.service.OtpService;
 import com.fpt.cursus.service.AccountService;
+import com.fpt.cursus.service.OtpService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin("*")
@@ -27,12 +27,15 @@ public class AccountController {
     private final AccountService accountService;
     private final OtpService otpService;
 
-    public AccountController(AccountService accountService, OtpService otpService) {
+    @Autowired
+    public AccountController(AccountService accountService,
+                             OtpService otpService) {
         this.accountService = accountService;
         this.otpService = otpService;
     }
 
     @Operation(summary = "Register new account", description = "API Register new account, auto send otp to email")
+
     @PostMapping(value = "/register", consumes = "multipart/form-data")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Account created"),

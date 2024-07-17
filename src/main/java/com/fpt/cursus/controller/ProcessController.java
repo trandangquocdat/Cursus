@@ -3,6 +3,7 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.service.CourseService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProcessController {
     private final CourseService courseService;
 
+    @Autowired
     public ProcessController(CourseService courseService) {
         this.courseService = courseService;
     }
@@ -31,6 +33,7 @@ public class ProcessController {
     public ResponseEntity<Object> viewAllStudiedLesson() {
         return ResponseEntity.ok(courseService.getAllStudiedCourses());
     }
+
     @GetMapping("/process/view-checkpoint")
     public ResponseEntity<Object> viewLastStudiedLesson() {
         return ResponseEntity.ok(courseService.getCheckPoint());

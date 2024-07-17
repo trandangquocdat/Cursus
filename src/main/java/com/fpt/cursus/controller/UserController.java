@@ -5,6 +5,7 @@ import com.fpt.cursus.service.CourseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +23,9 @@ public class UserController {
     private final AccountService accountService;
     private final CourseService courseService;
 
-    public UserController(AccountService accountService, CourseService courseService) {
+    @Autowired
+    public UserController(AccountService accountService,
+                          CourseService courseService) {
         this.accountService = accountService;
         this.courseService = courseService;
     }
@@ -60,6 +63,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getWishListCourses(offset, pageSize, sortBy));
     }
+
     @GetMapping("/enrolled-course/view-all-general")
     public ResponseEntity<Object> viewEnrolledCourses(@RequestParam(required = false) String sortBy,
                                                       @RequestParam(defaultValue = "1", required = false) int offset,
@@ -76,6 +80,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getDetailEnrolledCourses(sortBy, offset, pageSize));
     }
+
     @Operation(summary = "View course created by current user",
             description = "view course which created by current user, for admin and instructor")
     @GetMapping("/view-my-course")

@@ -14,6 +14,7 @@ public class PageUtil {
             throw new AppException(ErrorCode.INVALID_OFFSET);
         }
     }
+
     public Pageable getPageable(String sortBy, int offset, int pageSize) {
         return sortBy == null
                 ? PageRequest.of(offset, pageSize)

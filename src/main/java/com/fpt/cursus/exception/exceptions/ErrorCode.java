@@ -10,8 +10,8 @@ public enum ErrorCode {
     UNCATEGORIZED_ERROR(999, "Uncategorized error"),
     USER_NOT_FOUND(600, "User not found"),
     USER_EXISTS(601, "User already exists"),
-    USER_UNAUTHORIZED (602, "User doesn't have permission to perform this action "),
-    USER_ENROLLED_EMPTY (603, "User hasn't enrolled in any courses "),
+    USER_UNAUTHORIZED(602, "User doesn't have permission to perform this action "),
+    USER_ENROLLED_EMPTY(603, "User hasn't enrolled in any courses "),
     USER_ROLE_CAN_NOT_SELECTED(604, "This role can not be selected"),
     REFRESH_TOKEN_NOT_VALID(605, "Refresh token not valid"),
     REFRESH_TOKEN_EXPIRED(606, "Refresh token expired"),
@@ -25,7 +25,7 @@ public enum ErrorCode {
     FULLNAME_NULL(621, "Fullname can not be null"),
     FULLNAME_INVALID_SIZE(622, "Fullname must be less than 200 characters"),
     //Password error - 63x
-    PASSWORD_NOT_CORRECT(630,"Password is incorrect"),
+    PASSWORD_NOT_CORRECT(630, "Password is incorrect"),
     PASSWORD_NOT_MATCH(631, "Password does not match"),
     PASSWORD_IS_SAME_CURRENT(632, "Password is same as current password"),
     PASSWORD_SIZE_INVALID(633, "Password must be between 6 and 18 characters"),
@@ -42,7 +42,7 @@ public enum ErrorCode {
     EMAIL_CAN_NOT_SEND(655, "Email can not send"),
     EMAIL_NULL(656, "Email can not be null"),
     //OTP error - 66X
-    OTP_INVALID(660,"Wrong OTP"),
+    OTP_INVALID(660, "Wrong OTP"),
     OTP_EXPIRED(661, "OTP expired"),
     OTP_NOT_FOUND(662, "OTP not found"),
     //Course error - 70x
@@ -76,6 +76,10 @@ public enum ErrorCode {
     FILE_NOT_FOUND(741, "File not found"),
     FILE_DOWNLOAD_FAIL(742, "File download fail"),
     FILE_UPLOAD_FAIL(743, "File upload fail"),
+    FILE_INVALID_IMAGE(744, "Invalid image type"),
+    FILE_INVALID_PDF(745, "File must be PDF"),
+    FILE_INVALID_VIDEO(746, "File must be video"),
+
     //
     PROCESS_CALCULATE_PERCENT_FAIL(750, "Calculate percent fail"),
     PROCESS_ADD_STUDIED_COURSE_FAIL(751, "Add studied course fail"),
@@ -86,12 +90,13 @@ public enum ErrorCode {
     INVALID_OFFSET(800, "Invalid Page"),
     ;
 
+    private int code;
+    private String message;
+
     ErrorCode(int code, String message) {
         this.code = code;
         this.message = message;
 
     }
-    private int code;
-    private String message;
 
 }
