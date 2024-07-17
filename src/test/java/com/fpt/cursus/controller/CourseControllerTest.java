@@ -1,6 +1,7 @@
 package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateCourseDto;
+import com.fpt.cursus.dto.request.UpdateCourseDto;
 import com.fpt.cursus.dto.response.GeneralCourse;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.Category;
@@ -11,6 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.*;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -23,7 +26,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -74,6 +76,41 @@ class CourseControllerTest {
                 .andExpect(jsonPath("$").isNotEmpty());
     }
 
+    @Test
+    void updateCourse_success() throws Exception {
+        // Given
+        UpdateCourseDto updateCourseDto = new UpdateCourseDto();
+        updateCourseDto.setName("Updated Course");
+        updateCourseDto.setDescription("Updated description");
+        updateCourseDto.setCategory(Category.FINANCE);
+        updateCourseDto.setPrice(100.0);
+
+        Course updatedCourse = new Course();
+        updatedCourse.setId(1L);
+        updatedCourse.setName("Updated Course");
+
+        // Mocking the service call
+        when(courseService.updateCourse(anyLong(), any(UpdateCourseDto.class))).thenReturn(updatedCourse);
+
+        // Simulating the multipart file
+        MockMultipartFile pictureLink = new MockMultipartFile("pictureLink", "filename.jpg", "image/jpeg", new byte[0]);
+
+        // Then
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/course/update")
+                        .file(pictureLink)
+                        .with(request -> {
+                            request.setMethod("PUT"); // Specify PUT method
+                            return request;
+                        })
+                        .param("id", "1")
+                        .param("name", updateCourseDto.getName())
+                        .param("description", updateCourseDto.getDescription())
+                        .param("price", String.valueOf(updateCourseDto.getPrice()))
+                        .param("category", updateCourseDto.getCategory().toString())
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Updated Course"));
+    }
 
     @Test
     void viewAllGeneralCourse_success() throws Exception {
