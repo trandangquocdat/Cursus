@@ -6,8 +6,6 @@ import com.fpt.cursus.dto.request.UpdateChapterDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.entity.Chapter;
 import com.fpt.cursus.enums.ChapterStatus;
-import com.fpt.cursus.exception.exceptions.AppException;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.ChapterService;
 import com.fpt.cursus.util.ApiResUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,11 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.util.NestedServletException;
-
 
 import java.util.Collections;
 import java.util.Date;
@@ -62,6 +57,15 @@ class ChapterControllerTest {
 
     public ChapterControllerTest(WebApplicationContext webApplicationContext) {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
+
+    private static Chapter getChapter(CreateChapterRequest reqDto) {
+        Chapter chapter = new Chapter();
+        chapter.setName(reqDto.getName());
+        chapter.setDescription(reqDto.getDescription());
+        chapter.setCreatedDate(new Date());
+        chapter.setStatus(ChapterStatus.ACTIVE);
+        return chapter;
     }
 
     @BeforeEach
@@ -103,7 +107,7 @@ class ChapterControllerTest {
     }
 
     @Test
-    public void testDeleteChapter_Success() throws Exception {
+    void testDeleteChapter_Success() throws Exception {
         // Setup
         Chapter deletedChapter = new Chapter();
 
@@ -120,21 +124,8 @@ class ChapterControllerTest {
         verify(chapterService, times(1)).deleteChapterById(1L);
     }
 
-//    @Test
-//    public void testDeleteChapter_NotFound() throws Exception {
-//        // Arrange
-//        Long chapterId = 1L;
-//        when(chapterService.deleteChapterById(anyLong())).thenThrow(new AppException(ErrorCode.CHAPTER_NOT_FOUND));
-//
-//        // Act & Assert
-//        mockMvc.perform(MockMvcRequestBuilders.delete("/chapter/delete")
-//                        .param("chapterId", chapterId.toString())
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isNotFound());
-//    }
-
     @Test
-    public void testDeleteChapter_OtherException() {
+    void testDeleteChapter_OtherException() {
         // Arrange
         Long chapterId = 1L;
         when(chapterService.deleteChapterById(anyLong())).thenThrow(new RuntimeException("Unexpected error"));
@@ -146,13 +137,12 @@ class ChapterControllerTest {
                     .contentType(MediaType.APPLICATION_JSON));
         });
 
-        assertTrue(exception.getCause() instanceof RuntimeException);
+        assertInstanceOf(RuntimeException.class, exception.getCause());
         assertEquals("Unexpected error", exception.getCause().getMessage());
 
         // Verify ChapterService method was called with the correct chapterId
         verify(chapterService, times(1)).deleteChapterById(chapterId);
     }
-
 
     @Test
     void testUpdateChapter_Success() throws Exception {
@@ -191,7 +181,6 @@ class ChapterControllerTest {
                 .andExpect(jsonPath("$.description").value("Updated Description"));
     }
 
-
     @Test
     void testFindChapterById_Success() throws Exception {
         // given
@@ -212,8 +201,6 @@ class ChapterControllerTest {
                 .andExpect(jsonPath("$.name").value("Chapter 1"))
                 .andExpect(jsonPath("$.description").value("Description"));
     }
-
-
 
     @Test
     void testFindAll_Success() throws Exception {
@@ -243,7 +230,6 @@ class ChapterControllerTest {
                 .andExpect(jsonPath("$.data[0].description").value(chapter.getDescription()));
     }
 
-
     @Test
     void testFindAllByCourseId_Success() throws Exception {
         // given
@@ -264,15 +250,5 @@ class ChapterControllerTest {
                 .andExpectAll(status().isOk(),
                         jsonPath("$[0].name").value(chapter.getName()),
                         jsonPath("$[0].description").value(chapter.getDescription()));
-    }
-
-
-    private static Chapter getChapter(CreateChapterRequest reqDto) {
-        Chapter chapter = new Chapter();
-        chapter.setName(reqDto.getName());
-        chapter.setDescription(reqDto.getDescription());
-        chapter.setCreatedDate(new Date());
-        chapter.setStatus(ChapterStatus.ACTIVE);
-        return chapter;
     }
 }

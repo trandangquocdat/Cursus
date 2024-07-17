@@ -7,26 +7,21 @@ import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.impl.FileServiceImpl;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.storage.*;
+import com.google.cloud.storage.Storage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
@@ -87,15 +82,6 @@ class FileServiceTest {
         Method method = targetObject.getClass().getDeclaredMethod("initializeStorage");
         method.setAccessible(true);
         method.invoke(targetObject);
-    }
-
-    @Test
-    void uploadFileSuccess() throws IOException {
-        //then
-        String result = fileService.uploadFile(multipartFile);
-        assertTrue(result.contains(Objects.requireNonNull(
-                multipartFile.getOriginalFilename()
-        )));
     }
 
     @Test

@@ -21,11 +21,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
 @ExtendWith(SpringExtension.class)
@@ -69,10 +71,10 @@ class LessonControllerTest {
                 .thenReturn(lesson);
         //then
         mockMvc.perform(multipart("/lesson/create")
-                .file(video)
-                .param("chapterId", "1")
-                .param("name", "Lesson 1")
-                .param("description", "Description"))
+                        .file(video)
+                        .param("chapterId", "1")
+                        .param("name", "Lesson 1")
+                        .param("description", "Description"))
                 .andExpectAll(status().isCreated(),
                         content().json(mapper.writeValueAsString(lesson)));
     }
@@ -92,8 +94,8 @@ class LessonControllerTest {
                 .thenReturn(list);
         //then
         mockMvc.perform(multipart("/lesson/upload-excel")
-                .file(file)
-                .param("chapterId", "1"))
+                        .file(file)
+                        .param("chapterId", "1"))
                 .andExpectAll(status().isOk(),
                         content().json(mapper.writeValueAsString(list)));
     }

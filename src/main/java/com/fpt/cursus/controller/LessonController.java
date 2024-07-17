@@ -23,7 +23,7 @@ public class LessonController {
 
     private final LessonService lessonService;
 
-    @Autowired
+
     public LessonController(LessonService lessonService) {
         this.lessonService = lessonService;
     }
@@ -32,6 +32,7 @@ public class LessonController {
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> createLesson(@RequestParam Long chapterId,
                                                @ModelAttribute @Valid CreateLessonDto request) {
+
         return ResponseEntity.status(HttpStatus.CREATED).body(lessonService.createLesson(chapterId, request));
     }
 
