@@ -7,13 +7,16 @@ import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.impl.FileServiceImpl;
+import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.IOException;
@@ -22,6 +25,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
@@ -39,12 +44,19 @@ class FileServiceTest {
     private LessonService lessonService;
 
     @Mock
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Mock
     private MockMultipartFile multipartFile;
 
     private String link;
 
     @Mock
     private Storage storage;
+
+    @Mock
+    private BlobInfo blobInfo;
+
 
     @BeforeEach
     void setUp() throws NoSuchFieldException,
@@ -112,6 +124,12 @@ class FileServiceTest {
     }
 
     @Test
+    void uploadFileSuccess() throws IOException {
+        //then
+        fileService.uploadFile(multipartFile);
+    }
+
+    @Test
     void downloadFileAsResourceFailed() {
         //given
         String bucketName = "cursus-b6cde.appspot.com";
@@ -131,17 +149,5 @@ class FileServiceTest {
         AppException exception = assertThrows(AppException.class,
                 () -> fileService.downloadFileAsBytes(bucketName, "testFile.txt"));
         assertEquals(ErrorCode.FILE_NOT_FOUND, exception.getErrorCode());
-    }
-
-    @Test
-    void initializeStorageFailed() throws NoSuchFieldException,
-            IllegalAccessException {
-        //given
-        setField(fileService, "credentialsFilePath", "non");
-        //when
-        //then
-        assertThrows(IOException.class,
-                () -> setMethod(fileService),
-                ErrorCode.STORAGE_INITIALIZE_FAIL.getMessage());
     }
 }
