@@ -1,6 +1,8 @@
 package com.fpt.cursus.controller;
 
 import com.fpt.cursus.dto.request.CreateFeedbackDto;
+import com.fpt.cursus.dto.response.ApiRes;
+import com.fpt.cursus.entity.Feedback;
 import com.fpt.cursus.enums.FeedbackType;
 import com.fpt.cursus.service.FeedbackService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -25,12 +27,19 @@ public class FeedbackController {
     }
 
     @PostMapping("/feedback/create")
-    public ResponseEntity<Object> createFeedback(@RequestParam Long courseId,
-                                                 @RequestParam FeedbackType type,
-                                                 @RequestBody CreateFeedbackDto feedbackDto) {
+    public ResponseEntity<ApiRes<Object>> createFeedback(@RequestParam Long courseId,
+                                                         @RequestParam FeedbackType type,
+                                                         @RequestBody CreateFeedbackDto feedbackDto) {
+        Feedback feedback = feedbackService.createFeedback(courseId, type, feedbackDto);
+
+        ApiRes<Object> apiRes = new ApiRes<>();
+        apiRes.setMessage("Create feedback successfully");
+        apiRes.setData(feedback);
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(feedbackService.createFeedback(courseId, type, feedbackDto));
+                .body(apiRes);
     }
+
 
     @DeleteMapping("/feedback/delete")
     public ResponseEntity<Object> deleteFeedback(@RequestParam Long id) {
