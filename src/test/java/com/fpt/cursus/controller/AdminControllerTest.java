@@ -1,7 +1,6 @@
 package com.fpt.cursus.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.CourseStatus;
@@ -10,7 +9,6 @@ import com.fpt.cursus.enums.Role;
 import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.CourseService;
-import com.fpt.cursus.util.ApiResUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +28,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
 @ExtendWith(SpringExtension.class)
@@ -71,9 +70,9 @@ class AdminControllerTest {
                 .thenReturn(account);
         //then
         mockMvc.perform(patch("/admin/approve-instructor")
-                .param("id", "1")
-                .param("status", InstructorStatus.APPROVED.toString())
-                .contentType(MediaType.APPLICATION_JSON))
+                        .param("id", "1")
+                        .param("status", InstructorStatus.APPROVED.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(account)));
     }
@@ -116,10 +115,10 @@ class AdminControllerTest {
                 .thenReturn(page);
         //then
         mockMvc.perform(get("/admin/view-all-course")
-                .param("sortBy", "id")
-                .param("offset", "1")
-                .param("pageSize", "10")
-                .contentType(MediaType.APPLICATION_JSON))
+                        .param("sortBy", "id")
+                        .param("offset", "1")
+                        .param("pageSize", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(page)));
     }
@@ -135,9 +134,9 @@ class AdminControllerTest {
                 .thenReturn(course);
         //then
         mockMvc.perform(patch("/admin/approve-course")
-                .param("id", "1")
-                .param("status", CourseStatus.PUBLISHED.toString())
-                .contentType(MediaType.APPLICATION_JSON))
+                        .param("id", "1")
+                        .param("status", CourseStatus.PUBLISHED.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(course)));
     }
@@ -155,8 +154,8 @@ class AdminControllerTest {
                 .thenReturn(accounts);
         //then
         mockMvc.perform(get("/admin/view-instructor")
-                .param("status", InstructorStatus.APPROVED.toString())
-                .contentType(MediaType.APPLICATION_JSON))
+                        .param("status", InstructorStatus.APPROVED.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(accounts)));
     }
@@ -176,11 +175,11 @@ class AdminControllerTest {
                 .thenReturn(page);
         //then
         mockMvc.perform(get("/admin/view-instructor-and-student")
-                .param("role", Role.INSTRUCTOR.toString())
-                .param("sortBy", "id")
-                .param("offset", "1")
-                .param("pageSize", "10")
-                .contentType(MediaType.APPLICATION_JSON))
+                        .param("role", Role.INSTRUCTOR.toString())
+                        .param("sortBy", "id")
+                        .param("offset", "1")
+                        .param("pageSize", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(page)));
     }
@@ -197,9 +196,9 @@ class AdminControllerTest {
                 .thenReturn(account);
         //then
         mockMvc.perform(delete("/admin/set-status-account")
-                .param("username", "username")
-                .param("status", UserStatus.ACTIVE.toString())
-                .contentType(MediaType.APPLICATION_JSON))
+                        .param("username", "username")
+                        .param("status", UserStatus.ACTIVE.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(account)));
     }
@@ -216,8 +215,8 @@ class AdminControllerTest {
                 .thenReturn(account);
         //then
         mockMvc.perform(patch("/admin/set-admin")
-                .param("email", "test@test.com")
-                .contentType(MediaType.APPLICATION_JSON))
+                        .param("email", "test@test.com")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(account)));
     }
