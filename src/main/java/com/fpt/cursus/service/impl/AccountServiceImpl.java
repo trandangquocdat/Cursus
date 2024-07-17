@@ -106,6 +106,7 @@ public class AccountServiceImpl implements AccountService {
         return accountRepo.save(account);
     }
 
+
     private void validateRegisterRequest(RegisterReqDto registerReqDto) {
         if (!regex.isPhoneValid(registerReqDto.getPhone())) {
             throw new AppException(ErrorCode.PHONE_NOT_VALID);

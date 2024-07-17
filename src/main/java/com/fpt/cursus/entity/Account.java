@@ -45,6 +45,7 @@ public class Account implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private UserStatus status = UserStatus.INACTIVE;
     private String cvLink;
     @Enumerated(EnumType.STRING)
@@ -53,6 +54,7 @@ public class Account implements UserDetails {
     private Date createdDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date updatedDate;
+    private String createdBy;
     private String updatedBy;
 
     @Column(columnDefinition = "TEXT")

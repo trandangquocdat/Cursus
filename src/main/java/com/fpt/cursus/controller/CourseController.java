@@ -30,7 +30,7 @@ public class CourseController {
 
     @PostMapping(value = "/course/create", consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
-    public ResponseEntity<Object> createCourse(@ModelAttribute  @Valid CreateCourseDto createCourseDto) {
+    public ResponseEntity<Object> createCourse(@ModelAttribute @Valid CreateCourseDto createCourseDto) {
         Course course = courseService.createCourse(createCourseDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(course);
     }

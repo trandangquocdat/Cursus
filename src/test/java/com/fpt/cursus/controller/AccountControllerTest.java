@@ -1,157 +1,241 @@
-//package com.fpt.cursus.controller;
-//
-//
-//import com.fasterxml.jackson.core.JsonProcessingException;
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.fpt.cursus.dto.request.RegisterReqDto;
-//import com.fpt.cursus.entity.Account;
-//import com.fpt.cursus.enums.Gender;
-//import com.fpt.cursus.enums.Role;
-//import com.fpt.cursus.enums.UserStatus;
-//import com.fpt.cursus.service.AccountService;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.mockito.Mockito;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.boot.test.mock.mockito.MockBean;
-//import org.springframework.http.MediaType;
-//import org.springframework.test.web.servlet.MockMvc;
-//import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-//import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-//
-//@SpringBootTest
-//@AutoConfigureMockMvc
-//public class AccountControllerTest {
-//    @Autowired
-//    private MockMvc mockMvc;
-//    @MockBean
-//    private AccountService accountService;
-//
-//    private RegisterReqDto request;
-//    private Account response;
-//
-//    @BeforeEach
-//    void initData() {
-//        request = RegisterReqDto.builder()
-//                .username("test1")
-//                .password("123456")
-//                .email("test1@gmail.com")
-//                .gender(Gender.MALE)
-//                .fullName("test1")
-//                .phone("0972340212")
-//                .build();
-//
-//        response = Account.builder()
-//                .id(1L)
-//                .username("test1")
-//                .password("123456")
-//                .email("test1@gmail.com")
-//                .fullName("test1")
-//                .gender(Gender.MALE)
-//                .status(UserStatus.INACTIVE)
-//                .phone("0972340212")
-//                .role(Role.STUDENT)
-//                .build();
-//    }
-//
-//    @Test
-//    //
-//    void register_validRequest_success()  {
-//        //GIVEN
-//        ObjectMapper mapper = new ObjectMapper();
-//        String content = null;
-//        try {
-//            content = mapper.writeValueAsString(request);
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
-//        }
-//        Mockito.when(accountService.register(Mockito.any())).thenReturn(response);
-//        //WHEN
-//        try {
-//            mockMvc.perform(MockMvcRequestBuilders
-//                            .post("/auth/register")
-//                            .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                            .content(content))
-//                    //THEN
-//                    .andExpect(MockMvcResultMatchers.status().isOk())
-//                    .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(true))
-//                    .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(200))
-//                    .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(
-//                            "Register successfully. Please check your email to verify your account."))
-//                    .andExpect(MockMvcResultMatchers.jsonPath("$.result.username").value("test1"))
-//                    .andExpect(MockMvcResultMatchers.jsonPath("$.result.fullName").value("test1"))
-//                    .andExpect(MockMvcResultMatchers.jsonPath("$.result.email").value("test1@gmail.com"))
-//                    .andExpect(MockMvcResultMatchers.jsonPath("$.result.phone").value("0972340212"))
-//                    .andExpect(MockMvcResultMatchers.jsonPath("$.result.role").value("STUDENT"))
-//                    .andExpect(MockMvcResultMatchers.jsonPath("$.result.status").value("INACTIVE")
-//                    );
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//
-//    }
-//    @Test
-//    void register_emptyUsername_fail() throws Exception {
-//        request.setUsername(null);
-//        ObjectMapper mapper = new ObjectMapper();
-//        String content = mapper.writeValueAsString(request);
-//        Mockito.when(accountService.register(Mockito.any())).thenReturn(response);
-//        //WHEN
-//        mockMvc.perform(MockMvcRequestBuilders
-//                        .post("/auth/register")
-//                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                        .content(content))
-//                //THEN
-//                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(false))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(612))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(
-//                        "Username can not be null")
-//                );
-//
-//    }
-//    @Test
-//    void register_whiteSpaceUsername_fail() throws Exception {
-//        request.setUsername("dat tran dang");
-//        ObjectMapper mapper = new ObjectMapper();
-//        String content = mapper.writeValueAsString(request);
-//        Mockito.when(accountService.register(Mockito.any())).thenReturn(response);
-//        //WHEN
-//        mockMvc.perform(MockMvcRequestBuilders
-//                        .post("/auth/register")
-//                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                        .content(content))
-//                //THEN
-//                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(false))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(613))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(
-//                        "Username contains whitespace")
-//                );
-//
-//    }
-//
-//    @Test
-//    void register_invalidUsernameLength_fail() throws Exception {
-//        request.setUsername("d");
-//        ObjectMapper mapper = new ObjectMapper();
-//        String content = mapper.writeValueAsString(request);
-//        Mockito.when(accountService.register(Mockito.any())).thenReturn(response);
-//        //WHEN
-//        mockMvc.perform(MockMvcRequestBuilders
-//                        .post("/auth/register")
-//                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-//                        .content(content))
-//                //THEN
-//                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(false))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(611))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(
-//                        "Username must be between 4 and 18 characters")
-//                );
-//
-//    }
-//}
+package com.fpt.cursus.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fpt.cursus.dto.request.*;
+import com.fpt.cursus.dto.response.LoginResDto;
+import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.enums.Gender;
+import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.service.AccountService;
+import com.fpt.cursus.service.OtpService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Date;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
+
+@ExtendWith(SpringExtension.class)
+@WebMvcTest(AccountController.class)
+@ContextConfiguration(classes = {
+        AccountService.class,
+        OtpService.class
+})
+class AccountControllerTest {
+
+    @MockBean
+    private AccountService accountService;
+    @MockBean
+    private OtpService otpService;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private String username;
+    private String password;
+    private String email;
+    private String fullName;
+    private String phone;
+    private MockMultipartFile avatar;
+    private Gender gender;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = standaloneSetup(new AccountController(accountService, otpService))
+                .alwaysDo(print())
+                .build();
+
+        username = "username";
+        password = "password";
+        email = "test@test.com";
+        fullName = "fullName";
+        phone = "0123456789";
+        avatar = new MockMultipartFile("avatar",
+                "avatar.jpg",
+                "image/jpeg",
+                "avatar".getBytes());
+        gender = Gender.MALE;
+    }
+
+    @Test
+    void registerSuccess() throws Exception {
+        //given
+        Account newAccount = Account.builder()
+                .id(1L)
+                .username(username)
+                .password(password)
+                .email(email)
+                .fullName(fullName)
+                .phone(phone)
+                .role(Role.STUDENT)
+                .avatar(avatar.getOriginalFilename())
+                .gender(gender)
+                .build();
+        String otp = "otp";
+        //when
+        when(accountService.register(any(RegisterReqDto.class)))
+                .thenReturn(newAccount);
+        when(otpService.generateOtp())
+                .thenReturn(otp);
+        //then
+        mockMvc.perform(multipart("/register")
+                        .file(avatar)
+                        .param("username", username)
+                        .param("password", password)
+                        .param("email", email)
+                        .param("fullName", fullName)
+                        .param("phone", phone)
+                        .param("gender", gender.name())
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpectAll(status().isCreated(),
+                        content().json(objectMapper.writeValueAsString(newAccount)));
+        verify(otpService, times(1))
+                .updateOldOtps(email);
+        verify(otpService, times(1))
+                .sendOtpEmail(email, otp);
+        verify(otpService, times(1))
+                .saveOtp(email, otp);
+    }
+
+    @Test
+    void loginSuccess() throws Exception {
+        //given
+        LoginReqDto loginReqDto = new LoginReqDto();
+        loginReqDto.setUsername(username);
+        loginReqDto.setPassword(password);
+
+        LoginResDto loginResDto = new LoginResDto();
+        loginResDto.setAccessToken("accessToken");
+        loginResDto.setRefreshToken("refreshToken");
+        loginResDto.setExpire(new Date().getTime());
+        //when
+        when(accountService.login(any(LoginReqDto.class)))
+                .thenReturn(loginResDto);
+        //then
+        mockMvc.perform(post("/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginReqDto)))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(loginResDto)));
+    }
+
+    @Test
+    void loginGoogleSuccess() throws Exception {
+        //given
+        LoginGoogleReq loginGoogleReq = new LoginGoogleReq();
+        loginGoogleReq.setToken("token");
+
+        LoginResDto loginResDto = new LoginResDto();
+        loginResDto.setAccessToken("accessToken");
+        loginResDto.setRefreshToken("refreshToken");
+        loginResDto.setExpire(new Date().getTime());
+        //when
+        when(accountService.loginGoogle(anyString()))
+                .thenReturn(loginResDto);
+        //then
+        mockMvc.perform(post("/login-google-firebase")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginGoogleReq)))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(loginResDto)));
+    }
+
+    @Test
+    void authenticateAccountSuccess() throws Exception {
+        //given
+        Account account = Account.builder()
+                .id(1L)
+                .username(username)
+                .password(password)
+                .email(email)
+                .fullName(fullName)
+                .phone(phone)
+                .role(Role.STUDENT)
+                .avatar(avatar.getOriginalFilename())
+                .gender(gender)
+                .build();
+        //when
+        when(accountService.authenticateAccount(anyString(), anyString()))
+                .thenReturn(account);
+        //then
+        mockMvc.perform(get("/auth/authenticate-account")
+                        .param("email", email)
+                        .param("otp", "otp"))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(account)));
+    }
+
+    @Test
+    void regenerateOtpSuccess() throws Exception {
+        //given
+        String message = "otp";
+        //when
+        when(accountService.regenerateOtp(anyString()))
+                .thenReturn("otp");
+        //then
+        mockMvc.perform(put("/auth/regenerate-otp")
+                        .param("email", email))
+                .andExpectAll(status().isOk(),
+                        content().string(message));
+    }
+
+    @Test
+    void changePasswordSuccess() throws Exception {
+        //given
+        ChangePasswordDto changePasswordDto = new ChangePasswordDto();
+        changePasswordDto.setCurrentPassword("currentPassword");
+        changePasswordDto.setNewPassword("newPassword");
+        changePasswordDto.setConfirmNewPassword("newPassword");
+        //then
+        mockMvc.perform(patch("/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(changePasswordDto)))
+                .andExpectAll(status().isOk(),
+                        content().string("Change password successfully"));
+    }
+
+    @Test
+    void forgotPasswordSuccess() throws Exception {
+        //then
+        mockMvc.perform(get("/auth/forgot-password")
+                        .param("email", email))
+                .andExpectAll(status().isOk(),
+                        content().string("Check your email to reset password"));
+    }
+
+    @Test
+    void resetPasswordSuccess() throws Exception {
+        //given
+        ResetPasswordDto resetPasswordDto = new ResetPasswordDto();
+        resetPasswordDto.setPassword("password");
+        resetPasswordDto.setConfirmPassword("password");
+        String message = "Reset password successfully";
+        //then
+        mockMvc.perform(put("/auth/reset-password")
+                        .param("email", email)
+                        .param("otp", "otp")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(resetPasswordDto)))
+                .andExpectAll(status().isOk(),
+                        content().string(message));
+    }
+}
