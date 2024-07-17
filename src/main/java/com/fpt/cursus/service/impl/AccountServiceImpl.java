@@ -307,15 +307,22 @@ public class AccountServiceImpl implements AccountService {
         otpService.saveOtp(email, otp);
     }
 
-    private boolean validateOtp(Otp userOtp, String otp) {
-        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (otpExpiration)) {
-            return userOtp.getOtp().equals(otp);
+    public boolean validateOtp(Otp userOtp, String otp) {
+        long otpExpiration = 5 * 60; // 5 minutes in seconds
+
+        if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < otpExpiration) {
+            boolean isValid = userOtp.getOtp().equals(otp);
+            if (isValid) {
+                userOtp.setValid(true); // Mark OTP as valid
+            }
+            return isValid;
         } else {
-            userOtp.setValid(false);
+            userOtp.setValid(false); // Mark OTP as expired
             otpService.saveOtp(userOtp.getEmail(), userOtp.getOtp());
             throw new AppException(ErrorCode.OTP_EXPIRED);
         }
     }
+
 
 
     public Page<Account> getListOfStudentAndInstructor(Role role, int offset, int pageSize, String sortBy) {
