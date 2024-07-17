@@ -15,6 +15,7 @@ public enum ErrorCode {
     USER_ROLE_CAN_NOT_SELECTED(604, "This role can not be selected"),
     REFRESH_TOKEN_NOT_VALID(605, "Refresh token not valid"),
     REFRESH_TOKEN_EXPIRED(606, "Refresh token expired"),
+    TOKEN_INVALID(607, "Token invalid"),
     //Register error - 61x
     USERNAME_EXISTS(610, "Username already exists"),
     USERNAME_SIZE_INVALID(611, "Username must be between 4 and 18 characters"),
