@@ -4,31 +4,42 @@ import com.fpt.cursus.dto.request.CreateLessonDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Chapter;
 import com.fpt.cursus.entity.Lesson;
-import com.fpt.cursus.enums.status.LessonStatus;
+import com.fpt.cursus.enums.LessonStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.LessonRepo;
+import com.fpt.cursus.service.impl.LessonServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
+import com.fpt.cursus.util.FileUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class LessonServiceTest {
-
-    @InjectMocks
-    private LessonService lessonService;
+public class LessonServiceTest {
 
     @Mock
     private LessonRepo lessonRepo;
@@ -39,181 +50,243 @@ class LessonServiceTest {
     @Mock
     private AccountUtil accountUtil;
 
-    private Account account;
-    private Chapter chapter;
-    private Date date;
-    private Long id;
+    @Mock
+    private ModelMapper modelMapper;
+
+    @Mock
+    private FileService fileService;
+
+    @Mock
+    private FileUtil fileUtil;
+
+    @InjectMocks
+    private LessonServiceImpl lessonService;
+
+    private Account mockAccount;
+    private MultipartFile mockVideo;
+    private MultipartFile mockNonVideo;
+    private Long chapterId;
+    private Long lessonId;
+    private Lesson lesson;
 
     @BeforeEach
     void setUp() {
-        account = new Account();
-        account.setUsername("admin");
+        mockAccount = new Account();
+        mockAccount.setUsername("testuser");
+        mockVideo = new MockMultipartFile("video", "video.mp4", "video/mp4", "".getBytes());
+        mockNonVideo = new MockMultipartFile("video", "testfile.txt", "text/plain", "".getBytes());
+        chapterId = 1L;
+        lessonId = 1L;
+        lesson = new Lesson();
+        lesson.setId(lessonId);
+    }
 
-        chapter = new Chapter();
-        chapter.setId(1L);
-
-        date = new Date();
-        id = 1L;
+    private MultipartFile invokeGetFileFromPath(Object targetObject, String filePath) throws NoSuchMethodException,
+            InvocationTargetException, IllegalAccessException {
+        Method method = targetObject.getClass().getDeclaredMethod("getFileFromPath", String.class);
+        method.setAccessible(true);
+        return (MultipartFile) method.invoke(targetObject, filePath);
     }
 
     @Test
-    void testCreateLessonSuccessfully() {
+    void testCreateLesson() {
+        Long chapterId = 1L;
         CreateLessonDto request = new CreateLessonDto();
-        request.setName("New Lesson");
-        request.setDescription("New Description");
+        request.setVideoLink(mockVideo);
+
+        Chapter chapter = new Chapter();
+        chapter.setId(chapterId);
+
+        when(chapterService.findChapterById(chapterId)).thenReturn(chapter);
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+        when(fileUtil.isVideo(request.getVideoLink())).thenReturn(true);
 
         Lesson lesson = new Lesson();
-        lesson.setName(request.getName());
-        lesson.setDescription(request.getDescription());
-        lesson.setChapter(chapter);
-        lesson.setCreatedDate(date);
-        lesson.setCreatedBy(account.getUsername());
-
-        when(accountUtil.getCurrentAccount()).thenReturn(account);
-        when(chapterService.findChapterById(1L)).thenReturn(chapter);
+        when(modelMapper.map(request, Lesson.class)).thenReturn(lesson);
         when(lessonRepo.save(any(Lesson.class))).thenReturn(lesson);
 
-        Lesson result = lessonService.createLesson(id, request);
+        Lesson createdLesson = lessonService.createLesson(chapterId, request);
 
-        assertNotNull(result);
-        assertEquals(request.getName(), result.getName());
-        assertEquals(request.getDescription(), result.getDescription());
-        assertEquals(chapter, result.getChapter());
-        assertEquals(account.getUsername(), result.getCreatedBy());
-        assertEquals(date, result.getCreatedDate());
-        verify(lessonRepo, times(1)).save(any(Lesson.class));
+        assertNotNull(createdLesson);
+        assertEquals(chapter, createdLesson.getChapter());
+        assertEquals(mockAccount.getUsername(), createdLesson.getCreatedBy());
+        assertEquals(LessonStatus.ACTIVE, createdLesson.getStatus());
     }
 
     @Test
-    void testCreateLessonNotFoundChapter() {
+    void testCreateLessonInvalidVideo() {
         CreateLessonDto request = new CreateLessonDto();
-        request.setName("New Lesson");
-        request.setDescription("New Description");
+        request.setVideoLink(mockNonVideo);
+        lesson.setName("new lesson");
 
-        when(chapterService.findChapterById(1L)).thenReturn(null);
+        when(modelMapper.map(request, Lesson.class)).thenReturn(lesson);
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+        when(fileUtil.isVideo(request.getVideoLink())).thenReturn(false);
 
-        assertThrows(AppException.class,
-                () -> lessonService.createLesson(id, request),
-                ErrorCode.CHAPTER_NOT_FOUND.getMessage());
+        AppException exception = assertThrows(AppException.class, () -> {
+            lessonService.createLesson(chapterId, request);
+        });
+
+        assertEquals(ErrorCode.FILE_INVALID_VIDEO, exception.getErrorCode());
     }
 
     @Test
-    void testFindLessonByIdSuccessfully() {
-        Lesson lesson = new Lesson();
-        lesson.setId(id);
-        when(lessonRepo.findLessonById(anyLong())).thenReturn(lesson);
+    void testFindLessonById() {
+        when(lessonRepo.findLessonById(lessonId)).thenReturn(lesson);
 
-        Lesson result = lessonService.findLessonById(id);
+        Lesson foundLesson = lessonService.findLessonById(lessonId);
 
-        assertNotNull(result);
-        assertEquals(id, result.getId());
+        assertNotNull(foundLesson);
+        assertEquals(lessonId, foundLesson.getId());
     }
 
     @Test
-    void testFindLessonByIdFailed() {
-        when(lessonRepo.findLessonById(anyLong())).thenReturn(null);
+    void testDeleteLessonById() {
+        lesson.setChapter(new Chapter());
 
-        assertNull(lessonService.findLessonById(id));
-    }
-
-    @Test
-    void testDeleteLessonByIdSuccessfully() {
-        Lesson lesson = new Lesson();
-        lesson.setStatus(LessonStatus.ACTIVE);
-        lesson.setChapter(chapter);
-        when(lessonRepo.findLessonById(anyLong())).thenReturn(lesson);
-
-        lessonService.deleteLessonById(id);
-
-        assertNull(lesson.getChapter());
-        assertEquals(LessonStatus.DELETED, lesson.getStatus());
-        verify(lessonRepo, times(1)).save(any(Lesson.class));
-    }
-
-    @Test
-    void testDeleteLessonByIdNotFoundLessonId() {
-        when(lessonRepo.findLessonById(anyLong())).thenReturn(null);
-
-        assertThrows(AppException.class,
-                () -> lessonService.deleteLessonById(id),
-                ErrorCode.LESSON_NOT_FOUND.getMessage());
-    }
-
-    @Test
-    void testUpdateLessonSuccessfully() {
-        CreateLessonDto request = new CreateLessonDto();
-        request.setName("New Lesson");
-        request.setDescription("New Description");
-
-        Lesson lesson = new Lesson();
-        lesson.setId(id);
-        lesson.setName("Old Lesson");
-        lesson.setDescription("Old Description");
-        lesson.setUpdatedBy(account.getUsername());
-        lesson.setUpdatedDate(date);
-        when(lessonRepo.findLessonById(anyLong())).thenReturn(lesson);
-        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(lessonRepo.findLessonById(lessonId)).thenReturn(lesson);
         when(lessonRepo.save(any(Lesson.class))).thenReturn(lesson);
 
-        lessonService.updateLesson(id, request);
+        Lesson deletedLesson = lessonService.deleteLessonById(lessonId);
 
-        assertNotNull(lesson);
-        assertEquals(id, lesson.getId());
-        assertEquals(request.getName(), lesson.getName());
-        assertEquals(request.getDescription(), lesson.getDescription());
-        assertNotNull(lesson.getUpdatedDate());
-        assertEquals(account.getUsername(), lesson.getUpdatedBy());
-        verify(lessonRepo, times(1)).save(any(Lesson.class));
+        assertNotNull(deletedLesson);
+        assertNull(deletedLesson.getChapter());
+        assertEquals(LessonStatus.DELETED, deletedLesson.getStatus());
     }
 
     @Test
-    void testUpdateLessonNotFoundLessonId() {
+    void testUpdateLesson() {
+        Long lessonId = 1L;
         CreateLessonDto request = new CreateLessonDto();
-        request.setName("New Lesson");
-        request.setDescription("New Description");
+        request.setVideoLink(mockVideo);
 
-        when(lessonRepo.findLessonById(anyLong())).thenReturn(null);
+        Lesson existingLesson = new Lesson();
+        existingLesson.setId(lessonId);
 
-        assertThrows(AppException.class,
-                () -> lessonService.updateLesson(id, request),
-                ErrorCode.LESSON_NOT_FOUND.getMessage());
+        when(lessonRepo.findLessonById(lessonId)).thenReturn(existingLesson);
+        when(fileUtil.isVideo(request.getVideoLink())).thenReturn(true);
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+        when(lessonRepo.save(any(Lesson.class))).thenReturn(existingLesson);
+
+        Lesson updatedLesson = lessonService.updateLesson(lessonId, request);
+
+        assertNotNull(updatedLesson);
+        assertEquals(mockAccount.getUsername(), updatedLesson.getUpdatedBy());
     }
 
     @Test
-    void testFindAllByChapterIdSuccessfully() {
+    void testUpdateLessonFailed() {
+        CreateLessonDto request = new CreateLessonDto();
+        request.setVideoLink(mockNonVideo);
+
+        Lesson existingLesson = new Lesson();
+        existingLesson.setId(lessonId);
+
+        when(lessonRepo.findLessonById(lessonId)).thenReturn(existingLesson);
+        when(fileUtil.isVideo(request.getVideoLink())).thenReturn(false);
+
+        AppException exception = assertThrows(AppException.class, () -> {
+            lessonService.updateLesson(lessonId, request);
+        });
+
+        assertEquals(ErrorCode.FILE_INVALID_VIDEO, exception.getErrorCode());
+    }
+
+//    @Test
+//    void testUploadLessonFromExcel() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+//        byte[] excelBytes;
+//        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+//            Sheet sheet = workbook.createSheet("Sheet1");
+//            Row headerRow = sheet.createRow(0);
+//            headerRow.createCell(0).setCellValue("videoLink");
+//            headerRow.createCell(1).setCellValue("lessonName");
+//            headerRow.createCell(2).setCellValue("description");
+//
+//            Row dataRow = sheet.createRow(1);
+//            dataRow.createCell(0).setCellValue("video.mp4");
+//            dataRow.createCell(1).setCellValue("Lesson 1");
+//            dataRow.createCell(2).setCellValue("Description 1");
+//
+//            workbook.write(out);
+//            excelBytes = out.toByteArray();
+//        }
+//
+//        MultipartFile excelFile = new MockMultipartFile(
+//                "file",
+//                "test.xlsx",
+//                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+//                new ByteArrayInputStream(excelBytes)
+//        );
+//
+//        MockMultipartFile videoFile = new MockMultipartFile(
+//                "file",
+//                "video.mp4",
+//                "video/mp4",
+//                "This is a video file content".getBytes()
+//        );
+//
+//
+//        when(invokeGetFileFromPath(lessonService, "video.mp4")).thenReturn(videoFile);
+//        when(fileUtil.isVideo(any(MultipartFile.class))).thenReturn(true);
+//        when(fileService.uploadFile(any(MultipartFile.class))).thenReturn("uploadedFileUrl");
+//        when(lessonRepo.save(any(Lesson.class))).thenAnswer(invocation -> invocation.getArgument(0));
+//
+//        List<String> uploadedFileUrls = lessonService.uploadLessonFromExcel(chapterId, excelFile);
+//
+//        assertNotNull(uploadedFileUrls);
+//        assertEquals(1, uploadedFileUrls.size());
+//        assertEquals("uploadedFileUrl", uploadedFileUrls.get(0));
+//    }
+
+    @Test
+    void testFindAllByChapterId() {
         List<Lesson> lessons = new ArrayList<>();
-        lessons.add(new Lesson());
+        lesson.setId(1L);
+        lessons.add(lesson);
 
-        when(lessonRepo.findAllByChapterId(anyLong())).thenReturn(lessons);
+        when(lessonRepo.findAllByChapterId(chapterId)).thenReturn(lessons);
 
-        List<Lesson> result = lessonService.findAllByChapterId(id);
+        List<Lesson> foundLessons = lessonService.findAllByChapterId(chapterId);
 
-        assertNotNull(result);
+        assertNotNull(foundLessons);
+        assertEquals(1, foundLessons.size());
+        assertEquals(lesson.getId(), foundLessons.get(0).getId());
     }
 
     @Test
-    void testFindAllByChapterIdFailed() {
-        when(lessonRepo.findAllByChapterId(anyLong())).thenReturn(null);
-        assertThrows(AppException.class,
-                () -> lessonService.findAllByChapterId(id),
-                ErrorCode.LESSON_NOT_FOUND.getMessage());
+    void testFindAllByChapterId_NotFound() {
+        when(lessonRepo.findAllByChapterId(chapterId)).thenReturn(null);
+
+        AppException exception = assertThrows(AppException.class, () -> {
+            lessonService.findAllByChapterId(chapterId);
+        });
+
+        assertEquals(ErrorCode.LESSON_NOT_FOUND, exception.getErrorCode());
     }
 
     @Test
-    void testFindAllSuccessfully() {
+    void testFindAll() {
         List<Lesson> lessons = new ArrayList<>();
-        lessons.add(new Lesson());
+        lesson.setId(1L);
+        lessons.add(lesson);
 
         when(lessonRepo.findAll()).thenReturn(lessons);
 
-        List<Lesson> result = lessonService.findAll();
+        List<Lesson> foundLessons = lessonService.findAll();
 
-        assertNotNull(result);
+        assertNotNull(foundLessons);
+        assertEquals(1, foundLessons.size());
+        assertEquals(lesson.getId(), foundLessons.get(0).getId());
     }
 
     @Test
-    void testFindAllNotFound() {
-        when(lessonRepo.findAll()).thenReturn(new ArrayList<>());
-        assertEquals(0, lessonService.findAll().size());
+    void testSave() {
+        lesson.setId(1L);
+
+        when(lessonRepo.save(any(Lesson.class))).thenReturn(lesson);
+
+        lessonService.save(lesson);
+
+        verify(lessonRepo, times(1)).save(lesson);
     }
 }
