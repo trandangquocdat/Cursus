@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fpt.cursus.enums.FeedbackType;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
@@ -13,6 +14,7 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Feedback {
     @Id
@@ -32,4 +34,14 @@ public class Feedback {
     @JsonIgnore
     @JoinColumn(name = "course_id")
     private Course course;
+
+    public Feedback(long l, String goodCourse, float v, java.sql.Date date, String user1, FeedbackType feedbackType, Course course) {
+        this.id = l;
+        this.rating = v;
+        this.content = goodCourse;
+        this.createdBy = user1;
+        this.createdDate = date;
+        this.type = feedbackType;
+        this.course = course;
+    }
 }
