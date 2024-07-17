@@ -1,0 +1,235 @@
+package com.fpt.cursus.service;
+
+import com.fpt.cursus.dto.request.CreateFeedbackDto;
+import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.entity.Course;
+import com.fpt.cursus.entity.Feedback;
+import com.fpt.cursus.enums.FeedbackType;
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.repository.FeedbackRepo;
+import com.fpt.cursus.service.impl.FeedbackServiceImpl;
+import com.fpt.cursus.util.AccountUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.sql.Date;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+
+public class FeedbackServiceTest {
+    @InjectMocks
+    private FeedbackServiceImpl feedbackService;
+
+    @Mock
+    private FeedbackRepo feedbackRepo;
+
+    @Mock
+    private AccountUtil accountUtil;
+
+    @Mock
+    private CourseService courseService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testCreateFeedback() {
+        //given
+        CreateFeedbackDto feedbackDto = new CreateFeedbackDto();
+        feedbackDto.setContent("Test feedback");
+        feedbackDto.setRating(4.5f);
+        Account mockAccount = new Account();
+        mockAccount.setUsername("testUser");
+        Course mockCourse = new Course();
+        mockCourse.setId(1L);
+
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+        when(courseService.getCourseById(anyLong())).thenReturn(mockCourse);
+        when(feedbackRepo.save(any(Feedback.class))).thenAnswer(invocation -> {
+            Feedback savedFeedback = invocation.getArgument(0);
+            savedFeedback.setId(1L); // mock saved ID
+            return savedFeedback;
+        });
+
+        Feedback feedback = feedbackService.createFeedback(1L, FeedbackType.REVIEW, feedbackDto);
+
+        //then
+        assertNotNull(feedback);
+        assertEquals(feedbackDto.getContent(), feedback.getContent());
+        assertEquals(feedbackDto.getRating(), feedback.getRating());
+        assertEquals(FeedbackType.REVIEW, feedback.getType());
+        assertNotNull(feedback.getCreatedDate());
+        assertEquals("testUser", feedback.getCreatedBy());
+
+        verify(feedbackRepo, times(1)).save(any(Feedback.class));
+    }
+
+    @Test
+    public void testCreateFeedbackWithInvalidRating() {
+        //given
+        Long courseId = 1L;
+        FeedbackType type = FeedbackType.REVIEW;
+        CreateFeedbackDto feedbackDto = new CreateFeedbackDto();
+        feedbackDto.setContent("Test content");
+        feedbackDto.setRating(6.5F); // Assuming an invalid rating
+
+        //when
+        Account mockAccount = new Account();
+        mockAccount.setUsername("testuser");
+
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+
+        Course mockCourse = new Course();
+        mockCourse.setId(courseId);
+        when(courseService.getCourseById(courseId)).thenReturn(mockCourse);
+
+        assertThrows(AppException.class, () -> feedbackService.createFeedback(courseId, type, feedbackDto));
+
+        // Verify method interactions
+        verify(accountUtil, times(1)).getCurrentAccount();
+        verify(courseService, times(1)).getCourseById(courseId);
+        verify(feedbackRepo, never()).save(any(Feedback.class)); // Ensure save was not called
+    }
+
+    @Test
+    void testRatingCourse() {
+        //given
+        long courseId = 1L;
+        float newRating = 4.5f;
+
+        Course mockCourse = new Course();
+        mockCourse.setId(courseId);
+        mockCourse.setRating(4.0f);
+        Date date = new Date(System.currentTimeMillis());
+        List<Feedback> mockFeedbacks = List.of
+                (new Feedback(1L, "Good course", 4.0f, new Date(System.currentTimeMillis()), "user1", FeedbackType.REVIEW, mockCourse),
+                (new Feedback(2L, "Bad course", 2.0f, new Date(System.currentTimeMillis()), "user2", FeedbackType.REVIEW, mockCourse)));
+
+        //when
+        when(feedbackRepo.findFeedbackByCourseIdAndType(anyLong(), isNull())).thenReturn(mockFeedbacks);
+        when(courseService.getCourseById(anyLong())).thenReturn(mockCourse);
+
+        feedbackService.ratingCourse(courseId, newRating);
+
+        //then
+        assertEquals(4.5f, mockCourse.getRating());
+        verify(courseService, times(1)).saveCourse(any(Course.class));
+    }
+
+    @Test
+    public void testDeleteFeedbackById() {
+        //given
+        long feedbackId = 1L;
+
+        //when
+        doNothing().when(feedbackRepo).deleteById(feedbackId);
+        feedbackService.deleteFeedbackById(feedbackId);
+
+        //then
+        verify(feedbackRepo, times(1)).deleteById(feedbackId);
+    }
+
+    @Test
+    public void testUpdateFeedbackById() {
+        //given
+        long feedbackId = 1L;
+        CreateFeedbackDto feedbackDto = new CreateFeedbackDto();
+        feedbackDto.setContent("Updated content");
+
+        Feedback mockFeedback = new Feedback();
+        mockFeedback.setId(feedbackId);
+        mockFeedback.setContent("Original content");
+
+        //when
+        when(feedbackRepo.findFeedbackById(feedbackId)).thenReturn(mockFeedback);
+        when(feedbackRepo.save(any(Feedback.class))).thenAnswer(invocation -> {
+            Feedback updatedFeedback = invocation.getArgument(0);
+            updatedFeedback.setUpdatedDate(new Date(System.currentTimeMillis()));
+            return updatedFeedback;
+        });
+
+        Feedback updatedFeedback = feedbackService.updateFeedbackById(feedbackId, feedbackDto);
+
+        //then
+        verify(feedbackRepo, times(1)).findFeedbackById(feedbackId);
+        verify(feedbackRepo, times(1)).save(any(Feedback.class));
+    }
+
+    @Test
+    public void testGetFeedbackByType() {
+        //given
+        FeedbackType type = FeedbackType.REVIEW;
+        List<Feedback> mockFeedbackList = Arrays.asList(new Feedback(), new Feedback());
+
+        //when
+        when(feedbackRepo.findFeedbackByType(type)).thenReturn(mockFeedbackList);
+
+        List<Feedback> feedbacks = feedbackService.getFeedbackByType(type);
+
+        //then
+        assertEquals(mockFeedbackList.size(), feedbacks.size());
+    }
+
+    @Test
+    public void testGetFeedbackByCourseIdAndType() {
+        //given
+        long courseId = 1L;
+        FeedbackType type = FeedbackType.REVIEW;
+        List<Feedback> mockFeedbackList = Arrays.asList(new Feedback(), new Feedback());
+
+        //when
+        when(feedbackRepo.findFeedbackByCourseId(courseId)).thenReturn(mockFeedbackList);
+        when(feedbackRepo.findFeedbackByCourseIdAndType(courseId, type)).thenReturn(mockFeedbackList);
+
+        List<Feedback> feedbacks1 = feedbackService.getFeedbackByCourseIdAndType(courseId, null);
+        List<Feedback> feedbacks2 = feedbackService.getFeedbackByCourseIdAndType(courseId, type);
+
+        //then
+        assertEquals(mockFeedbackList.size(), feedbacks1.size());
+        assertEquals(mockFeedbackList.size(), feedbacks2.size());
+    }
+
+    @Test
+    public void testGetFeedbackByCourseIdAndTypeWhenNotFound() {
+        //given
+        long courseId = 1L;
+        FeedbackType type = FeedbackType.REVIEW;
+
+        //when
+        when(feedbackRepo.findFeedbackByCourseIdAndType(courseId, type)).thenReturn(null);
+
+        //then
+        assertThrows(AppException.class, () -> feedbackService.getFeedbackByCourseIdAndType(courseId, type));
+        verify(feedbackRepo, times(1)).findFeedbackByCourseIdAndType(courseId, type);
+    }
+
+    @Test
+    public void testGetFeedbackByCourseIdAndTypeWhenNullButNoException() {
+        //given
+        long courseId = 1L;
+        FeedbackType type = FeedbackType.REVIEW;
+
+        //when
+        when(feedbackRepo.findFeedbackByCourseIdAndType(courseId, type)).thenReturn(Collections.emptyList());
+
+
+        List<Feedback> feedbacks = feedbackService.getFeedbackByCourseIdAndType(courseId, type);
+
+        //then
+        verify(feedbackRepo, times(1)).findFeedbackByCourseIdAndType(courseId, type);
+        assertNotNull(feedbacks);
+        assertTrue(feedbacks.isEmpty());
+    }
+}
