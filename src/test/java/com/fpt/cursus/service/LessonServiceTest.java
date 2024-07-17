@@ -4,7 +4,7 @@ import com.fpt.cursus.dto.request.CreateLessonDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Chapter;
 import com.fpt.cursus.entity.Lesson;
-import com.fpt.cursus.enums.status.LessonStatus;
+import com.fpt.cursus.enums.LessonStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.LessonRepo;

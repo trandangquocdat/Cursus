@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.enums.Gender;
 import com.fpt.cursus.enums.InstructorStatus;
 import com.fpt.cursus.enums.Role;
@@ -19,7 +18,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Getter
@@ -61,18 +59,12 @@ public class Account implements UserDetails {
 
     @Column(columnDefinition = "TEXT")
     private String enrolledCourseJson;
-    @Transient
-    private List<Long> enrolledCourse;
 
     @Column(columnDefinition = "TEXT")
     private String wishListCourseJson;
-    @Transient
-    private List<Long> wishListCourse;
 
     @Column(columnDefinition = "TEXT")
     private String studiedCourseJson;
-    @Transient
-    private List<StudiedCourse> studiedCourse;
 
 
     @JsonProperty("authority")

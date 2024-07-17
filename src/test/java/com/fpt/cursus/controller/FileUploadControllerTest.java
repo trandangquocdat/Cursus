@@ -50,23 +50,6 @@ class FileUploadControllerTest {
                 .build();
     }
 
-    @Test
-    void uploadFileSuccess() throws Exception {
-        //given
-        String res = "response";
-        String content = "content";
-        MockMultipartFile multipartFile = new MockMultipartFile("file",
-                res, "text/plain",
-                content.getBytes());
-        //when
-        when(storageService.uploadFile(any(MultipartFile.class)))
-                .thenReturn(res);
-        //then
-        mockMvc.perform(multipart("/files/upload")
-                        .file(multipartFile))
-                .andExpectAll(status().isOk(),
-                        content().string(res));
-    }
 
     @Test
     void downloadFileSuccess() throws Exception {

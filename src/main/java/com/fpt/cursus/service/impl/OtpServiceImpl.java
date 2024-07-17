@@ -31,15 +31,17 @@ public class OtpServiceImpl implements OtpService {
         this.otpUtil = otpUtil;
         this.emailUtil = emailUtil;
     }
-
+    @Override
     public String generateOtp() {
         return otpUtil.generateOtp();
     }
 
+    @Override
     public void updateOldOtps(String email) {
         otpRepo.updateOldOtps(email);
     }
 
+    @Override
     public Otp findOtpByEmailAndValid(String email, Boolean valid) {
         Otp otp = otpRepo.findOtpByEmailAndValid(email, valid);
         if (otp == null) {
@@ -48,6 +50,7 @@ public class OtpServiceImpl implements OtpService {
         return otpRepo.findOtpByEmailAndValid(email, valid);
     }
 
+    @Override
     @Async
     public void saveOtp(String email, String otp) {
         Otp otpEntity = new Otp();
@@ -57,6 +60,7 @@ public class OtpServiceImpl implements OtpService {
         otpRepo.save(otpEntity);
     }
 
+    @Override
     @Async
     public void sendOtpEmail(String email, String otp) {
         try {
@@ -66,6 +70,7 @@ public class OtpServiceImpl implements OtpService {
         }
     }
 
+    @Override
     @Async
     public void sendResetPasswordEmail(String email, String otp) {
         try {
@@ -75,6 +80,7 @@ public class OtpServiceImpl implements OtpService {
         }
     }
 
+    @Override
     @Scheduled(cron = "0 0 0 * * ?") // Lập lịch chạy mỗi ngày vào nửa đêm
     public void deleteOldOtps() {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
