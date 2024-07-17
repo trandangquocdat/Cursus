@@ -38,8 +38,7 @@ class OrderControllerTest {
 
     @Test
     void createUrl_success() throws Exception {
-        PaymentDto paymentDto = new PaymentDto();
-        when(orderService.createUrl(any(PaymentDto.class))).thenReturn(ResponseEntity.ok("url"));
+        when(orderService.createPaymentUrl(any(PaymentDto.class))).thenReturn(ResponseEntity.ok("url"));
 
         mockMvc.perform(post("/order/create-url")
                         .contentType("application/json")

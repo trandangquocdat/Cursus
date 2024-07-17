@@ -57,7 +57,7 @@ public class LessonServiceImpl implements LessonService {
         this.fileService = fileService;
         this.fileUtil = fileUtil;
     }
-
+    @Override
     public List<String> uploadLessonFromExcel(Long chapterId, MultipartFile excelFile) throws IOException {
         List<String> uploadedFileUrls = new ArrayList<>();
 
@@ -82,9 +82,7 @@ public class LessonServiceImpl implements LessonService {
                     lesson.setStatus(LessonStatus.ACTIVE);
                     MultipartFile file = getFileFromPath(videoLink);
                     if (file != null && fileUtil.isVideo(file)) {
-                        String fileUrl = fileService.uploadFile(file);
-                        uploadedFileUrls.add(fileUrl);
-                        lesson.setVideoLink(fileUrl);
+                        fileService.setVideo(file, lesson);
                     }
                     lessonRepo.save(lesson);
                 }
@@ -105,12 +103,13 @@ public class LessonServiceImpl implements LessonService {
             return null;
         }
     }
-
+    @Override
     public Lesson createLesson(Long chapterId, CreateLessonDto request) {
         Chapter chapter = chapterService.findChapterById(chapterId);
         Account account = accountUtil.getCurrentAccount();
         Date date = new Date();
         Lesson lesson = modelMapper.map(request, Lesson.class);
+        lesson.setVideoLink(null);
         lesson.setChapter(chapter);
         lesson.setCreatedDate(date);
         lesson.setCreatedBy(account.getUsername());
@@ -122,10 +121,12 @@ public class LessonServiceImpl implements LessonService {
         }
         return lessonRepo.save(lesson);
     }
+    @Override
 
     public Lesson findLessonById(Long id) {
         return lessonRepo.findLessonById(id);
     }
+    @Override
 
     public Lesson deleteLessonById(Long id) {
         Lesson lesson = this.findLessonById(id);
@@ -133,6 +134,7 @@ public class LessonServiceImpl implements LessonService {
         lesson.setStatus(LessonStatus.DELETED);
         return lessonRepo.save(lesson);
     }
+    @Override
 
     public Lesson updateLesson(Long id, CreateLessonDto request) {
         ModelMapper mapper = new ModelMapper();
@@ -152,6 +154,7 @@ public class LessonServiceImpl implements LessonService {
         lesson.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         return lessonRepo.save(lesson);
     }
+    @Override
 
     public List<Lesson> findAllByChapterId(Long id) {
         List<Lesson> lessons = lessonRepo.findAllByChapterId(id);
@@ -160,10 +163,12 @@ public class LessonServiceImpl implements LessonService {
         }
         return lessons;
     }
+    @Override
 
     public List<Lesson> findAll() {
         return lessonRepo.findAll();
     }
+    @Override
 
     public void save(Lesson lesson) {
         lessonRepo.save(lesson);

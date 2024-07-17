@@ -42,7 +42,6 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
-
 @Service
 public class AccountServiceImpl implements AccountService {
 
@@ -56,6 +55,7 @@ public class AccountServiceImpl implements AccountService {
     private final PageUtil pageUtil;
     private final FileService fileService;
     private final FileUtil fileUtil;
+    private final ModelMapper modelMapper;
 
     @Value("${spring.security.jwt.access-token-expiration}")
     private long accessTokenExpiration;
@@ -72,7 +72,8 @@ public class AccountServiceImpl implements AccountService {
                               OtpService otpService,
                               PageUtil pageUtil,
                               FileService fileService,
-                              FileUtil fileUtil) {
+                              FileUtil fileUtil,
+                              ModelMapper modelMapper) {
         this.accountRepo = accountRepo;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -83,62 +84,67 @@ public class AccountServiceImpl implements AccountService {
         this.pageUtil = pageUtil;
         this.fileService = fileService;
         this.fileUtil = fileUtil;
+        this.modelMapper = modelMapper;
     }
 
+    @Override
+    public Account register(RegisterReqDto registerReqDto) {
+        validateRegisterRequest(registerReqDto);
 
-    public Account register(RegisterReqDto registerReqDTO) {
-        ModelMapper modelMapper = new ModelMapper();
-        //validate
-        if (!regex.isPhoneValid(registerReqDTO.getPhone())) {
-            throw new AppException(ErrorCode.PHONE_NOT_VALID);
-        }
-        if (accountRepo.existsByUsername(registerReqDTO.getUsername())) {
-            throw new AppException(ErrorCode.USERNAME_EXISTS);
-        }
-        if (accountRepo.existsByEmail(registerReqDTO.getEmail())) {
-            throw new AppException(ErrorCode.EMAIL_EXISTS);
-        }
-        //set account
-        Account account = modelMapper.map(registerReqDTO, Account.class);
+        Account account = modelMapper.map(registerReqDto, Account.class);
         account.setCreatedDate(new Date());
-        //set password with password encoder
-        account.setPassword(passwordEncoder.encode(registerReqDTO.getPassword()));
-        //set default role as "STUDENT"
+        account.setPassword(passwordEncoder.encode(registerReqDto.getPassword()));
         account.setRole(Role.STUDENT);
-        //
+        account.setStatus(UserStatus.INACTIVE);
 
-        if (fileUtil.isImage(registerReqDTO.getAvatar())) {
-            //set avatar
-            fileService.setAvatar(registerReqDTO.getAvatar(), account);
+        if (fileUtil.isImage(registerReqDto.getAvatar())) {
+            fileService.setAvatar(registerReqDto.getAvatar(), account);
         } else {
             throw new AppException(ErrorCode.FILE_INVALID_IMAGE);
         }
-        //set default status as "INACTIVE"
-        account.setStatus(UserStatus.INACTIVE);
-        //save
+
         return accountRepo.save(account);
     }
 
+
+    private void validateRegisterRequest(RegisterReqDto registerReqDto) {
+        if (!regex.isPhoneValid(registerReqDto.getPhone())) {
+            throw new AppException(ErrorCode.PHONE_NOT_VALID);
+        }
+        if (accountRepo.existsByUsername(registerReqDto.getUsername())) {
+            throw new AppException(ErrorCode.USERNAME_EXISTS);
+        }
+        if (accountRepo.existsByEmail(registerReqDto.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTS);
+        }
+    }
+
+    @Override
     public LoginResDto login(LoginReqDto loginReqDto) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginReqDto.getUsername(), loginReqDto.getPassword()));
             Account account = (Account) authentication.getPrincipal();
-            //validate
+
             if (!account.getStatus().equals(UserStatus.ACTIVE)) {
                 throw new AppException(ErrorCode.EMAIL_UNAUTHENTICATED);
             }
-            //set token
-            LoginResDto loginResDto = new LoginResDto();
-            loginResDto.setAccessToken(tokenHandler.generateAccessToken(account));
-            loginResDto.setRefreshToken(tokenHandler.generateRefreshToken(account));
-            loginResDto.setExpire(accessTokenExpiration);
-            return loginResDto;
+
+            return buildLoginResponse(account);
         } catch (BadCredentialsException e) {
             throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);
         }
     }
 
+    private LoginResDto buildLoginResponse(Account account) {
+        LoginResDto loginResDto = new LoginResDto();
+        loginResDto.setAccessToken(tokenHandler.generateAccessToken(account));
+        loginResDto.setRefreshToken(tokenHandler.generateRefreshToken(account));
+        loginResDto.setExpire(accessTokenExpiration);
+        return loginResDto;
+    }
+
+    @Override
     public LoginResDto refreshToken(HttpServletRequest request) {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -150,74 +156,62 @@ public class AccountServiceImpl implements AccountService {
         if (account == null) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
-        LoginResDto loginResDto = new LoginResDto();
-        loginResDto.setAccessToken(tokenHandler.generateAccessToken(account));
-        loginResDto.setExpire(accessTokenExpiration);
-        loginResDto.setRefreshToken(tokenHandler.generateRefreshToken(account));
-        return loginResDto;
+        return buildLoginResponse(account);
     }
 
+    @Override
     public LoginResDto loginGoogle(String token) {
         try {
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
             String email = decodedToken.getEmail();
             Account account = accountRepo.findAccountByEmail(email);
-            LoginResDto loginResponseDTO = new LoginResDto();
-            loginResponseDTO.setAccessToken(tokenHandler.generateAccessToken(account));
-            loginResponseDTO.setExpire(accessTokenExpiration);
-            loginResponseDTO.setRefreshToken(tokenHandler.generateRefreshToken(account));
-            return loginResponseDTO;
+            return buildLoginResponse(account);
         } catch (FirebaseAuthException e) {
             throw new RuntimeException(e.getMessage());
         }
     }
 
+    @Override
     public Account authenticateAccount(String email, String otp) {
         Otp userOtp = otpService.findOtpByEmailAndValid(email, true);
         if (validateOtp(userOtp, otp)) {
             Account account = accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
             account.setStatus(UserStatus.ACTIVE);
             otpService.updateOldOtps(email);
-            accountRepo.save(account);
+            return accountRepo.save(account);
         } else {
             throw new AppException(ErrorCode.OTP_INVALID);
         }
-        Account resAccount = new Account();
-        resAccount.setEmail(email);
-        resAccount.setStatus(UserStatus.ACTIVE);
-        return resAccount;
     }
 
+    @Override
     public Account approveInstructorById(Long id, InstructorStatus status) {
         Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         if (status.equals(InstructorStatus.REJECTED)) {
             account.setInstructorStatus(InstructorStatus.REJECTED);
-            return accountRepo.save(account);
         } else if (status.equals(InstructorStatus.APPROVED)) {
             account.setRole(Role.INSTRUCTOR);
             account.setInstructorStatus(InstructorStatus.APPROVED);
-            return accountRepo.save(account);
         }
-        return account;
+        return accountRepo.save(account);
     }
 
+    @Override
     public Account sendCv(MultipartFile file) {
         Account account = accountUtil.getCurrentAccount();
-        String cvLink = null;
         try {
             if (!fileUtil.isPDF(file)) {
                 throw new AppException(ErrorCode.FILE_INVALID_PDF);
             }
-            cvLink = fileService.uploadFile(file);
+            fileService.uploadFile(file);
         } catch (IOException e) {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
         }
-        account.setCvLink(cvLink);
         account.setInstructorStatus(InstructorStatus.WAITING);
         return accountRepo.save(account);
-
     }
 
+    @Override
     public List<Account> getInstructorByInstStatus(InstructorStatus status) {
         List<Account> accounts = accountRepo.findAccountByInstructorStatus(status);
         if (accounts.isEmpty()) {
@@ -226,6 +220,7 @@ public class AccountServiceImpl implements AccountService {
         return accounts;
     }
 
+    @Override
     public List<Account> getInstructorByName(String name) {
         List<Account> accounts = accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%", InstructorStatus.APPROVED);
         if (accounts.isEmpty()) {
@@ -234,6 +229,7 @@ public class AccountServiceImpl implements AccountService {
         return accounts;
     }
 
+    @Override
     public String regenerateOtp(String email) {
         if (accountRepo.findByEmail(email).isEmpty()) {
             throw new AppException(ErrorCode.EMAIL_NOT_FOUND);
@@ -245,12 +241,14 @@ public class AccountServiceImpl implements AccountService {
         return otp;
     }
 
+    @Override
     public Account setStatusAccount(String username, UserStatus status) {
         Account account = accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         account.setStatus(status);
         return accountRepo.save(account);
     }
 
+    @Override
     public Account setAdmin(String username) {
         Account account = accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         account.setRole(Role.ADMIN);
@@ -259,28 +257,30 @@ public class AccountServiceImpl implements AccountService {
         return accountRepo.save(account);
     }
 
+    @Override
     public void changePassword(ChangePasswordDto changePasswordDto) {
         Account account = accountUtil.getCurrentAccount();
-        if (account != null) {
-            if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), account.getPassword())) {
-                throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);
-            }
+        validateChangePasswordRequest(changePasswordDto, account);
 
-            if (passwordEncoder.matches(changePasswordDto.getNewPassword(), account.getPassword())) {
-                throw new AppException(ErrorCode.PASSWORD_IS_SAME_CURRENT);
-            }
+        account.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+        accountRepo.save(account);
+    }
 
-            if (!changePasswordDto.getNewPassword().equals(changePasswordDto.getConfirmNewPassword())) {
-                throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
-            }
+    private void validateChangePasswordRequest(ChangePasswordDto changePasswordDto, Account account) {
+        if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), account.getPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);
+        }
 
-            account.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
-            accountRepo.save(account);
-        } else {
-            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        if (passwordEncoder.matches(changePasswordDto.getNewPassword(), account.getPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_IS_SAME_CURRENT);
+        }
+
+        if (!changePasswordDto.getNewPassword().equals(changePasswordDto.getConfirmNewPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
         }
     }
 
+    @Override
     public void resetPassword(String email, String otp, ResetPasswordDto resetPasswordDto) {
         if (!resetPasswordDto.getPassword().equals(resetPasswordDto.getConfirmPassword())) {
             throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
@@ -289,7 +289,6 @@ public class AccountServiceImpl implements AccountService {
         Otp userOtp = otpService.findOtpByEmailAndValid(email, true);
         if (validateOtp(userOtp, otp)) {
             account.setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
-            // 1 thanh cong 1 fail , neu anh huong thi rollback
             otpService.updateOldOtps(email);
             accountRepo.save(account);
         } else {
@@ -297,6 +296,7 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Override
     public void forgotPassword(String email) {
         otpService.updateOldOtps(email);
         if (accountRepo.findByEmail(email).isEmpty()) {
@@ -317,7 +317,7 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-
+    @Override
     public Page<Account> getListOfStudentAndInstructor(Role role, int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
@@ -331,13 +331,13 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Override
     public void saveAccount(Account account) {
         accountRepo.save(account);
     }
 
+    @Override
     public Account getAccountByUsername(String username) {
         return accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
-
 }
-

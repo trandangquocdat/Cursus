@@ -23,7 +23,7 @@ public class OrderController {
 
     @PostMapping("/order/create-url")
     public ResponseEntity<Object> createUrl(@RequestBody PaymentDto request) {
-        return ResponseEntity.ok(orderService.createUrl(request));
+        return ResponseEntity.ok(orderService.createPaymentUrl(request));
     }
 
     @GetMapping("/order/update-status")
