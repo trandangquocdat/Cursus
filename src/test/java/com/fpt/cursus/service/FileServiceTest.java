@@ -7,6 +7,9 @@ import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.impl.FileServiceImpl;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.WriteChannel;
+import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
@@ -16,13 +19,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,30 +62,27 @@ class FileServiceTest {
     private Storage storage;
 
     @Mock
-    private BlobInfo blobInfo;
+    private Blob blob;
 
+    @Mock
+    private WriteChannel writeChannel;
 
     @BeforeEach
-    void setUp() throws NoSuchFieldException,
-            IllegalAccessException,
-            InvocationTargetException,
-            NoSuchMethodException {
+    void setUp() throws NoSuchFieldException, IllegalAccessException {
         //given
         setField(fileService,
                 "bucketName",
-                "cursus-b6cde.appspot.com");
+                "test-bucket");
         setField(fileService,
                 "credentialsFilePath",
                 "./firebase-file-admin.json");
-
-        setMethod(fileService);
 
         multipartFile = new MockMultipartFile("file",
                 "test.txt",
                 "text/plain",
                 "Hello World".getBytes());
 
-        link = "https://firebasestorage.googleapis.com/v0/b/cursus-b6cde.appspot.com/o/";
+        link = String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/", "test-bucket");
     }
 
     private void setField(Object targetObject, String fieldName, Object value)
@@ -88,66 +92,129 @@ class FileServiceTest {
         field.set(targetObject, value);
     }
 
-    private void setMethod(Object targetObject) throws NoSuchMethodException,
-            InvocationTargetException,
-            IllegalAccessException {
+    private void setMethod(Object targetObject)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Method method = targetObject.getClass().getDeclaredMethod("initializeStorage");
         method.setAccessible(true);
         method.invoke(targetObject);
     }
 
     @Test
-    void setAvatarSuccess() {
+    void testSetAvatarSuccess() throws NoSuchFieldException, IllegalAccessException {
         //given
         Account account = new Account();
+        setField(fileService, "storage", storage);
+        //when
+        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
         //then
         fileService.setAvatar(multipartFile, account);
         assertTrue(account.getAvatar().contains(link));
     }
 
     @Test
-    void setPictureSuccess() {
+    void testSetPictureSuccess() throws NoSuchFieldException, IllegalAccessException {
         //given
         Course course = new Course();
+        setField(fileService, "storage", storage);
+        //when
+        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
         //then
         fileService.setPicture(multipartFile, course);
         assertTrue(course.getPictureLink().contains(link));
     }
 
     @Test
-    void setVideoSuccess() {
+    void testSetVideoSuccess() throws NoSuchFieldException, IllegalAccessException {
         //given
         Lesson lesson = new Lesson();
+        setField(fileService, "storage", storage);
+        //when
+        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
         //then
         fileService.setVideo(multipartFile, lesson);
         assertTrue(lesson.getVideoLink().contains(link));
     }
 
     @Test
-    void uploadFileSuccess() throws IOException {
+    void testSetAvatarFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        //given
+        Account account = new Account();
+        setMethod(fileService);
         //then
-        fileService.uploadFile(multipartFile);
+        assertThrows(AppException.class, () -> fileService.setAvatar(multipartFile, account));
     }
 
     @Test
-    void downloadFileAsResourceFailed() {
+    void testSetPictureFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         //given
-        String bucketName = "cursus-b6cde.appspot.com";
-        //when
+        Course course = new Course();
+        setMethod(fileService);
         //then
-        AppException exception = assertThrows(AppException.class,
-                () -> fileService.downloadFileAsResource(bucketName, "testFile.txt"));
-        assertEquals(ErrorCode.FILE_NOT_FOUND, exception.getErrorCode());
+        assertThrows(AppException.class, () -> fileService.setPicture(multipartFile, course));
     }
 
     @Test
-    void downloadFileAsBytesFailed() {
+    void testSetVideoFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         //given
-        String bucketName = "cursus-b6cde.appspot.com";
+        Lesson lesson = new Lesson();
+        setMethod(fileService);
+        //then
+        assertThrows(AppException.class, () -> fileService.setVideo(multipartFile, lesson));
+    }
+
+    @Test
+    void testUploadFileFailRuntimeException() throws NoSuchFieldException, IllegalAccessException {
+        //given
+        setField(fileService, "storage", storage);
         //when
         //then
-        AppException exception = assertThrows(AppException.class,
-                () -> fileService.downloadFileAsBytes(bucketName, "testFile.txt"));
-        assertEquals(ErrorCode.FILE_NOT_FOUND, exception.getErrorCode());
+        assertThrows(RuntimeException.class, () -> fileService.uploadFile(multipartFile));
     }
+
+    @Test
+    void testDownloadFileAsResourceSuccess() throws NoSuchFieldException, IllegalAccessException {
+        //given
+        setField(fileService, "storage", storage);
+        byte[] content = "content".getBytes();
+        //when
+        when(storage.get(anyString(), anyString())).thenReturn(blob);
+        when(blob.getContent()).thenReturn(content);
+        //then
+        Resource result = fileService.downloadFileAsResource("test.bucket", "test.txt");
+        assertNotNull(result);
+    }
+
+    @Test
+    void testDownloadFileAsResourceFail() throws NoSuchFieldException, IllegalAccessException {
+        //given
+        setField(fileService, "storage", storage);
+        //when
+        when(storage.get(anyString(), anyString())).thenReturn(null);
+        //then
+        assertThrows(AppException.class, () -> fileService.downloadFileAsResource("test.bucket", "test.txt"));
+    }
+
+    @Test
+    void testDownloadFileAsBytesSuccess() throws NoSuchFieldException, IllegalAccessException {
+        //given
+        setField(fileService, "storage", storage);
+        byte[] content = "content".getBytes();
+        //when
+        when(storage.get(anyString(), anyString())).thenReturn(blob);
+        when(blob.getContent()).thenReturn(content);
+        //then
+        byte[] result = fileService.downloadFileAsBytes("test.bucket", "test.txt");
+        assertNotNull(result);
+    }
+
+    @Test
+    void testDownloadFileAsBytesFail() throws NoSuchFieldException, IllegalAccessException {
+        //given
+        setField(fileService, "storage", storage);
+        //when
+        when(storage.get(anyString(), anyString())).thenReturn(null);
+        //then
+        assertThrows(AppException.class, () -> fileService.downloadFileAsBytes("test.bucket", "test.txt"));
+    }
+
 }
