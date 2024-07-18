@@ -51,6 +51,4 @@ public interface AccountService {
     void saveAccount(Account account);
 
     Account getAccountByUsername(String username);
-
-    Account getAccountByEmail(String email);
 }

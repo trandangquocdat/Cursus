@@ -68,7 +68,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public String uploadFile(MultipartFile file) throws IOException {
+    public void uploadFile(MultipartFile file) throws IOException {
         String fileName = generateUniqueFileName(file.getOriginalFilename());
         BlobId blobId = BlobId.of(bucketName, fileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
@@ -93,7 +93,6 @@ public class FileServiceImpl implements FileService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return generateDownloadUrl(fileName);
     }
 
     private void sendProgressUpdate(double progress) {
@@ -103,12 +102,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void setAvatar(MultipartFile file, Account account) {
-        String fileName = null;
-        try {
-            fileName = uploadFile(file);
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
-        }
+        String fileName = generateUniqueFileName(file.getOriginalFilename());
         String link = generateDownloadUrl(fileName);
         account.setAvatar(link);
         accountService.saveAccount(account);
@@ -116,12 +110,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void setPicture(MultipartFile file, Course course) {
-        String fileName = null;
-        try {
-            fileName = uploadFile(file);
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
-        }
+        String fileName = generateUniqueFileName(file.getOriginalFilename());
         String link = generateDownloadUrl(fileName);
         course.setPictureLink(link);
         courseService.saveCourse(course);
@@ -129,12 +118,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void setVideo(MultipartFile file, Lesson lesson) {
-        String fileName = null;
-        try {
-            fileName = uploadFile(file);
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
-        }
+        String fileName = generateUniqueFileName(file.getOriginalFilename());
         String link = generateDownloadUrl(fileName);
         lesson.setVideoLink(link);
         lessonService.save(lesson);

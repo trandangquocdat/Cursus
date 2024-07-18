@@ -49,6 +49,20 @@ public class SecurityConfig {
     }
 
 
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+//        httpSecurity.cors(Customizer.withDefaults())
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/ws/**").permitAll() // Permit WebSocket connections
+//                        .anyRequest().authenticated()
+//                )
+//                .httpBasic(Customizer.withDefaults())
+//                .csrf(AbstractHttpConfigurer::disable)
+//                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
+//        return httpSecurity.build();
+//    }
+
+
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));

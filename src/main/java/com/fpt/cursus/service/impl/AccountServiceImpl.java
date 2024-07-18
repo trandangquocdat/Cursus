@@ -340,9 +340,4 @@ public class AccountServiceImpl implements AccountService {
     public Account getAccountByUsername(String username) {
         return accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
-
-    @Override
-    public Account getAccountByEmail(String email) {
-        return accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-    }
 }

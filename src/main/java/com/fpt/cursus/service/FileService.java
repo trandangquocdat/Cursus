@@ -10,7 +10,7 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 
 public interface FileService {
-    String uploadFile(MultipartFile file) throws IOException;
+    void uploadFile(MultipartFile file) throws IOException;
     Resource downloadFileAsResource(String bucketName, String fileName);
     byte[] downloadFileAsBytes(String bucketName, String fileName);
     void setAvatar(MultipartFile file, Account account);
