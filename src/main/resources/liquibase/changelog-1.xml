@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="9" author="Cursus" runOnChange="true">
+    <changeSet id="2" author="Cursus">
         <sql>
             INSERT INTO account (username, email, created_date, full_name, phone, password, role, status, avatar, instructor_status)
             VALUES
