@@ -1,79 +1,89 @@
 package com.fpt.cursus.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.enums.Role;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.util.AccountUtil;
 import com.fpt.cursus.util.TokenHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
-public class TokenControllerTest {
+@WebMvcTest(TokenController.class)
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {
+        TokenHandler.class,
+        AccountUtil.class,
+        AccountService.class
+})
+class TokenControllerTest {
 
-    @Mock
+    @MockBean
     private TokenHandler tokenHandler;
 
-    @Mock
+    @MockBean
     private AccountUtil accountUtil;
 
-    @Mock
+    @MockBean
     private AccountService accountService;
 
-    @InjectMocks
-    private TokenController tokenController;
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mockMvc = standaloneSetup(new TokenController(tokenHandler, accountUtil, accountService))
+                .alwaysDo(print())
+                .alwaysExpect(status().isOk())
+                .build();
     }
 
     @Test
-    void testGetRefreshToken() {
-        // Mocking getCurrentAccount method of AccountUtil
-        Account mockAccount = new Account();
-        mockAccount.setUsername("mockuser");
-        mockAccount.setEmail("mock@example.com");
-        mockAccount.setRole(Role.STUDENT);
-
-        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+    void testGetRefreshToken() throws Exception {
+        //given
+        Account account = new Account();
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
         when(tokenHandler.generateRefreshToken(any(Account.class))).thenReturn("mockedRefreshToken");
-
-        ResponseEntity<Object> response = tokenController.getRefreshToken();
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("mockedRefreshToken", response.getBody()); // Check if the generated token matches
+        //then
+        mockMvc.perform(get("/token/generate-refresh-token"))
+                .andExpect(content().string("mockedRefreshToken"));
     }
 
     @Test
-    void testRefreshToken() {
-        // Mocking refreshToken method of AccountService
-        LoginResDto mockLoginResDto = new LoginResDto();
-        mockLoginResDto.setAccessToken("mockedAccessToken");
-        mockLoginResDto.setRefreshToken("mockedRefreshToken");
-        mockLoginResDto.setExpire(3600L);
-
-        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-
-        when(accountService.refreshToken(mockRequest)).thenReturn(mockLoginResDto);
-
-        ResponseEntity<Object> response = tokenController.refreshToken(mockRequest);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        LoginResDto responseDto = (LoginResDto) response.getBody();
-        assertEquals(mockLoginResDto.getAccessToken(), responseDto.getAccessToken()); // Check if access token matches
-        assertEquals(mockLoginResDto.getRefreshToken(), responseDto.getRefreshToken()); // Check if refresh token matches
-        assertEquals(mockLoginResDto.getExpire(), responseDto.getExpire()); // Check if expiration matches
+    void testRefreshToken() throws Exception {
+        //given
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        LoginResDto loginResDto = new LoginResDto();
+        loginResDto.setAccessToken("mockedAccessToken");
+        loginResDto.setRefreshToken("mockedRefreshToken");
+        loginResDto.setExpire(1000L);
+        //when
+        when(accountService.refreshToken(any(HttpServletRequest.class))).thenReturn(loginResDto);
+        //then
+        mockMvc.perform(post("/token/refresh-token")
+                        .requestAttr("request", request))
+                .andExpect(content().json(objectMapper.writeValueAsString(loginResDto)));
     }
 }
