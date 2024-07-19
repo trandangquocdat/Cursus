@@ -23,7 +23,7 @@ public class LessonController {
 
     private final LessonService lessonService;
 
-
+    @Autowired
     public LessonController(LessonService lessonService) {
         this.lessonService = lessonService;
     }

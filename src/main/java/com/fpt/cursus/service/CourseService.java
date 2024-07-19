@@ -5,7 +5,6 @@ import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.dto.request.UpdateCourseDto;
 import com.fpt.cursus.dto.response.CustomAccountResDto;
 import com.fpt.cursus.dto.response.GeneralCourse;
-import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.Category;
 import com.fpt.cursus.enums.CourseStatus;

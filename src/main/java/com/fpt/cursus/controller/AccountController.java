@@ -3,8 +3,6 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.dto.request.*;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.exception.exceptions.AppException;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.OtpService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,13 +14,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @CrossOrigin("*")
@@ -34,7 +27,6 @@ public class AccountController {
     private final AccountService accountService;
     private final OtpService otpService;
 
-    //    private final VerifyTokenGoogle verifyTokenGoogle;
     @Autowired
     public AccountController(AccountService accountService,
                              OtpService otpService
@@ -102,7 +94,6 @@ public class AccountController {
         accountService.resetPassword(email, otp, resetPasswordDto);
         return ResponseEntity.status(HttpStatus.OK).body("Reset password successfully");
     }
-
 
 }
 

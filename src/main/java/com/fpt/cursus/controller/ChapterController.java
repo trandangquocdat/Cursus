@@ -4,10 +4,7 @@ import com.fpt.cursus.dto.request.CreateChapterRequest;
 import com.fpt.cursus.dto.request.UpdateChapterDto;
 import com.fpt.cursus.dto.response.ApiRes;
 import com.fpt.cursus.entity.Chapter;
-import com.fpt.cursus.exception.exceptions.AppException;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.ChapterService;
-import com.fpt.cursus.util.ApiResUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,12 +22,10 @@ import java.util.List;
 @Tag(name = "Chapter Controller")
 public class ChapterController {
     private final ChapterService chapterService;
-    private final ApiResUtil ApiResUtil;
 
     @Autowired
-    public ChapterController(ChapterService chapterService, ApiResUtil apiResUtil) {
+    public ChapterController(ChapterService chapterService) {
         this.chapterService = chapterService;
-        ApiResUtil = apiResUtil;
     }
 
     @PostMapping("/chapter/create")
@@ -38,21 +33,6 @@ public class ChapterController {
     public ResponseEntity<Object> createChapter(@RequestParam Long courseId, @RequestBody @Valid CreateChapterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(chapterService.createChapter(courseId, request));
     }
-
-//    @DeleteMapping("/chapter/delete")
-//    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
-//    public ResponseEntity<Object> deleteChapter(@RequestParam Long chapterId) {
-//        try {
-//            Chapter deletedChapter = chapterService.deleteChapterById(chapterId);
-//            return ResponseEntity.ok(ApiResUtil.returnApiRes(true, 200, "Chapter deleted successfully", deletedChapter));
-//        } catch (AppException e) {
-//            if (e.getErrorCode() == ErrorCode.CHAPTER_NOT_FOUND) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                        .body(ApiResUtil.returnApiRes(false, 404, "Chapter not found", null));
-//            }
-//            throw e;
-//        }
-//    }
 
     @DeleteMapping("/chapter/delete")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")

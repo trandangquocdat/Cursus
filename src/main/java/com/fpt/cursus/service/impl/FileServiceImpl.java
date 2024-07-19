@@ -21,7 +21,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +36,7 @@ public class FileServiceImpl implements FileService {
     private final AccountService accountService;
     private final CourseService courseService;
     private final LessonService lessonService;
-    private SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${firebase.storage.bucket}")
     private String bucketName;
@@ -98,7 +97,7 @@ public class FileServiceImpl implements FileService {
 
     private void sendProgressUpdate(double progress) {
         // Send progress update to client with sessionId using WebSocket
-        messagingTemplate.convertAndSend( "/topic/upload-status", String.valueOf(progress));
+        messagingTemplate.convertAndSend("/topic/upload-status", String.valueOf(progress));
     }
 
     @Override

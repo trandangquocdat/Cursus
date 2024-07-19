@@ -124,9 +124,6 @@ class FeedbackControllerTest {
         // Convert DTO to JSON string
         String json = objectMapper.writeValueAsString(requestDto);
 
-        // Define success message
-        String successMessage = "Update feedback successfully";
-
         // Mock the service method to return a Feedback object
         Feedback updatedFeedback = new Feedback();
         updatedFeedback.setId(1L);  // Set some dummy values for testing
@@ -147,7 +144,6 @@ class FeedbackControllerTest {
                 .andExpect(jsonPath("$.content").value(updatedFeedback.getContent()))
                 .andExpect(jsonPath("$.createdBy").value(updatedFeedback.getCreatedBy()));
     }
-
 
     @Test
     void testGetFeedbackByCourseId_Success() throws Exception {

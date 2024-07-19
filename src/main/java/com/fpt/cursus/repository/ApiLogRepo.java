@@ -13,5 +13,5 @@ public interface ApiLogRepo extends JpaRepository<ApiLog, Long> {
     @Query("SELECT COUNT(a) FROM ApiLog a WHERE a.ipAddress = :ipAddress AND a.apiEndpoint = :apiEndpoint AND a.accessTime > :time")
     int countAccesses(String ipAddress, String apiEndpoint, ZonedDateTime time);
 
-    void deleteByAccessTimeBefore (ZonedDateTime time);
+    void deleteByAccessTimeBefore(ZonedDateTime time);
 }

@@ -13,21 +13,23 @@ import com.fpt.cursus.service.impl.ChapterServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.config.Configuration;
 import org.modelmapper.convention.MatchingStrategies;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-import java.util.Optional;
-import java.util.*;
 
+@ExtendWith(MockitoExtension.class)
 class ChapterServiceTest {
 
     @Mock
@@ -47,11 +49,10 @@ class ChapterServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testUpdateChapter_Success() {
+    void testUpdateChapter_Success() {
         //given
         Chapter chapter = new Chapter();
         chapter.setId(1L);

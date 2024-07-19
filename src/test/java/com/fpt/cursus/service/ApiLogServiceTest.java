@@ -1,4 +1,5 @@
 package com.fpt.cursus.service;
+
 import com.fpt.cursus.entity.ApiLog;
 import com.fpt.cursus.entity.BackListIP;
 import com.fpt.cursus.repository.ApiLogRepo;
@@ -14,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,7 +31,6 @@ class ApiLogServiceTest {
     private ApiLogServiceImpl apiLogServiceImpl;
 
     private ApiLog apiLog;
-    private BackListIP backListIP;
 
     @BeforeEach
     void setUp() {
@@ -39,17 +39,10 @@ class ApiLogServiceTest {
         apiLog.setApiEndpoint("/test");
         apiLog.setCount(1);
         apiLog.setAccessTime(ZonedDateTime.now());
-
-        backListIP = new BackListIP();
-        backListIP.setIpAddress("127.0.0.1");
-        backListIP.setBanTime(ZonedDateTime.now());
     }
 
     @Test
     void deleteOldCounts() {
-        ZonedDateTime currentTime = ZonedDateTime.now();
-        ZonedDateTime timeDeleteRecord = currentTime.minusSeconds(10);
-
         apiLogServiceImpl.deleteOldCounts();
 
         verify(apiLogRepo, times(1)).deleteByAccessTimeBefore(any(ZonedDateTime.class));
@@ -85,11 +78,21 @@ class ApiLogServiceTest {
         verify(backListIPRepo, times(1)).save(any(BackListIP.class));
     }
 
-
     @Test
     void checkAndBanIfExceedLimit_doNotBan() {
         apiLog.setCount(50);
         when(apiLogRepo.findByIpAddressAndApiEndpoint(anyString(), anyString())).thenReturn(apiLog);
+
+        apiLogServiceImpl.logAccess("127.0.0.1", "/test");
+
+        verify(backListIPRepo, times(0)).save(any(BackListIP.class));
+    }
+
+    @Test
+    void checkAndBanIfExceedLimit_alreadyBanned() {
+        apiLog.setCount(101);
+        when(apiLogRepo.findByIpAddressAndApiEndpoint(anyString(), anyString())).thenReturn(apiLog);
+        when(backListIPRepo.findByIpAddress(anyString())).thenReturn(Optional.of(new BackListIP()));
 
         apiLogServiceImpl.logAccess("127.0.0.1", "/test");
 

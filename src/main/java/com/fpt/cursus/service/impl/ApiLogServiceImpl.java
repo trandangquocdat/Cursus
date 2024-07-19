@@ -16,11 +16,16 @@ import java.time.ZonedDateTime;
 @Service
 public class ApiLogServiceImpl implements ApiLogService {
 
-    @Autowired
-    private ApiLogRepo apiLogRepo;
+    private final ApiLogRepo apiLogRepo;
+
+    private final BackListIPRepo backListIPRepo;
 
     @Autowired
-    private BackListIPRepo backListIPRepo;
+    public ApiLogServiceImpl(ApiLogRepo apiLogRepo, BackListIPRepo backListIPRepo) {
+        this.apiLogRepo = apiLogRepo;
+        this.backListIPRepo = backListIPRepo;
+    }
+
     @Transactional
     @Scheduled(fixedRate = 10000) // delete mỗi 10 giây
     public void deleteOldCounts() {
@@ -45,18 +50,17 @@ public class ApiLogServiceImpl implements ApiLogService {
 
         checkAndBanIfExceedLimit(ipAddress, apiEndpoint, now);
     }
+
     private void checkAndBanIfExceedLimit(String ipAddress, String apiEndpoint, ZonedDateTime now) {
         ApiLog log = apiLogRepo.findByIpAddressAndApiEndpoint(ipAddress, apiEndpoint);
-        if (log != null && log.getCount() > 100) {
-            if (!backListIPRepo.findByIpAddress(ipAddress).isPresent()) {
-                BackListIP bannedIp = new BackListIP();
-                bannedIp.setIpAddress(ipAddress);
-                bannedIp.setBanTime(now);
-                backListIPRepo.save(bannedIp);
-            }
+        if (log != null && log.getCount() > 100 && backListIPRepo.findByIpAddress(ipAddress).isEmpty()) {
+            BackListIP bannedIp = new BackListIP();
+            bannedIp.setIpAddress(ipAddress);
+            bannedIp.setBanTime(now);
+            backListIPRepo.save(bannedIp);
         }
-    }
 
+    }
 
 }
 

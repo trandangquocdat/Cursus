@@ -5,7 +5,6 @@ import com.fpt.cursus.exception.exceptions.AuthException;
 import com.fpt.cursus.repository.AccountRepo;
 import com.fpt.cursus.repository.BackListIPRepo;
 import com.fpt.cursus.service.ApiLogService;
-import com.fpt.cursus.service.impl.ApiLogServiceImpl;
 import com.fpt.cursus.util.TokenHandler;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
@@ -61,7 +60,7 @@ public class Filter extends OncePerRequestFilter {
         String token = getToken(request);
         String uri = request.getRequestURI();
         if (uri.contains("login") || uri.contains("register") || uri.contains("swagger-ui") || uri.contains("v3")
-                || uri.contains("auth") || uri.contains("token") || uri.contains("order/update-status") ) {
+                || uri.contains("auth") || uri.contains("token") || uri.contains("order/update-status")) {
             filterChain.doFilter(request, response);
         } else {
             if (token == null) {

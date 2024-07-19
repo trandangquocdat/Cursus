@@ -3,15 +3,12 @@ package com.fpt.cursus.service;
 
 import com.fpt.cursus.dto.request.CreateCourseDto;
 import com.fpt.cursus.dto.request.UpdateCourseDto;
-import com.fpt.cursus.dto.response.GeneralCourse;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
-import com.fpt.cursus.enums.Category;
 import com.fpt.cursus.enums.CourseStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.CourseRepo;
-import com.fpt.cursus.service.impl.AccountServiceImpl;
 import com.fpt.cursus.service.impl.CourseServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import com.fpt.cursus.util.FileUtil;
@@ -21,24 +18,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
-import org.springframework.web.multipart.MultipartFile;
 
-
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CourseServiceTest {

@@ -91,8 +91,8 @@ public enum ErrorCode {
     INVALID_OFFSET(800, "Invalid Page"),
     ;
 
-    private int code;
-    private String message;
+    private final int code;
+    private final String message;
 
     ErrorCode(int code, String message) {
         this.code = code;

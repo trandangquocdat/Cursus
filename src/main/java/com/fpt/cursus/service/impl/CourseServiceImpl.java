@@ -69,6 +69,7 @@ public class CourseServiceImpl implements CourseService {
         this.fileService = fileService;
         this.fileUtil = fileUtil;
     }
+
     @Override
     public Course createCourse(CreateCourseDto createCourseDto) {
         validateCourseDto(createCourseDto);
@@ -86,6 +87,7 @@ public class CourseServiceImpl implements CourseService {
         return courseRepo.save(course);
 
     }
+
     @Override
     public Course deleteCourseById(Long id) {
         Course course = getCourseById(id);
@@ -94,6 +96,7 @@ public class CourseServiceImpl implements CourseService {
         course.setStatus(CourseStatus.DELETED);
         return courseRepo.save(course);
     }
+
     @Override
     public Course updateCourse(Long id, UpdateCourseDto request) {
         ModelMapper mapper = new ModelMapper();
@@ -120,6 +123,7 @@ public class CourseServiceImpl implements CourseService {
 
         return courseRepo.save(existingCourse);
     }
+
     @Override
     public Page<Course> getCourseByCreatedBy(int offset, int pageSize, String sortBy) {
         String username = accountUtil.getCurrentAccount().getUsername();
@@ -131,6 +135,7 @@ public class CourseServiceImpl implements CourseService {
         }
         return courses;
     }
+
     @Override
     public Course approveCourseById(Long id, CourseStatus status) {
         if (status.equals(CourseStatus.PUBLISHED)) {
@@ -150,10 +155,12 @@ public class CourseServiceImpl implements CourseService {
         }
         return null;
     }
+
     @Override
     public Course getCourseById(Long id) {
         return courseRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
     }
+
     @Override
     public Page<Course> getCourseByStatus(CourseStatus status, int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
@@ -164,6 +171,7 @@ public class CourseServiceImpl implements CourseService {
         }
         return courses;
     }
+
     @Override
     public CustomAccountResDto addStudiedLesson(Long lessonId) {
         Account account = accountUtil.getCurrentAccount();
@@ -195,6 +203,7 @@ public class CourseServiceImpl implements CourseService {
         newAccount.setStudiedCourses(studiedCourses);
         return newAccount;
     }
+
     @Override
     public CustomAccountResDto addToWishList(List<Long> ids) {
         List<Course> courses = courseRepo.findByIdIn(ids);
@@ -215,6 +224,7 @@ public class CourseServiceImpl implements CourseService {
         wishListAccount.setWishListCourses(wishListCourses);
         return wishListAccount;
     }
+
     @Override
     public CustomAccountResDto removeFromWishList(Long id) {
         Account account = accountUtil.getCurrentAccount();
@@ -227,6 +237,7 @@ public class CourseServiceImpl implements CourseService {
         wishListAccount.setWishListCourses(wishListCourses);
         return wishListAccount;
     }
+
     @Override
     public Page<GeneralCourse> getWishListCourses(int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
@@ -236,6 +247,7 @@ public class CourseServiceImpl implements CourseService {
         Page<Course> courses = courseRepo.findByIdInAndStatus(wishListCourses, CourseStatus.PUBLISHED, pageable);
         return convertToGeneralCoursePage(courses);
     }
+
     @Override
     public Page<GeneralCourse> getCourseByCategory(Category category, int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
@@ -251,6 +263,7 @@ public class CourseServiceImpl implements CourseService {
         }
         return convertToGeneralCoursePage(courses);
     }
+
     @Override
     public double percentDoneCourse(Long courseId) {
         Account account = accountUtil.getCurrentAccount();
@@ -268,6 +281,7 @@ public class CourseServiceImpl implements CourseService {
         Course course = getCourseById(courseId);
         return course.getChapter().stream().mapToInt(chapter -> chapter.getLesson().size()).sum();
     }
+
     @Override
     public Page<GeneralCourse> getAllGeneralCourses(String sortBy, int offset, int pageSize) {
         pageUtil.checkOffset(offset);
@@ -275,6 +289,7 @@ public class CourseServiceImpl implements CourseService {
         Page<Course> courses = courseRepo.findCourseByStatus(CourseStatus.PUBLISHED, pageable);
         return convertToGeneralCoursePage(courses);
     }
+
     @Override
     public Page<GeneralCourse> getGeneralEnrolledCourses(String sortBy, int offset, int pageSize) {
         pageUtil.checkOffset(offset);
@@ -282,6 +297,7 @@ public class CourseServiceImpl implements CourseService {
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         return convertToGeneralCoursePage(new PageImpl<>(courses.getContent(), pageable, courses.getTotalElements()));
     }
+
     @Override
     public Page<Course> getDetailEnrolledCourses(String sortBy, int offset, int pageSize) {
         pageUtil.checkOffset(offset);
@@ -289,6 +305,7 @@ public class CourseServiceImpl implements CourseService {
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         return new PageImpl<>(courses.getContent(), pageable, courses.getTotalElements());
     }
+
     @Override
     public void saveCourse(Course course) {
         courseRepo.save(course);
@@ -319,6 +336,7 @@ public class CourseServiceImpl implements CourseService {
         generalCourse.setVersion(course.getVersion());
         return generalCourse;
     }
+
     @Override
     public Page<GeneralCourse> getGeneralCourseByName(String name, int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
@@ -346,11 +364,13 @@ public class CourseServiceImpl implements CourseService {
         Pageable pageable = PageRequest.of(offset - 1, pageSize);
         return courseRepo.findByIdInAndStatus(enrolledCourseIds, CourseStatus.PUBLISHED, pageable);
     }
+
     @Override
     public List<StudiedCourse> getAllStudiedCourses() {
         Account account = accountUtil.getCurrentAccount();
         return getStudiedCourses(account);
     }
+
     @Override
     public StudiedCourse getCheckPoint() {
         Account account = accountUtil.getCurrentAccount();
@@ -362,12 +382,14 @@ public class CourseServiceImpl implements CourseService {
         }
         return null;
     }
+
     @Override
     public Page<Course> getAllCourse(int offset, int pageSize, String sortBy) {
         List<Course> courses = courseRepo.findAll();
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         return new PageImpl<>(courses, pageable, courses.size());
     }
+
     @Override
     public List<Course> getCourseByIdsIn(List<Long> courseIds) {
         List<Course> courses = courseRepo.findByIdIn(courseIds);
@@ -376,6 +398,7 @@ public class CourseServiceImpl implements CourseService {
         }
         return courses;
     }
+
     private List<StudiedCourse> getStudiedCourses(Account account) {
         if (account.getStudiedCourseJson() == null || account.getStudiedCourseJson().isEmpty()) {
             return new ArrayList<>();

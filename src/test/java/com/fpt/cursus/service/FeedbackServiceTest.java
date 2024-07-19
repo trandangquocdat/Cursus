@@ -11,9 +11,10 @@ import com.fpt.cursus.service.impl.FeedbackServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.Date;
 import java.util.Arrays;
@@ -25,7 +26,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-public class FeedbackServiceTest {
+@ExtendWith(MockitoExtension.class)
+class FeedbackServiceTest {
     @InjectMocks
     private FeedbackServiceImpl feedbackService;
 
@@ -40,7 +42,7 @@ public class FeedbackServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+
     }
 
     @Test
@@ -144,7 +146,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testCreateFeedbackWithInvalidRating() {
+    void testCreateFeedbackWithInvalidRating() {
         //given
         Long courseId = 1L;
         FeedbackType type = FeedbackType.REVIEW;
@@ -181,21 +183,21 @@ public class FeedbackServiceTest {
         mockCourse.setRating(4.0f);
         List<Feedback> mockFeedbacks = List.of
                 (new Feedback(1L, "Good course", 4.0f, new Date(System.currentTimeMillis()), "user1", FeedbackType.REVIEW, mockCourse),
-                (new Feedback(2L, "Bad course", 2.0f, new Date(System.currentTimeMillis()), "user2", FeedbackType.REVIEW, mockCourse)));
+                        (new Feedback(2L, "Bad course", 2.0f, new Date(System.currentTimeMillis()), "user2", FeedbackType.REVIEW, mockCourse)));
 
         //when
-        when(feedbackRepo.findFeedbackByCourseIdAndType(anyLong(), isNull())).thenReturn(mockFeedbacks);
+        when(feedbackRepo.findFeedbackByCourseId(anyLong())).thenReturn(mockFeedbacks);
         when(courseService.getCourseById(anyLong())).thenReturn(mockCourse);
 
         feedbackService.ratingCourse(courseId, newRating);
 
         //then
-        assertEquals(4.5f, mockCourse.getRating());
+        assertEquals(3.5f, mockCourse.getRating());
         verify(courseService, times(1)).saveCourse(any(Course.class));
     }
 
     @Test
-    public void testDeleteFeedbackById() {
+    void testDeleteFeedbackById() {
         //given
         long feedbackId = 1L;
 
@@ -208,7 +210,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testUpdateFeedbackById() {
+    void testUpdateFeedbackById() {
         //given
         long feedbackId = 1L;
         CreateFeedbackDto feedbackDto = new CreateFeedbackDto();
@@ -234,7 +236,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testGetFeedbackByType() {
+    void testGetFeedbackByType() {
         //given
         FeedbackType type = FeedbackType.REVIEW;
         List<Feedback> mockFeedbackList = Arrays.asList(new Feedback(), new Feedback());
@@ -249,7 +251,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testGetFeedbackByCourseIdAndType() {
+    void testGetFeedbackByCourseIdAndType() {
         //given
         long courseId = 1L;
         FeedbackType type = FeedbackType.REVIEW;
@@ -268,7 +270,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testGetFeedbackByCourseIdAndTypeWhenNotFound() {
+    void testGetFeedbackByCourseIdAndTypeWhenNotFound() {
         //given
         long courseId = 1L;
         FeedbackType type = FeedbackType.REVIEW;
@@ -282,7 +284,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    public void testGetFeedbackByCourseIdAndTypeWhenNullButNoException() {
+    void testGetFeedbackByCourseIdAndTypeWhenNullButNoException() {
         //given
         long courseId = 1L;
         FeedbackType type = FeedbackType.REVIEW;

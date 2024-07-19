@@ -6,9 +6,10 @@ import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.service.impl.EnrollCourseServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class EnrollCourseServiceTest {
+@ExtendWith(MockitoExtension.class)
+class EnrollCourseServiceTest {
 
     @Mock
     private AccountService accountService;
@@ -29,7 +31,6 @@ public class EnrollCourseServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         mapper = new ObjectMapper();
     }
 
