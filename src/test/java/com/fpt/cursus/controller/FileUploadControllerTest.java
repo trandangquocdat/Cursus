@@ -12,13 +12,17 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.IOException;
+
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
@@ -46,6 +50,36 @@ class FileUploadControllerTest {
                 .build();
     }
 
+    @Test
+    void handleFileUploadSuccess() throws Exception {
+        //given
+        MockMultipartFile file = new MockMultipartFile("file",
+                "filename",
+                MediaType.TEXT_PLAIN_VALUE,
+                "content".getBytes());
+        //then
+        mockMvc.perform(multipart("/files/upload")
+                        .file(file))
+                .andExpectAll(status().isOk(),
+                        content().string("File uploaded successfully!"));
+    }
+
+    @Test
+    void handleFileUploadFailed() throws Exception {
+        //given
+        MockMultipartFile file = new MockMultipartFile("file",
+                "filename",
+                MediaType.TEXT_PLAIN_VALUE,
+                "content".getBytes());
+        //when
+        when(storageService.uploadFile(file))
+                .thenThrow(new IOException("File upload failed"));
+        //then
+        mockMvc.perform(multipart("/files/upload")
+                        .file(file))
+                .andExpectAll(status().isOk(),
+                        content().string("File upload failed: File upload failed"));
+    }
 
     @Test
     void downloadFileSuccess() throws Exception {
