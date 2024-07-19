@@ -52,5 +52,9 @@ public interface AccountService {
 
     Account getAccountByUsername(String username);
 
+    void subscribeInstructor(Long id);
+
+    void unsubscribeInstructor(Long id);
+
     Account getAccountByEmail(String email);
 }
