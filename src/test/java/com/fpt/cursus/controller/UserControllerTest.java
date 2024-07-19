@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -191,5 +192,34 @@ class UserControllerTest {
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(page)));
     }
+
+    @Test
+    void testSubscribeInstructor() throws Exception {
+        // given
+        Long instructorId = 1L;
+        // when
+        doNothing().when(accountService).subscribeInstructor(anyLong()); // phương thức này không trả về giá trị gì
+        // then
+        mockMvc.perform(put("/subscribe-instructor")
+                        .param("id", instructorId.toString()))
+                .andExpectAll(status().isOk(),
+                        content().string("Subscribe successfully"));
+    }
+
+    @Test
+    void testUnbscribeInstructor() throws Exception {
+        // given
+        Long instructorId = 1L;
+        // when
+        doNothing().when(accountService).unsubscribeInstructor(anyLong()); // phương thức này không trả về giá trị gì
+        // then
+        mockMvc.perform(put("/unsubscribe-instructor")
+                        .param("id", instructorId.toString()))
+                .andExpectAll(status().isOk(),
+                        content().string("Unsubscribe successfully"));
+    }
+
+
+
 
 }

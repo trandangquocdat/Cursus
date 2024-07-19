@@ -1,142 +1,357 @@
-//package com.fpt.cursus.service;
+package com.fpt.cursus.service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fpt.cursus.dto.request.ChangePasswordDto;
+import com.fpt.cursus.dto.request.LoginReqDto;
+import com.fpt.cursus.dto.request.RegisterReqDto;
+import com.fpt.cursus.dto.request.ResetPasswordDto;
+import com.fpt.cursus.dto.response.LoginResDto;
+import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.entity.Otp;
+import com.fpt.cursus.enums.Gender;
+import com.fpt.cursus.enums.InstructorStatus;
+import com.fpt.cursus.enums.Role;
+import com.fpt.cursus.enums.UserStatus;
+import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
+import com.fpt.cursus.repository.AccountRepo;
+import com.fpt.cursus.service.impl.AccountServiceImpl;
+import com.fpt.cursus.util.AccountUtil;
+import com.fpt.cursus.util.FileUtil;
+import com.fpt.cursus.util.Regex;
+import com.fpt.cursus.util.TokenHandler;
+import com.google.common.net.HttpHeaders;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
+import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class AccountServiceTest {
+
+    @InjectMocks
+    private AccountServiceImpl accountService;
+
+    @Mock
+    private AccountRepo accountRepo;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private ObjectMapper objectMapper;
+
+
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private TokenHandler tokenHandler;
+
+    @Mock
+    private AccountUtil accountUtil;
+
+    @Mock
+    private Regex regex;
+
+    @Mock
+    private OtpService otpService;
+
+    @Mock
+    private FileService fileService;
+
+    @Mock
+    private FileUtil fileUtil;
+
+    @Mock
+    private FirebaseAuth firebaseAuth;
+
+    private HttpServletRequest mockRequest;
+
+    private Account account;
+    private Account instructorAccount;
+    private RegisterReqDto registerReqDto;
+    private LoginReqDto loginReqDto;
+    private LoginResDto loginResDto;
+    private Otp otp;
+    private int otpExpiration = 300; // Example OTP expiration in seconds
+    private MockMultipartFile mockAvatarFile;
+
+    @BeforeEach
+    void setUp() {
+        account = new Account();
+        account.setUsername("testuser");
+        account.setEmail("test@example.com");
+        account.setFullName("Test User");
+        account.setPhone("0123456789");
+        account.setPassword("password");
+        account.setRole(Role.STUDENT);
+        account.setStatus(UserStatus.INACTIVE);
+        account.setCreatedDate(new Date());
+        account.setSubscribingJson("[]");
+
+
+        instructorAccount = new Account();
+        instructorAccount.setUsername("testinstructor");
+        instructorAccount.setEmail("testIn@example.com");
+        instructorAccount.setFullName("Test Instructor");
+        instructorAccount.setPhone("098765432");
+        instructorAccount.setPassword("password");
+        instructorAccount.setRole(Role.INSTRUCTOR);
+        instructorAccount.setStatus(UserStatus.ACTIVE);
+        instructorAccount.setCreatedDate(new Date());
+        instructorAccount.setSubscribersJson("[]");
+
+        mockAvatarFile = new MockMultipartFile("avatar", "avatar.png", "image/png", "dummy content".getBytes());
+
+        registerReqDto = RegisterReqDto.builder()
+                .username("testuser")
+                .password("password")
+                .email("test@example.com")
+                .fullName("Test User")
+                .phone("1234567890")
+                .avatar(mockAvatarFile)
+                .gender(Gender.MALE)
+                .build();
+
+        loginReqDto = new LoginReqDto();
+        loginReqDto.setUsername("testuser");
+        loginReqDto.setPassword("password");
+
+        loginResDto = new LoginResDto();
+        loginResDto.setAccessToken("accessToken");
+        loginResDto.setRefreshToken("refreshToken");
+
+        otp = new Otp();
+        otp.setEmail("test@example.com");
+        otp.setOtp("123456");
+        otp.setOtpGeneratedTime(LocalDateTime.now()); // Ensure otpGeneratedTime is set
+        otp.setValid(true); // Ensure OTP is initially valid
+
+        mockRequest = mock(HttpServletRequest.class);
+
+        reset(firebaseAuth);
+
+    }
+
+
+    @Test
+    void testSubscribeInstructor_Success() throws Exception {
+
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+        List<Long> subcribing = List.of(3L, 4L); //của user
+        List<Long> subcriber = List.of(5L, 6L);  // của instructor
+        String subcribingJson = objectMapper.writeValueAsString(subcribing);
+        String subcriberJson = objectMapper.writeValueAsString(subcriber);
+        account.setSubscribingJson(subcribingJson);
+        instructorAccount.setSubscribersJson(subcriberJson);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        accountService.subscribeInstructor(instructorAccount.getId());
+        List<Long> expectedSubcribingList = new ArrayList<>(subcribing);
+        expectedSubcribingList.add(instructorAccount.getId());
+        List<Long> expectedSubscriberList = new ArrayList<>(subcriber);
+        expectedSubscriberList.add(account.getId());
+
+        //then
+        assertEquals(objectMapper.writeValueAsString(expectedSubcribingList), account.getSubscribingJson());
+        assertEquals(objectMapper.writeValueAsString(expectedSubscriberList), instructorAccount.getSubscribersJson());
+    }
+
+
+    @Test
+    void testGetSubscribersUsers_JsonException() throws Exception {
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+        List<Long> subcribing = List.of(3L, 4L); //của user
+        String invalidJsonForSubcriber = "invalid";
+//        List<Long> subcriber = List.of(5L, 6L);  // của instructor
+
+        String subcribingJson = objectMapper.writeValueAsString(subcribing);
+//        String subcriberJson = objectMapper.writeValueAsString(invalidJsonForSubcriber);
+        account.setSubscribingJson(subcribingJson);
+        instructorAccount.setSubscribersJson(invalidJsonForSubcriber);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        doThrow(new JsonProcessingException("Invalid JSON") {}).when(objectMapper).readValue(eq(invalidJsonForSubcriber), any(TypeReference.class));
+
+        //then
+        AppException exception = assertThrows(AppException.class, () -> {
+            accountService.subscribeInstructor(instructorAccount.getId());
+        });
+        assertEquals(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL, exception.getErrorCode());
+    }
+
+    @Test
+    void testGetSubscribingsUsers_JsonException() throws Exception {
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+        String invalidJsonForSubcribing = "invalid";
+        List<Long> subcriber = List.of(5L, 6L);
+        String subcriberJson = objectMapper.writeValueAsString(subcriber);
+        account.setSubscribingJson(invalidJsonForSubcribing);
+        instructorAccount.setSubscribersJson(subcriberJson);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        doThrow(new JsonProcessingException("Invalid JSON") {}).when(objectMapper).readValue(eq(invalidJsonForSubcribing), any(TypeReference.class));
+
+        //then
+        AppException exception = assertThrows(AppException.class, () -> {
+            accountService.subscribeInstructor(instructorAccount.getId());
+        });
+        assertEquals(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL, exception.getErrorCode());
+    }
+
+    @Test
+    void testGetSubscribingsAndSubcriberUsers_BeEmpty() throws Exception {
+
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+
+        String emptysubcriberJson = "";
+        String emptysubcribingJson =  "";
+        account.setSubscribingJson(emptysubcribingJson);
+        instructorAccount.setSubscribersJson(emptysubcriberJson);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        accountService.subscribeInstructor(instructorAccount.getId());
+        List<Long> expectedSubscriberList = new ArrayList<>();
+        expectedSubscriberList.add(account.getId());
+        List<Long> expectedSubscribingList = new ArrayList<>();
+        expectedSubscribingList.add(instructorAccount.getId());
+        //then
+        assertEquals(objectMapper.writeValueAsString(expectedSubscribingList), account.getSubscribingJson());
+        assertEquals(objectMapper.writeValueAsString(expectedSubscriberList), instructorAccount.getSubscribersJson());
+    }
+
+
+    @Test
+    void testUnsubscribeInstructor_Success() throws Exception {
+
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+        List<Long> subcribing = List.of(1L, 3L); //của user
+        List<Long> subcriber = List.of(2L, 4L);  // của instructor
+        String subcribingJson = objectMapper.writeValueAsString(subcribing);
+        String subcriberJson = objectMapper.writeValueAsString(subcriber);
+        account.setSubscribingJson(subcribingJson);
+        instructorAccount.setSubscribersJson(subcriberJson);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        accountService.unsubscribeInstructor(instructorAccount.getId());
+        List<Long> expectedSubcribingList = new ArrayList<>(subcribing);
+        expectedSubcribingList.remove(instructorAccount.getId());
+        List<Long> expectedSubscriberList = new ArrayList<>(subcriber);
+        expectedSubscriberList.remove(account.getId());
+
+        //then
+        assertEquals(objectMapper.writeValueAsString(expectedSubcribingList), account.getSubscribingJson());
+        assertEquals(objectMapper.writeValueAsString(expectedSubscriberList), instructorAccount.getSubscribersJson());
+
+    }
+}
+
+//    @Test
+//    void saveSubscribersUsers_JsonProcessingException() throws Exception {
+//        // Given
+//        instructorAccount.setId(1L);
+//        account.setId(2L);
 //
-//import com.fpt.cursus.dto.request.ChangePasswordDto;
-//import com.fpt.cursus.dto.request.LoginReqDto;
-//import com.fpt.cursus.dto.request.RegisterReqDto;
-//import com.fpt.cursus.dto.request.ResetPasswordDto;
-//import com.fpt.cursus.dto.response.LoginResDto;
-//import com.fpt.cursus.entity.Account;
-//import com.fpt.cursus.entity.Otp;
-//import com.fpt.cursus.enums.Gender;
-//import com.fpt.cursus.enums.InstructorStatus;
-//import com.fpt.cursus.enums.Role;
-//import com.fpt.cursus.enums.UserStatus;
-//import com.fpt.cursus.exception.exceptions.AppException;
-//import com.fpt.cursus.exception.exceptions.ErrorCode;
-//import com.fpt.cursus.repository.AccountRepo;
-//import com.fpt.cursus.service.impl.AccountServiceImpl;
-//import com.fpt.cursus.util.AccountUtil;
-//import com.fpt.cursus.util.FileUtil;
-//import com.fpt.cursus.util.Regex;
-//import com.fpt.cursus.util.TokenHandler;
-//import com.google.common.net.HttpHeaders;
-//import com.google.firebase.auth.FirebaseAuth;
-//import com.google.firebase.auth.FirebaseAuthException;
-//import com.google.firebase.auth.FirebaseToken;
-//import jakarta.servlet.http.HttpServletRequest;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//import org.springframework.mock.web.MockMultipartFile;
-//import org.springframework.security.authentication.AuthenticationManager;
-//import org.springframework.security.authentication.BadCredentialsException;
-//import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-//import org.springframework.security.core.Authentication;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-//import org.springframework.web.multipart.MultipartFile;
+//        // Setup mocks
+//        when(accountRepo.findById(account.getId())).thenReturn(Optional.of(account));
+//        when(accountUtil.getCurrentAccount()).thenReturn(account);
+//        when(objectMapper.writeValueAsString(anyList())).thenThrow(JsonProcessingException.class);
 //
-//import java.io.IOException;
-//import java.time.LocalDateTime;
-//import java.util.Date;
-//import java.util.List;
-//import java.util.Optional;
+//        // When
+//        AppException thrownException = assertThrows(AppException.class, () -> {
+//            accountService.subscribeInstructor(account.getId());
+//        });
 //
-//import static org.junit.jupiter.api.Assertions.*;
-//import static org.mockito.ArgumentMatchers.*;
-//import static org.mockito.Mockito.*;
+//        // Then
+//        assertEquals(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL, thrownException.getErrorCode());
+//        verify(accountRepo, times(0)).save(any(Account.class));
+//    }
 //
-//@ExtendWith(MockitoExtension.class)
-//class AccountServiceTest {
 //
-//    @InjectMocks
-//    private AccountServiceImpl accountService;
+//    public void testGetSubscribersUsers_InvalidJson() throws Exception {
+//        // Setup
+//        Account account = new Account();
+//        account.setSubscribersJson("[1,2,3"); // Invalid JSON data
 //
-//    @Mock
-//    private AccountRepo accountRepo;
+//        // Mock ObjectMapper behavior
+//        when(objectMapper.readValue(account.getSubscribersJson(), new TypeReference<List<Long>>() {}))
+//                .thenThrow(new JsonProcessingException("Invalid JSON") {});
 //
-//    @Mock
-//    private PasswordEncoder passwordEncoder;
-//
-//    @Mock
-//    private AuthenticationManager authenticationManager;
-//
-//    @Mock
-//    private TokenHandler tokenHandler;
-//
-//    @Mock
-//    private AccountUtil accountUtil;
-//
-//    @Mock
-//    private Regex regex;
-//
-//    @Mock
-//    private OtpService otpService;
-//
-//    @Mock
-//    private FileService fileService;
-//
-//    @Mock
-//    private FileUtil fileUtil;
-//
-//    @Mock
-//    private FirebaseAuth firebaseAuth;
-//
-//    private HttpServletRequest mockRequest;
-//
-//    private Account account;
-//    private RegisterReqDto registerReqDto;
-//    private LoginReqDto loginReqDto;
-//    private LoginResDto loginResDto;
-//    private Otp otp;
-//    private int otpExpiration = 300; // Example OTP expiration in seconds
-//    private MockMultipartFile mockAvatarFile;
-//
-//    @BeforeEach
-//    void setUp() {
-//        account = new Account();
-//        account.setUsername("testuser");
-//        account.setEmail("test@example.com");
-//        account.setFullName("Test User");
-//        account.setPhone("0123456789");
-//        account.setPassword("password");
-//        account.setRole(Role.STUDENT);
-//        account.setStatus(UserStatus.INACTIVE);
-//        account.setCreatedDate(new Date());
-//
-//        mockAvatarFile = new MockMultipartFile("avatar", "avatar.png", "image/png", "dummy content".getBytes());
-//
-//        registerReqDto = RegisterReqDto.builder()
-//                .username("testuser")
-//                .password("password")
-//                .email("test@example.com")
-//                .fullName("Test User")
-//                .phone("1234567890")
-//                .avatar(mockAvatarFile)
-//                .gender(Gender.MALE)
-//                .build();
-//
-//        loginReqDto = new LoginReqDto();
-//        loginReqDto.setUsername("testuser");
-//        loginReqDto.setPassword("password");
-//
-//        loginResDto = new LoginResDto();
-//        loginResDto.setAccessToken("accessToken");
-//        loginResDto.setRefreshToken("refreshToken");
-//
-//        otp = new Otp();
-//        otp.setEmail("test@example.com");
-//        otp.setOtp("123456");
-//        otp.setOtpGeneratedTime(LocalDateTime.now()); // Ensure otpGeneratedTime is set
-//        otp.setValid(true); // Ensure OTP is initially valid
-//
-//        mockRequest = mock(HttpServletRequest.class);
-//        reset(firebaseAuth);
+//        // Test
 //
 //    }
 //
+//    @Test
+//    void testUnsubscribeInstructor_Success() throws Exception {
+//        //given
+//        instructorAccount.setId(1L);
+//        account.setId(2L);
+//
+//        //when
+//        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+//        when(accountUtil.getCurrentAccount()).thenReturn(account);
+//        when(objectMapper.readValue(anyString(), any(TypeReference.class)))
+//                .thenReturn(new ArrayList<>());
+//        accountService.unsubscribeInstructor(instructorAccount.getId());
+//
+//        //then
+//        verify(accountRepo, times(2)).save(instructorAccount);
+//        verify(accountRepo, times(2)).save(account);
+//    }
+//
+//
+//}
+
+
+
+
 //    @Test
 //    void testRegister_Success() {
 //        // when
