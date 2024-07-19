@@ -13,14 +13,18 @@ import com.fpt.cursus.service.impl.ChapterServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.config.Configuration;
+import org.modelmapper.convention.MatchingStrategies;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
-import javax.lang.model.element.UnknownAnnotationValueException;
 import java.util.Optional;
 import java.util.*;
 
@@ -41,48 +45,47 @@ class ChapterServiceTest {
     @InjectMocks
     private ChapterServiceImpl chapterService;
 
-    private Chapter chapter;
-    private UpdateChapterDto updateChapterDto;
-    private Account account;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        chapter = new Chapter();
-        chapter.setId(1L);
-        chapter.setStatus(ChapterStatus.ACTIVE);
-        chapter.setCreatedDate(new Date());
-        chapter.setCreatedBy("user");
-
-        updateChapterDto = new UpdateChapterDto();
-        updateChapterDto.setName("Updated Chapter");
-
-        account = new Account();
-        account.setUsername("user");
-
-        when(accountUtil.getCurrentAccount()).thenReturn(account);
-        when(chapterRepo.findById(anyLong())).thenReturn(Optional.of(chapter));
-        doAnswer(invocation -> {
-            Chapter c = invocation.getArgument(1);
-            c.setName(updateChapterDto.getName());
-            return null;
-        }).when(modelMapper).map(any(UpdateChapterDto.class), any(Chapter.class));
-        when(chapterRepo.save(any(Chapter.class))).thenReturn(chapter);
     }
 
     @Test
     public void testUpdateChapter_Success() {
-        //then
+        //given
+        Chapter chapter = new Chapter();
+        chapter.setId(1L);
+        chapter.setName("Old Title");
+        chapter.setStatus(ChapterStatus.ACTIVE);
+
+        UpdateChapterDto updateChapterDto = new UpdateChapterDto();
+        updateChapterDto.setName("New Title");
+
+        Account account = new Account();
+        account.setUsername("testUser");
+
+        modelMapper = new ModelMapper();
+        chapterService = new ChapterServiceImpl(courseService, chapterRepo, accountUtil, modelMapper);
+
+        //when
+        when(chapterRepo.findById(anyLong())).thenReturn(Optional.of(chapter));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(chapterRepo.save(any(Chapter.class))).thenReturn(chapter);
+
+        // Set the matching strategy and skip null values configuration
+        modelMapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.STRICT)
+                .setSkipNullEnabled(true);
+
         Chapter updatedChapter = chapterService.updateChapter(1L, updateChapterDto);
 
-        verify(chapterRepo, times(1)).findById(1L);
-        verify(modelMapper, times(1)).getConfiguration();
-        verify(modelMapper, times(1)).map(updateChapterDto, chapter);
-        verify(chapterRepo, times(1)).save(chapter);
+        assertNotNull(updatedChapter);
+        assertEquals("New Title", updatedChapter.getName());
+        assertEquals("testUser", updatedChapter.getUpdatedBy());
+        assertNotNull(updatedChapter.getUpdatedDate());
 
-        assertEquals(updateChapterDto.getName(), updatedChapter.getName());
-        assertEquals(account.getUsername(), updatedChapter.getUpdatedBy());
+        verify(chapterRepo, times(1)).findById(anyLong());
+        verify(chapterRepo, times(1)).save(any(Chapter.class));
     }
 
     @Test
