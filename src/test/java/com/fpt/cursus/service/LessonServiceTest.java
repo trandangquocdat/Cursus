@@ -11,10 +11,6 @@ import com.fpt.cursus.repository.LessonRepo;
 import com.fpt.cursus.service.impl.LessonServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import com.fpt.cursus.util.FileUtil;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,12 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,13 +44,13 @@ public class LessonServiceTest {
     private ModelMapper modelMapper;
 
     @Mock
-    private FileService fileService;
-
-    @Mock
     private FileUtil fileUtil;
 
     @InjectMocks
     private LessonServiceImpl lessonService;
+
+    @Mock
+    private FileService fileService;
 
     private Account mockAccount;
     private MultipartFile mockVideo;
@@ -72,7 +62,7 @@ public class LessonServiceTest {
     @BeforeEach
     void setUp() {
         mockAccount = new Account();
-        mockAccount.setUsername("testuser");
+        mockAccount.setUsername("testUser");
         mockVideo = new MockMultipartFile("video", "video.mp4", "video/mp4", "".getBytes());
         mockNonVideo = new MockMultipartFile("video", "testfile.txt", "text/plain", "".getBytes());
         chapterId = 1L;
@@ -81,12 +71,12 @@ public class LessonServiceTest {
         lesson.setId(lessonId);
     }
 
-    private MultipartFile invokeGetFileFromPath(Object targetObject, String filePath) throws NoSuchMethodException,
-            InvocationTargetException, IllegalAccessException {
-        Method method = targetObject.getClass().getDeclaredMethod("getFileFromPath", String.class);
-        method.setAccessible(true);
-        return (MultipartFile) method.invoke(targetObject, filePath);
-    }
+//    private MultipartFile invokeGetFileFromPath(Object targetObject, String filePath) throws NoSuchMethodException,
+//            InvocationTargetException, IllegalAccessException {
+//        Method method = targetObject.getClass().getDeclaredMethod("getFileFromPath", String.class);
+//        method.setAccessible(true);
+//        return (MultipartFile) method.invoke(targetObject, filePath);
+//    }
 
     @Test
     void testCreateLesson() {
