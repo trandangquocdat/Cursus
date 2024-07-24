@@ -3,7 +3,6 @@ package com.fpt.cursus.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.PaymentDto;
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Orders;
 import com.fpt.cursus.enums.OrderStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
@@ -17,14 +16,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
