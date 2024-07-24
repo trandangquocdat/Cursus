@@ -889,7 +889,8 @@ class AccountServiceTest {
         //when
         when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
         when(accountUtil.getCurrentAccount()).thenReturn(account);
-        doThrow(new JsonProcessingException("Invalid JSON") {})
+        doThrow(new JsonProcessingException("Invalid JSON") {
+        })
                 .when(objectMapper).readValue(eq(invalidJsonForSubcriber), any(TypeReference.class));
 
         //then
@@ -913,7 +914,8 @@ class AccountServiceTest {
         //when
         when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
         when(accountUtil.getCurrentAccount()).thenReturn(account);
-        doThrow(new JsonProcessingException("Invalid JSON") {})
+        doThrow(new JsonProcessingException("Invalid JSON") {
+        })
                 .when(objectMapper).readValue(eq(invalidJsonForSubcribing), any(TypeReference.class));
 
         //then
@@ -931,7 +933,7 @@ class AccountServiceTest {
         account.setId(2L);
 
         String emptysubcriberJson = "";
-        String emptysubcribingJson =  "";
+        String emptysubcribingJson = "";
         account.setSubscribingJson(emptysubcribingJson);
         instructorAccount.setSubscribersJson(emptysubcriberJson);
 

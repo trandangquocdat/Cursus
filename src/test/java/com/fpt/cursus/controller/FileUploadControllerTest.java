@@ -1,6 +1,5 @@
 package com.fpt.cursus.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.service.FileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -40,9 +40,6 @@ class FileUploadControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @BeforeEach
     void setUp() {
         mockMvc = standaloneSetup(new FileUploadController(storageService))
@@ -61,7 +58,7 @@ class FileUploadControllerTest {
         mockMvc.perform(multipart("/files/upload")
                         .file(file))
                 .andExpectAll(status().isOk(),
-                        content().string("File uploaded successfully!"));
+                        content().string("File uploaded successfully: filename"));
     }
 
     @Test
@@ -72,8 +69,8 @@ class FileUploadControllerTest {
                 MediaType.TEXT_PLAIN_VALUE,
                 "content".getBytes());
         //when
-        when(storageService.uploadFile(file))
-                .thenThrow(new IOException("File upload failed"));
+        doThrow(new IOException("File upload failed"))
+                .when(storageService).uploadFile(file, file.getOriginalFilename());
         //then
         mockMvc.perform(multipart("/files/upload")
                         .file(file))
@@ -96,6 +93,5 @@ class FileUploadControllerTest {
                         content().bytes(content),
                         header().string(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=\"attachment\"; filename=\"" + filename + "\""),
                         header().string(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE));
-
     }
 }
