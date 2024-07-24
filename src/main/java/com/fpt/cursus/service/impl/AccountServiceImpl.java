@@ -1,5 +1,8 @@
 package com.fpt.cursus.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.ChangePasswordDto;
 import com.fpt.cursus.dto.request.LoginReqDto;
 import com.fpt.cursus.dto.request.RegisterReqDto;
@@ -22,12 +25,14 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import jakarta.servlet.http.HttpServletRequest;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,6 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -56,6 +62,7 @@ public class AccountServiceImpl implements AccountService {
     private final FileService fileService;
     private final FileUtil fileUtil;
     private final ModelMapper modelMapper;
+    private final ObjectMapper objectMapper;
 
     @Value("${spring.security.jwt.access-token-expiration}")
     private long accessTokenExpiration;
@@ -73,7 +80,8 @@ public class AccountServiceImpl implements AccountService {
                               PageUtil pageUtil,
                               FileService fileService,
                               FileUtil fileUtil,
-                              ModelMapper modelMapper) {
+                              ModelMapper modelMapper,
+                              ObjectMapper objectMapper) {
         this.accountRepo = accountRepo;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -85,27 +93,37 @@ public class AccountServiceImpl implements AccountService {
         this.fileService = fileService;
         this.fileUtil = fileUtil;
         this.modelMapper = modelMapper;
+        this.objectMapper = objectMapper;
     }
 
     @Override
     public Account register(RegisterReqDto registerReqDto) {
+        //validate
         validateRegisterRequest(registerReqDto);
-
+        //create account by model mapper
+        ModelMapper customModelMapper = new ModelMapper();
+        customModelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT).setSkipNullEnabled(true);
         Account account = modelMapper.map(registerReqDto, Account.class);
         account.setCreatedDate(new Date());
         account.setPassword(passwordEncoder.encode(registerReqDto.getPassword()));
         account.setRole(Role.STUDENT);
         account.setStatus(UserStatus.INACTIVE);
-
-        if (fileUtil.isImage(registerReqDto.getAvatar())) {
-            fileService.setAvatar(registerReqDto.getAvatar(), account);
-        } else {
-            throw new AppException(ErrorCode.FILE_INVALID_IMAGE);
-        }
-
         return accountRepo.save(account);
     }
 
+    @Override
+    public void uploadAvatar(MultipartFile avatar, String folder, Account account) {
+        if (avatar == null) {
+            account.setAvatar("defaultAvatar.jpg");
+            accountRepo.save(account);
+        } else if (fileUtil.isImage(avatar)) {
+            String avatarPath = fileService.linkSave(avatar, folder);
+            account.setAvatar(avatarPath);
+            accountRepo.save(account);
+        } else {
+            throw new AppException(ErrorCode.FILE_INVALID_IMAGE);
+        }
+    }
 
     private void validateRegisterRequest(RegisterReqDto registerReqDto) {
         if (!regex.isPhoneValid(registerReqDto.getPhone())) {
@@ -199,21 +217,61 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account sendCv(MultipartFile file) {
         Account account = accountUtil.getCurrentAccount();
-        try {
-            if (!fileUtil.isPDF(file)) {
-                throw new AppException(ErrorCode.FILE_INVALID_PDF);
-            }
-            fileService.uploadFile(file);
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        String folder = account.getUsername();
+        if (!fileUtil.isPDF(file)) {
+            throw new AppException(ErrorCode.FILE_INVALID_PDF);
         }
+        String link = fileService.linkSave(file, folder);
+        account.setCvLink(link);
         account.setInstructorStatus(InstructorStatus.WAITING);
         return accountRepo.save(account);
     }
 
     @Override
+    public void subscribeInstructor(Long id) {
+        Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Account currentAccount = accountUtil.getCurrentAccount();
+
+        // save subscriber
+        List<Long> listSubscriber = getSubscribersUsers(account);
+        if (!listSubscriber.contains(currentAccount.getId())) {
+            listSubscriber.add(currentAccount.getId());
+            saveSubscribersUsers(account, listSubscriber);
+            accountRepo.save(account);
+
+            // save subscribing
+            List<Long> listSubscribing = getSubscribingsUsers(currentAccount);
+            listSubscribing.add(id);
+            saveSubscribingsUsers(currentAccount, listSubscribing);
+            accountRepo.save(currentAccount);
+        }
+    }
+
+    @Override
+    public void unsubscribeInstructor(Long id) {
+        Account account = accountRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Account currentAccount = accountUtil.getCurrentAccount();
+
+        List<Long> listSubscriber = getSubscribersUsers(account);
+        listSubscriber.remove(currentAccount.getId());
+        saveSubscribersUsers(account, listSubscriber);
+        accountRepo.save(account);
+
+        // save subscribing
+        List<Long> listSubscribing = getSubscribingsUsers(currentAccount);
+        listSubscribing.remove(id);
+        saveSubscribingsUsers(currentAccount, listSubscribing);
+        accountRepo.save(currentAccount);
+    }
+
+    @Override
     public List<Account> getInstructorByInstStatus(InstructorStatus status) {
         List<Account> accounts = accountRepo.findAccountByInstructorStatus(status);
+        for (Account account : accounts) {
+            if (account.getAvatar() != null) {
+                account.setAvatar(fileService.getSignedImageUrl(account.getAvatar()));
+            }
+        }
         if (accounts.isEmpty()) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
@@ -332,17 +390,76 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Account getProfile() {
+        Account account = accountUtil.getCurrentAccount();
+        if (account.getAvatar() != null) {
+            account.setAvatar(fileService.getSignedImageUrl(account.getAvatar()));
+        }
+        return account;
+    }
+
+    @Override
     public void saveAccount(Account account) {
         accountRepo.save(account);
     }
 
     @Override
     public Account getAccountByUsername(String username) {
-        return accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Account account = accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        if (account.getAvatar() != null) {
+            account.setAvatar(fileService.getSignedImageUrl(account.getAvatar()));
+        }
+        return account;
     }
 
     @Override
     public Account getAccountByEmail(String email) {
-        return accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        Account account = accountRepo.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        if (account.getAvatar() != null) {
+            account.setAvatar(fileService.getSignedImageUrl(account.getAvatar()));
+        }
+        return account;
+    }
+
+    public List<Long> getSubscribersUsers(Account account) {
+        if (account.getSubscribersJson() == null || account.getSubscribersJson().isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            return objectMapper.readValue(account.getSubscribersJson(), new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
+    }
+
+    private void saveSubscribersUsers(Account account, List<Long> subscribedsUsers) {
+        try {
+            account.setSubscribersJson(objectMapper.writeValueAsString(subscribedsUsers));
+            this.saveAccount(account);
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
+    }
+
+    private List<Long> getSubscribingsUsers(Account account) {
+        if (account.getSubscribingJson() == null || account.getSubscribingJson().isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            return objectMapper.readValue(account.getSubscribingJson(), new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
+    }
+
+    private void saveSubscribingsUsers(Account account, List<Long> subscribingsUsers) {
+        try {
+            account.setSubscribingJson(objectMapper.writeValueAsString(subscribingsUsers));
+            this.saveAccount(account);
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
     }
 }

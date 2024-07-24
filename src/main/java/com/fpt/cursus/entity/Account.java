@@ -42,10 +42,10 @@ public class Account implements UserDetails {
     @Email
     private String email;
     private String phone;
+
     @Enumerated(EnumType.STRING)
     private Role role;
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private UserStatus status = UserStatus.INACTIVE;
     private String cvLink;
     @Enumerated(EnumType.STRING)
@@ -56,6 +56,12 @@ public class Account implements UserDetails {
     private Date updatedDate;
     private String createdBy;
     private String updatedBy;
+
+    @Column(columnDefinition = "TEXT")
+    private String subscribersJson;
+
+    @Column(columnDefinition = "TEXT")
+    private String subscribingJson;
 
     @Column(columnDefinition = "TEXT")
     private String enrolledCourseJson;

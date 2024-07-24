@@ -22,6 +22,8 @@ public interface CourseService {
 
     Page<Course> getCourseByCreatedBy(int offset, int pageSize, String sortBy);
 
+    List<Course> getCourseByCreatedBy(String username);
+
     Course approveCourseById(Long id, CourseStatus status);
 
     Course getCourseById(Long id);
@@ -51,6 +53,8 @@ public interface CourseService {
     Page<GeneralCourse> getGeneralCourseByName(String name, int offset, int pageSize, String sortBy);
 
     List<StudiedCourse> getAllStudiedCourses();
+
+    List<StudiedCourse> getStudiedCourses(Account account);
 
     StudiedCourse getCheckPoint();
 

@@ -84,7 +84,7 @@ public class AdminController {
 
     @PatchMapping("/admin/set-admin")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Object> setAdmin(@RequestParam String email) {
-        return ResponseEntity.ok(accountService.setAdmin(email));
+    public ResponseEntity<Object> setAdmin(@RequestParam String username) {
+        return ResponseEntity.ok(accountService.setAdmin(username));
     }
 }
