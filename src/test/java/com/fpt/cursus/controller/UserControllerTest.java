@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.dto.response.CustomAccountResDto;
 import com.fpt.cursus.dto.response.GeneralCourse;
+import com.fpt.cursus.dto.response.InstructorDashboardRes;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.Role;
@@ -201,28 +202,57 @@ class UserControllerTest {
     @Test
     void testSubscribeInstructor() throws Exception {
         // given
-        Long instructorId = 1L;
+        long instructorId = 1L;
         // when
         doNothing().when(accountService).subscribeInstructor(anyLong()); // phương thức này không trả về giá trị gì
         // then
         mockMvc.perform(put("/subscribe-instructor")
-                        .param("id", instructorId.toString()))
+                        .param("id", Long.toString(instructorId)))
                 .andExpectAll(status().isOk(),
                         content().string("Subscribe successfully"));
     }
 
     @Test
-    void testUnbscribeInstructor() throws Exception {
+    void testUnsubscribeInstructor() throws Exception {
         // given
-        Long instructorId = 1L;
+        long instructorId = 1L;
         // when
         doNothing().when(accountService).unsubscribeInstructor(anyLong()); // phương thức này không trả về giá trị gì
         // then
         mockMvc.perform(put("/unsubscribe-instructor")
-                        .param("id", instructorId.toString()))
+                        .param("id", Long.toString(instructorId)))
                 .andExpectAll(status().isOk(),
                         content().string("Unsubscribe successfully"));
     }
 
+    @Test
+    void testGetProfile() throws Exception {
+        // given
+        Account account = new Account();
+        account.setId(1L);
+        account.setRole(Role.ADMIN);
+        // when
+        when(accountService.getProfile()).thenReturn(account);
+        // then
+        mockMvc.perform(get("/profile"))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(account)));
+    }
 
+    @Test
+    void testGetInstructorDashboard() throws Exception {
+        // given
+        InstructorDashboardRes res = new InstructorDashboardRes();
+        res.setCurrentSubscribers(1L);
+        res.setTotalCourses(1L);
+        res.setTotalEnroll(1L);
+        res.setTotalSales(1.0);
+        res.setTotalStudents(1L);
+        // when
+        when(dashboardService.getInstructorDashboardRes()).thenReturn(res);
+        // then
+        mockMvc.perform(get("/instructor-dashboard"))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(res)));
+    }
 }
