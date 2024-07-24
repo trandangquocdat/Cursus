@@ -307,6 +307,10 @@ public class AccountServiceImpl implements AccountService {
         otpService.saveOtp(email, otp);
     }
 
+    public boolean publicValidateOtp(Otp userOtp, String otp) {
+        return validateOtp(userOtp, otp);
+    }
+
     private boolean validateOtp(Otp userOtp, String otp) {
         if (Duration.between(userOtp.getOtpGeneratedTime(), LocalDateTime.now()).getSeconds() < (otpExpiration)) {
             return userOtp.getOtp().equals(otp);
