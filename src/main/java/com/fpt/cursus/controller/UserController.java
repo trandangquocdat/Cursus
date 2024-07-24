@@ -1,6 +1,5 @@
 package com.fpt.cursus.controller;
 
-import com.fpt.cursus.dto.response.InstructorDashboardRes;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.DashboardService;
@@ -25,6 +24,7 @@ public class UserController {
     private final AccountService accountService;
     private final CourseService courseService;
     private final DashboardService dashboardService;
+
     @Autowired
     public UserController(AccountService accountService,
                           CourseService courseService,
@@ -67,6 +67,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getWishListCourses(offset, pageSize, sortBy));
     }
+
     @PutMapping("/subscribe-instructor")
     public ResponseEntity<Object> subscribeInstructor(@RequestParam Long id) {
         accountService.subscribeInstructor(id);
@@ -109,6 +110,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getCourseByCreatedBy(offset, pageSize, sortBy));
     }
+
     @GetMapping("/profile")
     public ResponseEntity<Object> getProfile() {
         return ResponseEntity.status(HttpStatus.OK)

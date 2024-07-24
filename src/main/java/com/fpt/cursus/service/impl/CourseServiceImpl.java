@@ -302,7 +302,6 @@ public class CourseServiceImpl implements CourseService {
         return totalLessons == 0 ? 0 : (double) completedLessons / totalLessons;
     }
 
-
     private int getTotalLesson(Long courseId) {
         Course course = getCourseById(courseId);
         return course.getChapter().stream().mapToInt(chapter -> chapter.getLesson().size()).sum();
@@ -345,7 +344,6 @@ public class CourseServiceImpl implements CourseService {
     public void saveCourse(Course course) {
         courseRepo.save(course);
     }
-
 
     private Page<GeneralCourse> convertToGeneralCoursePage(Page<Course> courses) {
         List<GeneralCourse> generalCoursesList = new ArrayList<>();

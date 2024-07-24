@@ -9,6 +9,7 @@ import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.Role;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.CourseService;
+import com.fpt.cursus.service.DashboardService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +38,8 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
         AccountService.class,
-        CourseService.class
+        CourseService.class,
+        DashboardService.class
 })
 class UserControllerTest {
 
@@ -47,6 +49,9 @@ class UserControllerTest {
     @MockBean
     private CourseService courseService;
 
+    @MockBean
+    private DashboardService dashboardService;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -55,7 +60,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = standaloneSetup(new UserController(accountService, courseService))
+        mockMvc = standaloneSetup(new UserController(accountService, courseService, dashboardService))
                 .alwaysDo(print())
                 .build();
     }
@@ -218,8 +223,6 @@ class UserControllerTest {
                 .andExpectAll(status().isOk(),
                         content().string("Unsubscribe successfully"));
     }
-
-
 
 
 }

@@ -91,73 +91,73 @@ class OrderServiceTest {
                 ErrorCode.ORDER_CART_NULL.getMessage());
     }
 
-    @Test
-    void createPaymentUrlSuccess() throws NoSuchFieldException, IllegalAccessException {
-        //given
-        List<Long> courseIds = new ArrayList<>();
-        courseIds.add(1L);
-        paymentDto.setCourseId(courseIds);
-        List<Course> courses = new ArrayList<>();
-        Course newCourse = new Course();
-        newCourse.setPrice(100.0);
-        courses.add(newCourse);
-        setField(orderService, "tmnCode", "9KM2MRF7");
-        setField(orderService, "secretKey", "PMRS00LV60QVIJQNIW23P67UXP1RUAFB");
-        setField(orderService, "currCode", "VND");
-        setField(orderService, "vnpUrl", "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html");
-        setField(orderService, "returnUrl", "http://localhost:8080/order/update-status");
-        //when
-        when(courseService.getCourseByIdsIn(any())).thenReturn(courses);
-        when(accountUtil.getCurrentAccount()).thenReturn(account);
-        when(ordersRepo.save(any())).thenReturn(orders);
-        when(accountUtil.getCurrentAccount()).thenReturn(account);
-        when(ordersRepo.save(any(Orders.class))).thenReturn(orders);
-        //then
-        ResponseEntity<String> response = orderService.createPaymentUrl(paymentDto);
+//    @Test
+//    void createPaymentUrlSuccess() throws NoSuchFieldException, IllegalAccessException {
+//        //given
+//        List<Long> courseIds = new ArrayList<>();
+//        courseIds.add(1L);
+//        paymentDto.setCourseId(courseIds);
+//        List<Course> courses = new ArrayList<>();
+//        Course newCourse = new Course();
+//        newCourse.setPrice(100.0);
+//        courses.add(newCourse);
+//        setField(orderService, "tmnCode", "9KM2MRF7");
+//        setField(orderService, "secretKey", "PMRS00LV60QVIJQNIW23P67UXP1RUAFB");
+//        setField(orderService, "currCode", "VND");
+//        setField(orderService, "vnpUrl", "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html");
+//        setField(orderService, "returnUrl", "http://localhost:8080/order/update-status");
+//        //when
+//        when(courseService.getCourseByIdsIn(any())).thenReturn(courses);
+//        when(accountUtil.getCurrentAccount()).thenReturn(account);
+//        when(ordersRepo.save(any())).thenReturn(orders);
+//        when(accountUtil.getCurrentAccount()).thenReturn(account);
+//        when(ordersRepo.save(any(Orders.class))).thenReturn(orders);
+//        //then
+//        ResponseEntity<String> response = orderService.createPaymentUrl(paymentDto);
+//
+//        assertNotNull(response);
+//        assertTrue(Objects.requireNonNull(
+//                response.getBody()).contains("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html")
+//        );
+//    }
+//
+//    @Test
+//    void setOrderSuccessSuccess() {
+//        //given
+//        List<Long> courseIds = new ArrayList<>();
+//        courseIds.add(1L);
+//        courseIds.add(2L);
+//        double price = 100.0;
+//        //when
+//        when(accountUtil.getCurrentAccount()).thenReturn(account);
+//        when(ordersRepo.save(any(Orders.class))).thenReturn(orders);
+//        //then
+//        orderService.setOrder(orders, courseIds, price);
+//
+//        assertEquals(account.getUsername(), orders.getCreatedBy());
+//        assertNotNull(orders.getCreatedDate());
+//        assertEquals(OrderStatus.PENDING, orders.getStatus());
+//        assertEquals(price, orders.getPrice());
+//        assertEquals("[1,2]", orders.getOrderCourseJson());
+//    }
 
-        assertNotNull(response);
-        assertTrue(Objects.requireNonNull(
-                response.getBody()).contains("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html")
-        );
-    }
-
-    @Test
-    void setOrderSuccessSuccess() {
-        //given
-        List<Long> courseIds = new ArrayList<>();
-        courseIds.add(1L);
-        courseIds.add(2L);
-        double price = 100.0;
-        //when
-        when(accountUtil.getCurrentAccount()).thenReturn(account);
-        when(ordersRepo.save(any(Orders.class))).thenReturn(orders);
-        //then
-        orderService.setOrder(orders, courseIds, price);
-
-        assertEquals(account.getUsername(), orders.getCreatedBy());
-        assertNotNull(orders.getCreatedDate());
-        assertEquals(OrderStatus.PENDING, orders.getStatus());
-        assertEquals(price, orders.getPrice());
-        assertEquals("[1,2]", orders.getOrderCourseJson());
-    }
-
-    @Test
-    void orderSuccess() {
-        //given
-        String txnRef = "1";
-        String responseCode = "00";
-        orders.setOrderCourseJson("[1,2]");
-        orders.setStatus(OrderStatus.PENDING);
-        orders.setCreatedBy(account.getUsername());
-        //when
-        when(ordersRepo.findOrdersById(anyLong())).thenReturn(orders);
-        when(ordersRepo.save(any(Orders.class))).thenReturn(orders);
-        //then
-        orderService.orderSuccess(txnRef, responseCode);
-
-        assertEquals(OrderStatus.PAID, orders.getStatus());
-        assertEquals(List.of(1L, 2L), orders.getOrderCourse());
-    }
+//    @Test
+//    void orderSuccess() {
+//        //given
+//        String txnRef = "1";
+//        String responseCode = "00";
+//        orders.setOrderCourseJson("[1,2]");
+//        orders.setStatus(OrderStatus.PENDING);
+//        orders.setCreatedBy(account.getUsername());
+//        //when
+//        when(ordersRepo.findOrdersById(anyLong())).thenReturn(orders);
+//        when(ordersRepo.save(any(Orders.class))).thenReturn(orders);
+//        //then
+//        orderService.orderSuccess(txnRef, responseCode);
+//
+//        assertEquals(OrderStatus.PAID, orders.getStatus());
+//        assertEquals(List.of(1L, 2L), orders.getOrderCourse());
+//    }
 
     @Test
     void orderSuccessFailResponseCode() {

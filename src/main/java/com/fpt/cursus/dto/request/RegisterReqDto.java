@@ -2,7 +2,10 @@ package com.fpt.cursus.dto.request;
 
 import com.fpt.cursus.enums.Gender;
 import com.fpt.cursus.validator.NotEmptyOrNullMultipartFile;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;

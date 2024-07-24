@@ -12,6 +12,7 @@ import com.fpt.cursus.service.OrderService;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,6 +31,7 @@ public class DashboardServiceImpl implements DashboardService {
         this.orderService = orderService;
         this.accountService = accountService;
     }
+
     @Override
     public InstructorDashboardRes getInstructorDashboardRes() {
         InstructorDashboardRes res = new InstructorDashboardRes();
@@ -40,7 +42,7 @@ public class DashboardServiceImpl implements DashboardService {
         Double totalSales = 0.0;
         long totalStudents = 0L;
         long totalEnroll = 0L;
-        List<String> studentNames = null;
+        List<String> studentNames = new ArrayList<>();
         for (OrdersDetail ordersDetail : ordersDetails) {
             totalSales += ordersDetail.getPrice();
             totalStudents += 1;

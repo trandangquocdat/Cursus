@@ -1,22 +1,14 @@
 package com.fpt.cursus.service.impl;
 
-
-import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.entity.Course;
-import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.service.AccountService;
-import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.FileService;
-import com.fpt.cursus.service.LessonService;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -35,9 +27,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class FileServiceImpl implements FileService {
-    private final AccountService accountService;
-    private final CourseService courseService;
-    private final LessonService lessonService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${firebase.storage.bucket}")
@@ -47,14 +36,8 @@ public class FileServiceImpl implements FileService {
     private Storage storage;
 
     @Autowired
-    public FileServiceImpl(@Lazy AccountService accountService,
-                           @Lazy CourseService courseService,
-                           @Lazy LessonService lessonService,
-                           SimpMessagingTemplate messagingTemplate
+    public FileServiceImpl(SimpMessagingTemplate messagingTemplate
     ) {
-        this.accountService = accountService;
-        this.courseService = courseService;
-        this.lessonService = lessonService;
         this.messagingTemplate = messagingTemplate;
     }
 

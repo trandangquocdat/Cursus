@@ -8,7 +8,6 @@ import lombok.*;
 
 import java.time.ZonedDateTime;
 
-
 @Entity
 @Getter
 @Setter
@@ -16,7 +15,7 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BackListIP {
+public class BlackListIP {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -1,9 +1,9 @@
 package com.fpt.cursus.service.impl;
 
 import com.fpt.cursus.entity.ApiLog;
-import com.fpt.cursus.entity.BackListIP;
+import com.fpt.cursus.entity.BlackListIP;
 import com.fpt.cursus.repository.ApiLogRepo;
-import com.fpt.cursus.repository.BackListIPRepo;
+import com.fpt.cursus.repository.BlackListIPRepo;
 import com.fpt.cursus.service.ApiLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,18 +12,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 
-
 @Service
 public class ApiLogServiceImpl implements ApiLogService {
 
     private final ApiLogRepo apiLogRepo;
 
-    private final BackListIPRepo backListIPRepo;
+    private final BlackListIPRepo blackListIPRepo;
 
     @Autowired
-    public ApiLogServiceImpl(ApiLogRepo apiLogRepo, BackListIPRepo backListIPRepo) {
+    public ApiLogServiceImpl(ApiLogRepo apiLogRepo, BlackListIPRepo blackListIPRepo) {
         this.apiLogRepo = apiLogRepo;
-        this.backListIPRepo = backListIPRepo;
+        this.blackListIPRepo = blackListIPRepo;
     }
 
     @Transactional
@@ -53,15 +52,14 @@ public class ApiLogServiceImpl implements ApiLogService {
 
     private void checkAndBanIfExceedLimit(String ipAddress, String apiEndpoint, ZonedDateTime now) {
         ApiLog log = apiLogRepo.findByIpAddressAndApiEndpoint(ipAddress, apiEndpoint);
-        if (log != null && log.getCount() > 100 && backListIPRepo.findByIpAddress(ipAddress).isEmpty()) {
-            BackListIP bannedIp = new BackListIP();
+        if (log != null && log.getCount() > 100 && blackListIPRepo.findByIpAddress(ipAddress).isEmpty()) {
+            BlackListIP bannedIp = new BlackListIP();
             bannedIp.setIpAddress(ipAddress);
             bannedIp.setBanTime(now);
-            backListIPRepo.save(bannedIp);
+            blackListIPRepo.save(bannedIp);
         }
 
     }
-
 
 }
 

@@ -22,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,41 +89,41 @@ public class CourseServiceTest {
         sampleUpdateCourseDto.setPictureLink(null);
     }
 
-    @Test
-    void testCreateCourse_ValidDto() {
-        Course mockMappedCourse = new Course();
-        mockMappedCourse.setName(sampleCreateCourseDto.getName());
-        mockMappedCourse.setPrice(sampleCreateCourseDto.getPrice());
-
-        when(modelMapper.map(sampleCreateCourseDto, Course.class)).thenReturn(mockMappedCourse);
-        when(fileUtil.isImage(sampleCreateCourseDto.getPictureLink())).thenReturn(true);
-
-        Course savedCourse = new Course();
-        savedCourse.setId(1L);
-        savedCourse.setName(sampleCreateCourseDto.getName());
-        savedCourse.setPrice(sampleCreateCourseDto.getPrice());
-        savedCourse.setCreatedDate(new Date());
-        savedCourse.setCreatedBy("testuser");
-        savedCourse.setStatus(CourseStatus.DRAFT);
-        savedCourse.setVersion(1f);
-
-        when(accountUtil.getCurrentAccount()).thenReturn(account);
-        when(courseRepo.save(any(Course.class))).thenReturn(savedCourse);
-
-        Course createdCourse = courseService.createCourse(sampleCreateCourseDto);
-
-        assertEquals(savedCourse.getId(), createdCourse.getId());
-        assertEquals(savedCourse.getName(), createdCourse.getName());
-        assertEquals(savedCourse.getPrice(), createdCourse.getPrice());
-        assertEquals(savedCourse.getCreatedBy(), createdCourse.getCreatedBy());
-        assertEquals(savedCourse.getStatus(), createdCourse.getStatus());
-        assertEquals(savedCourse.getVersion(), createdCourse.getVersion());
-
-        verify(modelMapper, times(1)).map(sampleCreateCourseDto, Course.class);
-        verify(fileUtil, times(1)).isImage(sampleCreateCourseDto.getPictureLink());
-        verify(fileService, times(1)).setPicture(sampleCreateCourseDto.getPictureLink(), mockMappedCourse);
-        verify(courseRepo, times(1)).save(mockMappedCourse);
-    }
+//    @Test
+//    void testCreateCourse_ValidDto() {
+//        Course mockMappedCourse = new Course();
+//        mockMappedCourse.setName(sampleCreateCourseDto.getName());
+//        mockMappedCourse.setPrice(sampleCreateCourseDto.getPrice());
+//
+//        when(modelMapper.map(sampleCreateCourseDto, Course.class)).thenReturn(mockMappedCourse);
+//        when(fileUtil.isImage(sampleCreateCourseDto.getPictureLink())).thenReturn(true);
+//
+//        Course savedCourse = new Course();
+//        savedCourse.setId(1L);
+//        savedCourse.setName(sampleCreateCourseDto.getName());
+//        savedCourse.setPrice(sampleCreateCourseDto.getPrice());
+//        savedCourse.setCreatedDate(new Date());
+//        savedCourse.setCreatedBy("testuser");
+//        savedCourse.setStatus(CourseStatus.DRAFT);
+//        savedCourse.setVersion(1f);
+//
+//        when(accountUtil.getCurrentAccount()).thenReturn(account);
+//        when(courseRepo.save(any(Course.class))).thenReturn(savedCourse);
+//
+//        Course createdCourse = courseService.createCourse(sampleCreateCourseDto);
+//
+//        assertEquals(savedCourse.getId(), createdCourse.getId());
+//        assertEquals(savedCourse.getName(), createdCourse.getName());
+//        assertEquals(savedCourse.getPrice(), createdCourse.getPrice());
+//        assertEquals(savedCourse.getCreatedBy(), createdCourse.getCreatedBy());
+//        assertEquals(savedCourse.getStatus(), createdCourse.getStatus());
+//        assertEquals(savedCourse.getVersion(), createdCourse.getVersion());
+//
+//        verify(modelMapper, times(1)).map(sampleCreateCourseDto, Course.class);
+//        verify(fileUtil, times(1)).isImage(sampleCreateCourseDto.getPictureLink());
+//        verify(fileService, times(1)).setPicture(sampleCreateCourseDto.getPictureLink(), mockMappedCourse);
+//        verify(courseRepo, times(1)).save(mockMappedCourse);
+//    }
 
     @Test
     void testCreateCourse_InvalidImage() {

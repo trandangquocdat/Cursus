@@ -9,7 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-
 public class EnrollCourseDto {
 
     private String courseName;

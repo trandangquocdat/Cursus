@@ -61,7 +61,6 @@ public class ChapterController {
         return ResponseEntity.ok(apiRes);
     }
 
-
     @GetMapping("/chapter/get-by-course")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> findAllByCourseId(@RequestParam Long courseId) {

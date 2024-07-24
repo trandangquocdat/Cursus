@@ -13,5 +13,6 @@ public interface OrderService {
     Orders orderSuccess(String txnRef, String responseCode);
 
     void setOrder(Orders order, List<Long> ids, double price);
+
     List<OrdersDetail> findAllByIdIn(List<Long> ids);
 }

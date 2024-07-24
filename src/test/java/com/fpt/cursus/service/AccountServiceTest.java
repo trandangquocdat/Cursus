@@ -3,15 +3,12 @@ package com.fpt.cursus.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fpt.cursus.dto.request.ChangePasswordDto;
 import com.fpt.cursus.dto.request.LoginReqDto;
 import com.fpt.cursus.dto.request.RegisterReqDto;
-import com.fpt.cursus.dto.request.ResetPasswordDto;
 import com.fpt.cursus.dto.response.LoginResDto;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Otp;
 import com.fpt.cursus.enums.Gender;
-import com.fpt.cursus.enums.InstructorStatus;
 import com.fpt.cursus.enums.Role;
 import com.fpt.cursus.enums.UserStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
@@ -22,85 +19,65 @@ import com.fpt.cursus.util.AccountUtil;
 import com.fpt.cursus.util.FileUtil;
 import com.fpt.cursus.util.Regex;
 import com.fpt.cursus.util.TokenHandler;
-import com.google.common.net.HttpHeaders;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest {
 
+    private final int otpExpiration = 300; // Example OTP expiration in seconds
     @InjectMocks
     private AccountServiceImpl accountService;
-
     @Mock
     private AccountRepo accountRepo;
-
     @Mock
     private PasswordEncoder passwordEncoder;
-
     @Mock
     private ObjectMapper objectMapper;
-
-
     @Mock
     private AuthenticationManager authenticationManager;
-
     @Mock
     private TokenHandler tokenHandler;
-
     @Mock
     private AccountUtil accountUtil;
-
     @Mock
     private Regex regex;
-
     @Mock
     private OtpService otpService;
-
     @Mock
     private FileService fileService;
-
     @Mock
     private FileUtil fileUtil;
-
     @Mock
     private FirebaseAuth firebaseAuth;
-
     private HttpServletRequest mockRequest;
-
     private Account account;
     private Account instructorAccount;
     private RegisterReqDto registerReqDto;
     private LoginReqDto loginReqDto;
     private LoginResDto loginResDto;
     private Otp otp;
-    private int otpExpiration = 300; // Example OTP expiration in seconds
     private MockMultipartFile mockAvatarFile;
 
     @BeforeEach
@@ -206,7 +183,8 @@ class AccountServiceTest {
         //when
         when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
         when(accountUtil.getCurrentAccount()).thenReturn(account);
-        doThrow(new JsonProcessingException("Invalid JSON") {}).when(objectMapper).readValue(eq(invalidJsonForSubcriber), any(TypeReference.class));
+        doThrow(new JsonProcessingException("Invalid JSON") {
+        }).when(objectMapper).readValue(eq(invalidJsonForSubcriber), any(TypeReference.class));
 
         //then
         AppException exception = assertThrows(AppException.class, () -> {
@@ -229,7 +207,8 @@ class AccountServiceTest {
         //when
         when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
         when(accountUtil.getCurrentAccount()).thenReturn(account);
-        doThrow(new JsonProcessingException("Invalid JSON") {}).when(objectMapper).readValue(eq(invalidJsonForSubcribing), any(TypeReference.class));
+        doThrow(new JsonProcessingException("Invalid JSON") {
+        }).when(objectMapper).readValue(eq(invalidJsonForSubcribing), any(TypeReference.class));
 
         //then
         AppException exception = assertThrows(AppException.class, () -> {
@@ -246,7 +225,7 @@ class AccountServiceTest {
         account.setId(2L);
 
         String emptysubcriberJson = "";
-        String emptysubcribingJson =  "";
+        String emptysubcribingJson = "";
         account.setSubscribingJson(emptysubcribingJson);
         instructorAccount.setSubscribersJson(emptysubcriberJson);
 
@@ -348,8 +327,6 @@ class AccountServiceTest {
 //
 //
 //}
-
-
 
 
 //    @Test

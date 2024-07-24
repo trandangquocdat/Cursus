@@ -2,7 +2,6 @@ package com.fpt.cursus.dto.object;
 
 import lombok.Data;
 
-
 @Data
 public class StudiedCourse {
     private Long courseId;

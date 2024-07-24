@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="19" author="Cursus">
+    <changeSet id="9" author="Cursus">
         <sql>
             INSERT INTO account (username, email, created_date, full_name, phone, password, role, status, avatar,
                                  instructor_status)
@@ -54,16 +54,16 @@
                    ('3', CURRENT_TIMESTAMP, 'admin03', 'description chapter 1', 'chapter 1', 'ACTIVE'),
                    ('3', CURRENT_TIMESTAMP, 'admin03', 'description chapter 2', 'chapter 2', 'ACTIVE');
             INSERT INTO lesson (chapter_id, created_date, created_by, description, name, status, video_link)
-            VALUES ('1', CURRENT_TIMESTAMP, 'admin01', 'description lesson 1', 'lesson 1', 'ACTIVE','videoTest.mp4'),
-                   ('1', CURRENT_TIMESTAMP, 'admin01', 'description lesson 2', 'lesson 2', 'ACTIVE','videoTest.mp4'),
-                   ('1', CURRENT_TIMESTAMP, 'admin01', 'description lesson 3', 'lesson 3', 'ACTIVE','videoTest.mp4'),
-                   ('1', CURRENT_TIMESTAMP, 'admin01', 'description lesson 4', 'lesson 4', 'ACTIVE','videoTest.mp4'),
-                   ('2', CURRENT_TIMESTAMP, 'admin02', 'description lesson 1', 'lesson 1', 'ACTIVE','videoTest.mp4'),
-                   ('2', CURRENT_TIMESTAMP, 'admin02', 'description lesson 2', 'lesson 2', 'ACTIVE','videoTest.mp4'),
-                   ('2', CURRENT_TIMESTAMP, 'admin02', 'description lesson 3', 'lesson 3', 'ACTIVE','videoTest.mp4'),
-                   ('3', CURRENT_TIMESTAMP, 'admin03', 'description lesson 1', 'lesson 1', 'ACTIVE','videoTest.mp4'),
-                   ('3', CURRENT_TIMESTAMP, 'admin03', 'description lesson 2', 'lesson 2', 'ACTIVE','videoTest.mp4'),
-                   ('3', CURRENT_TIMESTAMP, 'admin03', 'description lesson 3', 'lesson 3', 'ACTIVE','videoTest.mp4');
+            VALUES ('1', CURRENT_TIMESTAMP, 'admin01', 'description lesson 1', 'lesson 1', 'ACTIVE', 'videoTest.mp4'),
+                   ('1', CURRENT_TIMESTAMP, 'admin01', 'description lesson 2', 'lesson 2', 'ACTIVE', 'videoTest.mp4'),
+                   ('1', CURRENT_TIMESTAMP, 'admin01', 'description lesson 3', 'lesson 3', 'ACTIVE', 'videoTest.mp4'),
+                   ('1', CURRENT_TIMESTAMP, 'admin01', 'description lesson 4', 'lesson 4', 'ACTIVE', 'videoTest.mp4'),
+                   ('2', CURRENT_TIMESTAMP, 'admin02', 'description lesson 1', 'lesson 1', 'ACTIVE', 'videoTest.mp4'),
+                   ('2', CURRENT_TIMESTAMP, 'admin02', 'description lesson 2', 'lesson 2', 'ACTIVE', 'videoTest.mp4'),
+                   ('2', CURRENT_TIMESTAMP, 'admin02', 'description lesson 3', 'lesson 3', 'ACTIVE', 'videoTest.mp4'),
+                   ('3', CURRENT_TIMESTAMP, 'admin03', 'description lesson 1', 'lesson 1', 'ACTIVE', 'videoTest.mp4'),
+                   ('3', CURRENT_TIMESTAMP, 'admin03', 'description lesson 2', 'lesson 2', 'ACTIVE', 'videoTest.mp4'),
+                   ('3', CURRENT_TIMESTAMP, 'admin03', 'description lesson 3', 'lesson 3', 'ACTIVE', 'videoTest.mp4');
         </sql>
     </changeSet>
 </databaseChangeLog>

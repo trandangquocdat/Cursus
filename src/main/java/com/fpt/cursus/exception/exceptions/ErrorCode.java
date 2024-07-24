@@ -2,7 +2,6 @@ package com.fpt.cursus.exception.exceptions;
 
 import lombok.Getter;
 
-
 @Getter
 public enum ErrorCode {
 

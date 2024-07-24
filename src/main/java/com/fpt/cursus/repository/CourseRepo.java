@@ -10,11 +10,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-
 @Repository
 
 public interface CourseRepo extends JpaRepository<Course, Long> {
-
 
     Page<Course> findAllByStatus(CourseStatus status, Pageable pageable);
 
@@ -27,6 +25,7 @@ public interface CourseRepo extends JpaRepository<Course, Long> {
     boolean existsByName(String name);
 
     Page<Course> findCourseByCreatedBy(String createdBy, Pageable pageable);
+
     List<Course> findCourseByCreatedBy(String createdBy);
 
     Page<Course> findCourseByStatus(CourseStatus status, Pageable pageable);
