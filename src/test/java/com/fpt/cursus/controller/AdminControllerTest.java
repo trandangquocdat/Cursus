@@ -209,14 +209,14 @@ class AdminControllerTest {
         Account account = new Account();
         account.setId(1L);
         account.setEmail("test@test.com");
+        account.setUsername("test");
         account.setRole(Role.ADMIN);
         //when
         when(accountService.setAdmin(anyString()))
                 .thenReturn(account);
         //then
         mockMvc.perform(patch("/admin/set-admin")
-                        .param("email", "test@test.com")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .param("username", "test"))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(account)));
     }
