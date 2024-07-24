@@ -102,7 +102,6 @@ public class FileServiceImpl implements FileService {
         return fileName;
     }
 
-
     private String generateUniqueFileName(String folderName, String originalFileName) {
         String uniqueId = UUID.randomUUID().toString();
         return folderName + "/" + uniqueId + "_" + originalFileName;

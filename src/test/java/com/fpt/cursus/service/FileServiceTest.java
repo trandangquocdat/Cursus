@@ -5,7 +5,9 @@ import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.service.impl.FileServiceImpl;
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,11 +21,11 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
@@ -46,8 +48,6 @@ class FileServiceTest {
     @Mock
     private MockMultipartFile multipartFile;
 
-    private String link;
-
     @Mock
     private Storage storage;
 
@@ -56,6 +56,9 @@ class FileServiceTest {
 
     @Mock
     private WriteChannel writeChannel;
+
+    @Mock
+    private URL url;
 
     @BeforeEach
     void setUp() throws NoSuchFieldException, IllegalAccessException {
@@ -72,7 +75,6 @@ class FileServiceTest {
                 "text/plain",
                 "Hello World".getBytes());
 
-        link = String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/", "test-bucket");
     }
 
     private void setField(Object targetObject, String fieldName, Object value)
@@ -88,78 +90,15 @@ class FileServiceTest {
         method.setAccessible(true);
         method.invoke(targetObject);
     }
-//
-//    @Test
-//    void testSetAvatarSuccess() throws NoSuchFieldException, IllegalAccessException {
-//        //given
-//        Account account = new Account();
-//        setField(fileService, "storage", storage);
-//        //when
-//        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
-//        //then
-//        fileService.setAvatar(multipartFile, account);
-//        assertTrue(account.getAvatar().contains(link));
-//    }
-//
-//    @Test
-//    void testSetPictureSuccess() throws NoSuchFieldException, IllegalAccessException {
-//        //given
-//        Course course = new Course();
-//        setField(fileService, "storage", storage);
-//        //when
-//        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
-//        //then
-//        fileService.setPicture(multipartFile, course);
-//        assertTrue(course.getPictureLink().contains(link));
-//    }
-//
-//    @Test
-//    void testSetVideoSuccess() throws NoSuchFieldException, IllegalAccessException {
-//        //given
-//        Lesson lesson = new Lesson();
-//        setField(fileService, "storage", storage);
-//        //when
-//        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
-//        //then
-//        fileService.setVideo(multipartFile, lesson);
-//        assertTrue(lesson.getVideoLink().contains(link));
-//    }
-//
-//    @Test
-//    void testSetAvatarFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-//        //given
-//        Account account = new Account();
-//        setMethod(fileService);
-//        //then
-//        assertThrows(AppException.class, () -> fileService.setAvatar(multipartFile, account));
-//    }
-//
-//    @Test
-//    void testSetPictureFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-//        //given
-//        Course course = new Course();
-//        setMethod(fileService);
-//        //then
-//        assertThrows(AppException.class, () -> fileService.setPicture(multipartFile, course));
-//    }
-//
-//    @Test
-//    void testSetVideoFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-//        //given
-//        Lesson lesson = new Lesson();
-//        setMethod(fileService);
-//        //then
-//        assertThrows(AppException.class, () -> fileService.setVideo(multipartFile, lesson));
-//    }
-//
-//    @Test
-//    void testUploadFileFailRuntimeException() throws NoSuchFieldException, IllegalAccessException {
-//        //given
-//        setField(fileService, "storage", storage);
-//        //when
-//        //then
-//        assertThrows(RuntimeException.class, () -> fileService.uploadFile(multipartFile));
-//    }
+
+    @Test
+    void testUploadFileFailRuntimeException() throws NoSuchFieldException, IllegalAccessException {
+        //given
+        setField(fileService, "storage", storage);
+        //when
+        //then
+        assertThrows(RuntimeException.class, () -> fileService.uploadFile(multipartFile, "test.txt"));
+    }
 
     @Test
     void testDownloadFileAsResourceSuccess() throws NoSuchFieldException, IllegalAccessException {
@@ -207,4 +146,45 @@ class FileServiceTest {
         assertThrows(AppException.class, () -> fileService.downloadFileAsBytes("test.bucket", "test.txt"));
     }
 
+    @Test
+    void testLinkSaveSuccess() throws IllegalAccessException, NoSuchFieldException {
+        //given
+        setField(fileService, "storage", storage);
+        String folder = "test";
+        String originalFileName = "test.txt";
+        //when
+        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
+        //then
+        String result = fileService.linkSave(multipartFile, folder);
+        assertTrue(result.contains(originalFileName));
+        assertTrue(result.contains(folder));
+    }
+
+    @Test
+    void testLinkSaveFail() throws IllegalAccessException, NoSuchFieldException {
+        //given
+        setField(fileService, "storage", storage);
+        //when
+        when(storage.writer(any(BlobInfo.class))).thenThrow(StorageException.class);
+        //then
+        assertThrows(AppException.class, () -> fileService.linkSave(multipartFile, "test"));
+    }
+
+    @Test
+    void testGetSignedImageUrl() throws NoSuchFieldException, IllegalAccessException {
+        //given
+        String filename = "test.txt";
+        setField(fileService, "storage", storage);
+        //when
+        when(storage.signUrl(any(BlobInfo.class), any(Long.class), any(), any())).thenReturn(url);
+        //then
+        fileService.getSignedImageUrl(filename);
+        verify(storage, times(1)).signUrl(any(BlobInfo.class), any(Long.class), any(), any());
+    }
+
+    @Test
+    void testInitializeStorage() {
+        //then
+        assertDoesNotThrow(() -> setMethod(fileService));
+    }
 }
