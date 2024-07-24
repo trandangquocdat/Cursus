@@ -27,8 +27,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -67,9 +69,8 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public String uploadFile(MultipartFile file) throws IOException {
-        String fileName = generateUniqueFileName(file.getOriginalFilename());
-        BlobId blobId = BlobId.of(bucketName, fileName);
+    public void uploadFile(MultipartFile file, String filename) throws IOException {
+        BlobId blobId = BlobId.of(bucketName, filename);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
 
         try (WriteChannel writer = storage.writer(blobInfo)) {
@@ -92,7 +93,14 @@ public class FileServiceImpl implements FileService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return generateDownloadUrl(fileName);
+    }
+
+    public String getSignedImageUrl(String filename) {
+        URL signedUrl = storage.signUrl(
+                BlobInfo.newBuilder(BlobId.of(bucketName, filename)).build(),
+                15, TimeUnit.MINUTES,
+                Storage.SignUrlOption.withV4Signature());
+        return signedUrl.toString();
     }
 
     private void sendProgressUpdate(double progress) {
@@ -101,52 +109,20 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void setAvatar(MultipartFile file, Account account) {
-        String fileName = null;
+    public String linkSave(MultipartFile file, String folder) {
+        String fileName = generateUniqueFileName(folder, file.getOriginalFilename());
         try {
-            fileName = uploadFile(file);
+            uploadFile(file, fileName);
         } catch (IOException e) {
             throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
         }
-        String link = generateDownloadUrl(fileName);
-        account.setAvatar(link);
-        accountService.saveAccount(account);
-    }
-
-    @Override
-    public void setPicture(MultipartFile file, Course course) {
-        String fileName = null;
-        try {
-            fileName = uploadFile(file);
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
-        }
-        String link = generateDownloadUrl(fileName);
-        course.setPictureLink(link);
-        courseService.saveCourse(course);
-    }
-
-    @Override
-    public void setVideo(MultipartFile file, Lesson lesson) {
-        String fileName = null;
-        try {
-            fileName = uploadFile(file);
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
-        }
-        String link = generateDownloadUrl(fileName);
-        lesson.setVideoLink(link);
-        lessonService.save(lesson);
+        return fileName;
     }
 
 
-    private String generateDownloadUrl(String fileName) {
-        return String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media", bucketName, fileName);
-    }
-
-    private String generateUniqueFileName(String originalFileName) {
+    private String generateUniqueFileName(String folderName, String originalFileName) {
         String uniqueId = UUID.randomUUID().toString();
-        return uniqueId + "_" + originalFileName;
+        return folderName + "/" + uniqueId + "_" + originalFileName;
     }
 
     @Override

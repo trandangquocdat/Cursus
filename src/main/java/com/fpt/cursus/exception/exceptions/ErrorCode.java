@@ -46,7 +46,10 @@ public enum ErrorCode {
     OTP_INVALID(660, "Wrong OTP"),
     OTP_EXPIRED(661, "OTP expired"),
     OTP_NOT_FOUND(662, "OTP not found"),
+    //
+    AVATAR_EMPTY(670, "Avatar can not be empty"),
     //Course error - 70x
+
     COURSE_NOT_FOUND(700, "Course not found"),
     COURSE_SIZE_INVALID(701, "Course name must be less than 200 characters"),
     COURSE_PRICE_NULL(702, "Price of course can not be null"),

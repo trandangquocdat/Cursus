@@ -82,6 +82,17 @@ public class Filter extends OncePerRequestFilter {
         }
     }
 
+    public String getFullURL(HttpServletRequest request) {
+        StringBuilder requestURL = new StringBuilder(request.getRequestURL().toString());
+        String queryString = request.getQueryString();
+
+        if (queryString != null) {
+            requestURL.append("?").append(queryString);
+        }
+
+        return requestURL.toString();
+    }
+
     public String getToken(HttpServletRequest request) {
         try {
             return request.getHeader("Authorization").split(" ")[1];

@@ -1,10 +1,8 @@
 package com.fpt.cursus.dto.request;
 
 import com.fpt.cursus.enums.Gender;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.fpt.cursus.validator.NotEmptyOrNullMultipartFile;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +26,7 @@ public class RegisterReqDto {
     private String fullName;
     @NotBlank(message = "PHONE_NULL")
     private String phone;
+    @NotEmptyOrNullMultipartFile()
     private MultipartFile avatar;
     private Gender gender;
 

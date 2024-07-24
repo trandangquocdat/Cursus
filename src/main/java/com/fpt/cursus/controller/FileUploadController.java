@@ -27,12 +27,12 @@ public class FileUploadController {
         this.storageService = storageService;
     }
 
-    @GetMapping("/files/upload")
+    @PostMapping("/files/upload")
     public String handleFileUpload(@RequestParam("file") MultipartFile file) {
         try {
             // Start the file upload process
-            storageService.uploadFile(file);
-            return "File uploaded successfully!";
+            storageService.uploadFile(file, file.getOriginalFilename());
+            return "File uploaded successfully: " + file.getOriginalFilename();
         } catch (IOException e) {
             e.printStackTrace(); // Handle exception as needed
             return "File upload failed: " + e.getMessage();
