@@ -1,5 +1,8 @@
 package com.fpt.cursus.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.ChangePasswordDto;
 import com.fpt.cursus.dto.request.LoginReqDto;
 import com.fpt.cursus.dto.request.RegisterReqDto;
@@ -37,6 +40,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -64,6 +68,8 @@ class AccountServiceTest {
     @Mock
     private ModelMapper modelMapper;
     @Mock
+    private ObjectMapper objectMapper;
+    @Mock
     private Regex regex;
     @Mock
     private OtpService otpService;
@@ -77,7 +83,7 @@ class AccountServiceTest {
     private Account account;
     private RegisterReqDto registerReqDto;
     private LoginReqDto loginReqDto;
-    private Otp otp;
+    private Account instructorAccount;
 
     @BeforeEach
     void setUp() {
@@ -90,6 +96,17 @@ class AccountServiceTest {
         account.setRole(Role.STUDENT);
         account.setStatus(UserStatus.INACTIVE);
         account.setCreatedDate(new Date());
+
+        instructorAccount = new Account();
+        instructorAccount.setUsername("testinstructor");
+        instructorAccount.setEmail("testIn@example.com");
+        instructorAccount.setFullName("Test Instructor");
+        instructorAccount.setPhone("098765432");
+        instructorAccount.setPassword("password");
+        instructorAccount.setRole(Role.INSTRUCTOR);
+        instructorAccount.setStatus(UserStatus.ACTIVE);
+        instructorAccount.setCreatedDate(new Date());
+        instructorAccount.setSubscribersJson("[]");
 
         MockMultipartFile mockAvatarFile = new MockMultipartFile("avatar", "avatar.png", "image/png", "dummy content".getBytes());
 
@@ -106,12 +123,6 @@ class AccountServiceTest {
         loginReqDto = new LoginReqDto();
         loginReqDto.setUsername("testuser");
         loginReqDto.setPassword("password");
-
-        otp = new Otp();
-        otp.setEmail("test@example.com");
-        otp.setOtp("123456");
-        otp.setOtpGeneratedTime(LocalDateTime.now()); // Ensure otpGeneratedTime is set
-        otp.setValid(true); // Ensure OTP is initially valid
 
         mockRequest = mock(HttpServletRequest.class);
         reset(firebaseAuth);
@@ -837,5 +848,132 @@ class AccountServiceTest {
         verify(tokenHandler, never()).generateRefreshToken(any(Account.class));
     }
 
+    @Test
+    void testSubscribeInstructor_Success() throws Exception {
+
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+        List<Long> subcribing = List.of(3L, 4L); //của user
+        List<Long> subcriber = List.of(5L, 6L);  // của instructor
+        String subcribingJson = objectMapper.writeValueAsString(subcribing);
+        String subcriberJson = objectMapper.writeValueAsString(subcriber);
+        account.setSubscribingJson(subcribingJson);
+        instructorAccount.setSubscribersJson(subcriberJson);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        accountService.subscribeInstructor(instructorAccount.getId());
+        List<Long> expectedSubcribingList = new ArrayList<>(subcribing);
+        expectedSubcribingList.add(instructorAccount.getId());
+        List<Long> expectedSubscriberList = new ArrayList<>(subcriber);
+        expectedSubscriberList.add(account.getId());
+
+        //then
+        assertEquals(objectMapper.writeValueAsString(expectedSubcribingList), account.getSubscribingJson());
+        assertEquals(objectMapper.writeValueAsString(expectedSubscriberList), instructorAccount.getSubscribersJson());
+    }
+
+    @Test
+    void testGetSubscribersUsers_JsonException() throws Exception {
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+        List<Long> subcribing = List.of(3L, 4L); //của user
+        String invalidJsonForSubcriber = "invalid";
+        String subcribingJson = objectMapper.writeValueAsString(subcribing);
+        account.setSubscribingJson(subcribingJson);
+        instructorAccount.setSubscribersJson(invalidJsonForSubcriber);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        doThrow(new JsonProcessingException("Invalid JSON") {})
+                .when(objectMapper).readValue(eq(invalidJsonForSubcriber), any(TypeReference.class));
+
+        //then
+        AppException exception = assertThrows(AppException.class, () -> {
+            accountService.subscribeInstructor(instructorAccount.getId());
+        });
+        assertEquals(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL, exception.getErrorCode());
+    }
+
+    @Test
+    void testGetSubscribingsUsers_JsonException() throws Exception {
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+        String invalidJsonForSubcribing = "invalid";
+        List<Long> subcriber = List.of(5L, 6L);
+        String subcriberJson = objectMapper.writeValueAsString(subcriber);
+        account.setSubscribingJson(invalidJsonForSubcribing);
+        instructorAccount.setSubscribersJson(subcriberJson);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        doThrow(new JsonProcessingException("Invalid JSON") {})
+                .when(objectMapper).readValue(eq(invalidJsonForSubcribing), any(TypeReference.class));
+
+        //then
+        AppException exception = assertThrows(AppException.class, () -> {
+            accountService.subscribeInstructor(instructorAccount.getId());
+        });
+        assertEquals(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL, exception.getErrorCode());
+    }
+
+    @Test
+    void testGetSubscribingsAndSubcriberUsers_BeEmpty() throws Exception {
+
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+
+        String emptysubcriberJson = "";
+        String emptysubcribingJson =  "";
+        account.setSubscribingJson(emptysubcribingJson);
+        instructorAccount.setSubscribersJson(emptysubcriberJson);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        accountService.subscribeInstructor(instructorAccount.getId());
+        List<Long> expectedSubscriberList = new ArrayList<>();
+        expectedSubscriberList.add(account.getId());
+        List<Long> expectedSubscribingList = new ArrayList<>();
+        expectedSubscribingList.add(instructorAccount.getId());
+        //then
+        assertEquals(objectMapper.writeValueAsString(expectedSubscribingList), account.getSubscribingJson());
+        assertEquals(objectMapper.writeValueAsString(expectedSubscriberList), instructorAccount.getSubscribersJson());
+    }
+
+    @Test
+    void testUnsubscribeInstructor_Success() throws Exception {
+
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+        List<Long> subcribing = List.of(1L, 3L); //của user
+        List<Long> subcriber = List.of(2L, 4L);  // của instructor
+        String subcribingJson = objectMapper.writeValueAsString(subcribing);
+        String subcriberJson = objectMapper.writeValueAsString(subcriber);
+        account.setSubscribingJson(subcribingJson);
+        instructorAccount.setSubscribersJson(subcriberJson);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        accountService.unsubscribeInstructor(instructorAccount.getId());
+        List<Long> expectedSubcribingList = new ArrayList<>(subcribing);
+        expectedSubcribingList.remove(instructorAccount.getId());
+        List<Long> expectedSubscriberList = new ArrayList<>(subcriber);
+        expectedSubscriberList.remove(account.getId());
+
+        //then
+        assertEquals(objectMapper.writeValueAsString(expectedSubcribingList), account.getSubscribingJson());
+        assertEquals(objectMapper.writeValueAsString(expectedSubscriberList), instructorAccount.getSubscribersJson());
+
+    }
 }
 
