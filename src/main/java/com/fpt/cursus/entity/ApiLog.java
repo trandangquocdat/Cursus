@@ -20,8 +20,8 @@ public class ApiLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
     private String ipAddress;
+    @Column(length = 800)
     private String apiEndpoint;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
     private ZonedDateTime accessTime;

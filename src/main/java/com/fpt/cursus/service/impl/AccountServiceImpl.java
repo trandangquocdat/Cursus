@@ -405,11 +405,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account getAccountByUsername(String username) {
-        Account account = accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        if (account.getAvatar() != null) {
-            account.setAvatar(fileService.getSignedImageUrl(account.getAvatar()));
-        }
-        return account;
+        return accountRepo.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Override

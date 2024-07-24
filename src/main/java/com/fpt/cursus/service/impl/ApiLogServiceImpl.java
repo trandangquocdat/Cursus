@@ -47,7 +47,7 @@ public class ApiLogServiceImpl implements ApiLogService {
     }
     private void checkAndBanIfExceedLimit(String ipAddress, String apiEndpoint, ZonedDateTime now) {
         ApiLog log = apiLogRepo.findByIpAddressAndApiEndpoint(ipAddress, apiEndpoint);
-        if (log != null && log.getCount() > 100) {
+        if (log != null && log.getCount() > 5) {
             if (!backListIPRepo.findByIpAddress(ipAddress).isPresent()) {
                 BackListIP bannedIp = new BackListIP();
                 bannedIp.setIpAddress(ipAddress);

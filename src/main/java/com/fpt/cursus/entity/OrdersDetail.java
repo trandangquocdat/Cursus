@@ -1,6 +1,7 @@
 package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fpt.cursus.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,5 +25,6 @@ public class OrdersDetail {
 
     @ManyToOne
     @JoinColumn(name = "orders_id")
+    @JsonIgnore
     private Orders orders;
 }

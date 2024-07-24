@@ -173,12 +173,17 @@ public class OrderServiceImpl implements OrderService {
         order.setCreatedDate(new Date());
         order.setStatus(OrderStatus.PENDING);
         order.setPrice(price);
+
         ObjectMapper mapper = new ObjectMapper();
         try {
             order.setOrderCourseJson(mapper.writeValueAsString(ids));
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.ORDER_FAIL);
         }
+
+        // Save the Orders entity first
+        ordersRepo.save(order);
+
         List<OrdersDetail> orderedDetails = new ArrayList<>();
 
         for (Long courseId : ids) {
@@ -189,12 +194,18 @@ public class OrderServiceImpl implements OrderService {
             ordersDetail.setCourseId(courseId);
             ordersDetail.setPrice(courseService.getCourseById(courseId).getPrice());
             ordersDetail.setOrders(order);
-            ordersDetailRepo.save(ordersDetail);
             orderedDetails.add(ordersDetail);
         }
+
+        // Save all OrdersDetail entities
+        ordersDetailRepo.saveAll(orderedDetails);
+
         order.setOrdersDetails(orderedDetails);
+
+        // Optionally update the Orders entity with the details
         ordersRepo.save(order);
     }
+
     @Override
     public List<OrdersDetail> findAllByIdIn(List<Long> ids) {
         List<OrdersDetail> ordersDetails = ordersDetailRepo.findAllByIdIn(ids);
