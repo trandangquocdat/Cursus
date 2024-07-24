@@ -69,23 +69,29 @@ public class CourseServiceImpl implements CourseService {
         this.fileService = fileService;
         this.fileUtil = fileUtil;
     }
+
     @Override
     public Course createCourse(CreateCourseDto createCourseDto) {
         validateCourseDto(createCourseDto);
         Course course = modelMapper.map(createCourseDto, Course.class);
+        String folder = accountUtil.getCurrentAccount().getUsername();
         Date date = new Date();
         course.setCreatedDate(date);
         course.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
-        if (!fileUtil.isImage(createCourseDto.getPictureLink())) {
+        if (createCourseDto.getPictureLink() == null) {
+            course.setPictureLink("defaultImage.jpg");
+        } else if (!fileUtil.isImage(createCourseDto.getPictureLink())) {
             throw new AppException(ErrorCode.FILE_INVALID_IMAGE);
         } else {
-            fileService.setPicture(createCourseDto.getPictureLink(), course);
+            String link = fileService.linkSave(createCourseDto.getPictureLink(), folder);
+            course.setPictureLink(link);
         }
         course.setStatus(CourseStatus.DRAFT);
         course.setVersion(1f);
         return courseRepo.save(course);
 
     }
+
     @Override
     public Course deleteCourseById(Long id) {
         Course course = getCourseById(id);
@@ -94,11 +100,12 @@ public class CourseServiceImpl implements CourseService {
         course.setStatus(CourseStatus.DELETED);
         return courseRepo.save(course);
     }
+
     @Override
     public Course updateCourse(Long id, UpdateCourseDto request) {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT).setSkipNullEnabled(true);
-
+        String folder = accountUtil.getCurrentAccount().getUsername();
         Course existingCourse = getCourseById(id);
         if (existingCourse.getStatus() == CourseStatus.DELETED) {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
@@ -111,26 +118,43 @@ public class CourseServiceImpl implements CourseService {
         }
         mapper.map(request, existingCourse);
         if (request.getPictureLink() != null) {
-            fileService.setPicture(request.getPictureLink(), existingCourse);
+            String link = fileService.linkSave(request.getPictureLink(), folder);
+            existingCourse.setPictureLink(link);
         }
         existingCourse.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         existingCourse.setStatus(CourseStatus.DRAFT);
         existingCourse.setVersion(Math.round((existingCourse.getVersion() + 0.1f) * 10) / 10.0f);
         existingCourse.setUpdatedDate(new Date());
-
         return courseRepo.save(existingCourse);
     }
+
     @Override
     public Page<Course> getCourseByCreatedBy(int offset, int pageSize, String sortBy) {
         String username = accountUtil.getCurrentAccount().getUsername();
         pageUtil.checkOffset(offset);
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         Page<Course> courses = courseRepo.findCourseByCreatedBy(username, pageable);
+        for (Course course : courses) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
         if (courses.isEmpty()) {
             return new PageImpl<>(Collections.emptyList());
         }
         return courses;
     }
+
+    @Override
+    public List<Course> getCourseByCreatedBy(String username) {
+        List<Course> courses = courseRepo.findCourseByCreatedBy(username);
+        for (Course course : courses) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
+        if (courses.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return courses;
+    }
+
     @Override
     public Course approveCourseById(Long id, CourseStatus status) {
         if (status.equals(CourseStatus.PUBLISHED)) {
@@ -150,20 +174,26 @@ public class CourseServiceImpl implements CourseService {
         }
         return null;
     }
+
     @Override
     public Course getCourseById(Long id) {
         return courseRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
     }
+
     @Override
     public Page<Course> getCourseByStatus(CourseStatus status, int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         Page<Course> courses = courseRepo.findCourseByStatus(status, pageable);
+        for (Course course : courses) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
         if (courses.isEmpty()) {
             return new PageImpl<>(Collections.emptyList());
         }
         return courses;
     }
+
     @Override
     public CustomAccountResDto addStudiedLesson(Long lessonId) {
         Account account = accountUtil.getCurrentAccount();
@@ -195,6 +225,7 @@ public class CourseServiceImpl implements CourseService {
         newAccount.setStudiedCourses(studiedCourses);
         return newAccount;
     }
+
     @Override
     public CustomAccountResDto addToWishList(List<Long> ids) {
         List<Course> courses = courseRepo.findByIdIn(ids);
@@ -215,6 +246,7 @@ public class CourseServiceImpl implements CourseService {
         wishListAccount.setWishListCourses(wishListCourses);
         return wishListAccount;
     }
+
     @Override
     public CustomAccountResDto removeFromWishList(Long id) {
         Account account = accountUtil.getCurrentAccount();
@@ -227,6 +259,7 @@ public class CourseServiceImpl implements CourseService {
         wishListAccount.setWishListCourses(wishListCourses);
         return wishListAccount;
     }
+
     @Override
     public Page<GeneralCourse> getWishListCourses(int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
@@ -236,6 +269,7 @@ public class CourseServiceImpl implements CourseService {
         Page<Course> courses = courseRepo.findByIdInAndStatus(wishListCourses, CourseStatus.PUBLISHED, pageable);
         return convertToGeneralCoursePage(courses);
     }
+
     @Override
     public Page<GeneralCourse> getCourseByCategory(Category category, int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
@@ -248,9 +282,14 @@ public class CourseServiceImpl implements CourseService {
         }
         if (courses.isEmpty()) {
             return new PageImpl<>(new ArrayList<>());
+        } else {
+            for (Course course : courses) {
+                course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+            }
         }
         return convertToGeneralCoursePage(courses);
     }
+
     @Override
     public double percentDoneCourse(Long courseId) {
         Account account = accountUtil.getCurrentAccount();
@@ -263,37 +302,48 @@ public class CourseServiceImpl implements CourseService {
         return totalLessons == 0 ? 0 : (double) completedLessons / totalLessons;
     }
 
-
     private int getTotalLesson(Long courseId) {
         Course course = getCourseById(courseId);
         return course.getChapter().stream().mapToInt(chapter -> chapter.getLesson().size()).sum();
     }
+
     @Override
     public Page<GeneralCourse> getAllGeneralCourses(String sortBy, int offset, int pageSize) {
         pageUtil.checkOffset(offset);
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         Page<Course> courses = courseRepo.findCourseByStatus(CourseStatus.PUBLISHED, pageable);
+        for (Course course : courses) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
         return convertToGeneralCoursePage(courses);
     }
+
     @Override
     public Page<GeneralCourse> getGeneralEnrolledCourses(String sortBy, int offset, int pageSize) {
         pageUtil.checkOffset(offset);
         Page<Course> courses = getEnrolledCoursesPage(offset, pageSize);
+        for (Course course : courses) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         return convertToGeneralCoursePage(new PageImpl<>(courses.getContent(), pageable, courses.getTotalElements()));
     }
+
     @Override
     public Page<Course> getDetailEnrolledCourses(String sortBy, int offset, int pageSize) {
         pageUtil.checkOffset(offset);
         Page<Course> courses = getEnrolledCoursesPage(offset, pageSize);
+        for (Course course : courses) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         return new PageImpl<>(courses.getContent(), pageable, courses.getTotalElements());
     }
+
     @Override
     public void saveCourse(Course course) {
         courseRepo.save(course);
     }
-
 
     private Page<GeneralCourse> convertToGeneralCoursePage(Page<Course> courses) {
         List<GeneralCourse> generalCoursesList = new ArrayList<>();
@@ -307,6 +357,7 @@ public class CourseServiceImpl implements CourseService {
         GeneralCourse generalCourse = new GeneralCourse();
         generalCourse.setId(course.getId());
         generalCourse.setName(course.getName());
+        generalCourse.setDescription(course.getDescription());
         generalCourse.setPictureLink(course.getPictureLink());
         generalCourse.setPrice(course.getPrice());
         generalCourse.setRating(course.getRating());
@@ -319,12 +370,16 @@ public class CourseServiceImpl implements CourseService {
         generalCourse.setVersion(course.getVersion());
         return generalCourse;
     }
+
     @Override
     public Page<GeneralCourse> getGeneralCourseByName(String name, int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         List<Long> courses = courseRepo.findCourseByNameLike("%" + name + "%").stream().map(Course::getId).toList();
         Page<Course> coursePage = courseRepo.findByIdInAndStatus(courses, CourseStatus.PUBLISHED, pageable);
+        for (Course course : coursePage) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
         return convertToGeneralCoursePage(coursePage);
     }
 
@@ -342,15 +397,20 @@ public class CourseServiceImpl implements CourseService {
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.COURSE_NOT_FOUND);
         }
-
         Pageable pageable = PageRequest.of(offset - 1, pageSize);
-        return courseRepo.findByIdInAndStatus(enrolledCourseIds, CourseStatus.PUBLISHED, pageable);
+        Page<Course> coursePage = courseRepo.findByIdInAndStatus(enrolledCourseIds, CourseStatus.PUBLISHED, pageable);
+        for (Course course : coursePage) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
+        return coursePage;
     }
+
     @Override
     public List<StudiedCourse> getAllStudiedCourses() {
         Account account = accountUtil.getCurrentAccount();
         return getStudiedCourses(account);
     }
+
     @Override
     public StudiedCourse getCheckPoint() {
         Account account = accountUtil.getCurrentAccount();
@@ -362,12 +422,17 @@ public class CourseServiceImpl implements CourseService {
         }
         return null;
     }
+
     @Override
     public Page<Course> getAllCourse(int offset, int pageSize, String sortBy) {
         List<Course> courses = courseRepo.findAll();
+        for (Course course : courses) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         return new PageImpl<>(courses, pageable, courses.size());
     }
+
     @Override
     public List<Course> getCourseByIdsIn(List<Long> courseIds) {
         List<Course> courses = courseRepo.findByIdIn(courseIds);
@@ -376,7 +441,8 @@ public class CourseServiceImpl implements CourseService {
         }
         return courses;
     }
-    private List<StudiedCourse> getStudiedCourses(Account account) {
+
+    public List<StudiedCourse> getStudiedCourses(Account account) {
         if (account.getStudiedCourseJson() == null || account.getStudiedCourseJson().isEmpty()) {
             return new ArrayList<>();
         }

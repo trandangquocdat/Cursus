@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.PaymentDto;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Orders;
+import com.fpt.cursus.entity.OrdersDetail;
 import com.fpt.cursus.enums.OrderStatus;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
+import com.fpt.cursus.repository.OrdersDetailRepo;
 import com.fpt.cursus.repository.OrdersRepo;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.EnrollCourseService;
@@ -27,10 +29,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -38,6 +37,7 @@ public class OrderServiceImpl implements OrderService {
     private final CourseService courseService;
     private final OrdersRepo ordersRepo;
     private final EnrollCourseService enroll;
+    private final OrdersDetailRepo ordersDetailRepo;
     @Value("${spring.vnpay.tmnCode}")
     private String tmnCode;
     @Value("${spring.vnpay.secretKey}")
@@ -53,11 +53,13 @@ public class OrderServiceImpl implements OrderService {
     public OrderServiceImpl(AccountUtil accountUtil,
                             CourseService courseService,
                             OrdersRepo ordersRepo,
-                            EnrollCourseService enroll) {
+                            EnrollCourseService enroll,
+                            OrdersDetailRepo ordersDetailRepo) {
         this.accountUtil = accountUtil;
         this.courseService = courseService;
         this.ordersRepo = ordersRepo;
         this.enroll = enroll;
+        this.ordersDetailRepo = ordersDetailRepo;
     }
 
     @Override
@@ -72,10 +74,10 @@ public class OrderServiceImpl implements OrderService {
         String formattedCreateDate = createDate.format(formatter);
         double prices = 0;
         List<Course> courses = courseService.getCourseByIdsIn(ids);
+        if (courses == null) {
+            throw new AppException(ErrorCode.COURSE_NOT_FOUND);
+        }
         for (Course course : courses) {
-            if (course == null) {
-                throw new AppException(ErrorCode.COURSE_NOT_FOUND);
-            }
             prices += course.getPrice();
         }
         setOrder(order, ids, prices);
@@ -139,6 +141,7 @@ public class OrderServiceImpl implements OrderService {
         }
         return result.toString();
     }
+
     @Override
     public Orders orderSuccess(String txnRef, String responseCode) {
         Long id = Long.parseLong(txnRef);
@@ -158,20 +161,59 @@ public class OrderServiceImpl implements OrderService {
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.ORDER_FAIL);
         }
+        List<OrdersDetail> orderedDetails = order.getOrdersDetails();
+        for (OrdersDetail ordersDetail : orderedDetails) {
+            ordersDetail.setStatus(OrderStatus.PAID);
+            ordersDetailRepo.save(ordersDetail);
+        }
         return ordersRepo.save(order);
     }
+
     @Override
     public void setOrder(Orders order, List<Long> ids, double price) {
         order.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
         order.setCreatedDate(new Date());
         order.setStatus(OrderStatus.PENDING);
         order.setPrice(price);
+
         ObjectMapper mapper = new ObjectMapper();
         try {
             order.setOrderCourseJson(mapper.writeValueAsString(ids));
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.ORDER_FAIL);
         }
+
+        // Save the Orders entity first
         ordersRepo.save(order);
+
+        List<OrdersDetail> orderedDetails = new ArrayList<>();
+
+        for (Long courseId : ids) {
+            OrdersDetail ordersDetail = new OrdersDetail();
+            ordersDetail.setCreatedDate(new Date());
+            ordersDetail.setStatus(OrderStatus.PENDING);
+            ordersDetail.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
+            ordersDetail.setCourseId(courseId);
+            ordersDetail.setPrice(courseService.getCourseById(courseId).getPrice());
+            ordersDetail.setOrders(order);
+            orderedDetails.add(ordersDetail);
+        }
+
+        // Save all OrdersDetail entities
+        ordersDetailRepo.saveAll(orderedDetails);
+
+        order.setOrdersDetails(orderedDetails);
+
+        // Optionally update the Orders entity with the details
+        ordersRepo.save(order);
+    }
+
+    @Override
+    public List<OrdersDetail> findAllByIdIn(List<Long> ids) {
+        List<OrdersDetail> ordersDetails = ordersDetailRepo.findAllByIdIn(ids);
+        if (ordersDetails.isEmpty()) {
+            throw new AppException(ErrorCode.ORDER_NOT_FOUND);
+        }
+        return ordersDetails;
     }
 }

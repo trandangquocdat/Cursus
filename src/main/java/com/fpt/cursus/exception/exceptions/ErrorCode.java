@@ -2,7 +2,6 @@ package com.fpt.cursus.exception.exceptions;
 
 import lombok.Getter;
 
-
 @Getter
 public enum ErrorCode {
 
@@ -46,7 +45,10 @@ public enum ErrorCode {
     OTP_INVALID(660, "Wrong OTP"),
     OTP_EXPIRED(661, "OTP expired"),
     OTP_NOT_FOUND(662, "OTP not found"),
+    //
+    AVATAR_EMPTY(670, "Avatar can not be empty"),
     //Course error - 70x
+
     COURSE_NOT_FOUND(700, "Course not found"),
     COURSE_SIZE_INVALID(701, "Course name must be less than 200 characters"),
     COURSE_PRICE_NULL(702, "Price of course can not be null"),
@@ -91,8 +93,8 @@ public enum ErrorCode {
     INVALID_OFFSET(800, "Invalid Page"),
     ;
 
-    private int code;
-    private String message;
+    private final int code;
+    private final String message;
 
     ErrorCode(int code, String message) {
         this.code = code;

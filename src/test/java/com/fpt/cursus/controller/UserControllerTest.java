@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.dto.response.CustomAccountResDto;
 import com.fpt.cursus.dto.response.GeneralCourse;
+import com.fpt.cursus.dto.response.InstructorDashboardRes;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.enums.Role;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.CourseService;
+import com.fpt.cursus.service.DashboardService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -37,7 +39,8 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
         AccountService.class,
-        CourseService.class
+        CourseService.class,
+        DashboardService.class
 })
 class UserControllerTest {
 
@@ -47,6 +50,9 @@ class UserControllerTest {
     @MockBean
     private CourseService courseService;
 
+    @MockBean
+    private DashboardService dashboardService;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -55,7 +61,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = standaloneSetup(new UserController(accountService, courseService))
+        mockMvc = standaloneSetup(new UserController(accountService, courseService, dashboardService))
                 .alwaysDo(print())
                 .build();
     }
@@ -193,4 +199,60 @@ class UserControllerTest {
                         content().json(objectMapper.writeValueAsString(page)));
     }
 
+    @Test
+    void testSubscribeInstructor() throws Exception {
+        // given
+        long instructorId = 1L;
+        // when
+        doNothing().when(accountService).subscribeInstructor(anyLong()); // phương thức này không trả về giá trị gì
+        // then
+        mockMvc.perform(put("/subscribe-instructor")
+                        .param("id", Long.toString(instructorId)))
+                .andExpectAll(status().isOk(),
+                        content().string("Subscribe successfully"));
+    }
+
+    @Test
+    void testUnsubscribeInstructor() throws Exception {
+        // given
+        long instructorId = 1L;
+        // when
+        doNothing().when(accountService).unsubscribeInstructor(anyLong()); // phương thức này không trả về giá trị gì
+        // then
+        mockMvc.perform(put("/unsubscribe-instructor")
+                        .param("id", Long.toString(instructorId)))
+                .andExpectAll(status().isOk(),
+                        content().string("Unsubscribe successfully"));
+    }
+
+    @Test
+    void testGetProfile() throws Exception {
+        // given
+        Account account = new Account();
+        account.setId(1L);
+        account.setRole(Role.ADMIN);
+        // when
+        when(accountService.getProfile()).thenReturn(account);
+        // then
+        mockMvc.perform(get("/profile"))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(account)));
+    }
+
+    @Test
+    void testGetInstructorDashboard() throws Exception {
+        // given
+        InstructorDashboardRes res = new InstructorDashboardRes();
+        res.setCurrentSubscribers(1L);
+        res.setTotalCourses(1L);
+        res.setTotalEnroll(1L);
+        res.setTotalSales(1.0);
+        res.setTotalStudents(1L);
+        // when
+        when(dashboardService.getInstructorDashboardRes()).thenReturn(res);
+        // then
+        mockMvc.perform(get("/instructor-dashboard"))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(res)));
+    }
 }

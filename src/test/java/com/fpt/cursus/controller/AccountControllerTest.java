@@ -230,7 +230,7 @@ class AccountControllerTest {
         resetPasswordDto.setConfirmPassword("password");
         String message = "Reset password successfully";
         //then
-        mockMvc.perform(put("/auth/reset-password")
+        mockMvc.perform(patch("/auth/reset-password")
                         .param("email", email)
                         .param("otp", "otp")
                         .contentType(MediaType.APPLICATION_JSON)

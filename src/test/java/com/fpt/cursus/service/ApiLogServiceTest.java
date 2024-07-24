@@ -1,8 +1,9 @@
 package com.fpt.cursus.service;
+
 import com.fpt.cursus.entity.ApiLog;
-import com.fpt.cursus.entity.BackListIP;
+import com.fpt.cursus.entity.BlackListIP;
 import com.fpt.cursus.repository.ApiLogRepo;
-import com.fpt.cursus.repository.BackListIPRepo;
+import com.fpt.cursus.repository.BlackListIPRepo;
 import com.fpt.cursus.service.impl.ApiLogServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,13 +25,12 @@ class ApiLogServiceTest {
     private ApiLogRepo apiLogRepo;
 
     @Mock
-    private BackListIPRepo backListIPRepo;
+    private BlackListIPRepo blackListIPRepo;
 
     @InjectMocks
     private ApiLogServiceImpl apiLogServiceImpl;
 
     private ApiLog apiLog;
-    private BackListIP backListIP;
 
     @BeforeEach
     void setUp() {
@@ -39,17 +39,10 @@ class ApiLogServiceTest {
         apiLog.setApiEndpoint("/test");
         apiLog.setCount(1);
         apiLog.setAccessTime(ZonedDateTime.now());
-
-        backListIP = new BackListIP();
-        backListIP.setIpAddress("127.0.0.1");
-        backListIP.setBanTime(ZonedDateTime.now());
     }
 
     @Test
     void deleteOldCounts() {
-        ZonedDateTime currentTime = ZonedDateTime.now();
-        ZonedDateTime timeDeleteRecord = currentTime.minusSeconds(10);
-
         apiLogServiceImpl.deleteOldCounts();
 
         verify(apiLogRepo, times(1)).deleteByAccessTimeBefore(any(ZonedDateTime.class));
@@ -78,13 +71,12 @@ class ApiLogServiceTest {
     void checkAndBanIfExceedLimit_ban() {
         apiLog.setCount(101);
         when(apiLogRepo.findByIpAddressAndApiEndpoint(anyString(), anyString())).thenReturn(apiLog);
-        when(backListIPRepo.findByIpAddress(anyString())).thenReturn(Optional.empty());
+        when(blackListIPRepo.findByIpAddress(anyString())).thenReturn(Optional.empty());
 
         apiLogServiceImpl.logAccess("127.0.0.1", "/test");
 
-        verify(backListIPRepo, times(1)).save(any(BackListIP.class));
+        verify(blackListIPRepo, times(1)).save(any(BlackListIP.class));
     }
-
 
     @Test
     void checkAndBanIfExceedLimit_doNotBan() {
@@ -93,6 +85,17 @@ class ApiLogServiceTest {
 
         apiLogServiceImpl.logAccess("127.0.0.1", "/test");
 
-        verify(backListIPRepo, times(0)).save(any(BackListIP.class));
+        verify(blackListIPRepo, times(0)).save(any(BlackListIP.class));
+    }
+
+    @Test
+    void checkAndBanIfExceedLimit_alreadyBanned() {
+        apiLog.setCount(101);
+        when(apiLogRepo.findByIpAddressAndApiEndpoint(anyString(), anyString())).thenReturn(apiLog);
+        when(blackListIPRepo.findByIpAddress(anyString())).thenReturn(Optional.of(new BlackListIP()));
+
+        apiLogServiceImpl.logAccess("127.0.0.1", "/test");
+
+        verify(blackListIPRepo, times(0)).save(any(BlackListIP.class));
     }
 }

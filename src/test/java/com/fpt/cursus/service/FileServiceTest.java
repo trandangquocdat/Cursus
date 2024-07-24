@@ -1,39 +1,29 @@
 package com.fpt.cursus.service;
 
 
-import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.entity.Course;
-import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.exception.exceptions.AppException;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.impl.FileServiceImpl;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
@@ -98,78 +88,78 @@ class FileServiceTest {
         method.setAccessible(true);
         method.invoke(targetObject);
     }
-
-    @Test
-    void testSetAvatarSuccess() throws NoSuchFieldException, IllegalAccessException {
-        //given
-        Account account = new Account();
-        setField(fileService, "storage", storage);
-        //when
-        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
-        //then
-        fileService.setAvatar(multipartFile, account);
-        assertTrue(account.getAvatar().contains(link));
-    }
-
-    @Test
-    void testSetPictureSuccess() throws NoSuchFieldException, IllegalAccessException {
-        //given
-        Course course = new Course();
-        setField(fileService, "storage", storage);
-        //when
-        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
-        //then
-        fileService.setPicture(multipartFile, course);
-        assertTrue(course.getPictureLink().contains(link));
-    }
-
-    @Test
-    void testSetVideoSuccess() throws NoSuchFieldException, IllegalAccessException {
-        //given
-        Lesson lesson = new Lesson();
-        setField(fileService, "storage", storage);
-        //when
-        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
-        //then
-        fileService.setVideo(multipartFile, lesson);
-        assertTrue(lesson.getVideoLink().contains(link));
-    }
-
-    @Test
-    void testSetAvatarFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        //given
-        Account account = new Account();
-        setMethod(fileService);
-        //then
-        assertThrows(AppException.class, () -> fileService.setAvatar(multipartFile, account));
-    }
-
-    @Test
-    void testSetPictureFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        //given
-        Course course = new Course();
-        setMethod(fileService);
-        //then
-        assertThrows(AppException.class, () -> fileService.setPicture(multipartFile, course));
-    }
-
-    @Test
-    void testSetVideoFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        //given
-        Lesson lesson = new Lesson();
-        setMethod(fileService);
-        //then
-        assertThrows(AppException.class, () -> fileService.setVideo(multipartFile, lesson));
-    }
-
-    @Test
-    void testUploadFileFailRuntimeException() throws NoSuchFieldException, IllegalAccessException {
-        //given
-        setField(fileService, "storage", storage);
-        //when
-        //then
-        assertThrows(RuntimeException.class, () -> fileService.uploadFile(multipartFile));
-    }
+//
+//    @Test
+//    void testSetAvatarSuccess() throws NoSuchFieldException, IllegalAccessException {
+//        //given
+//        Account account = new Account();
+//        setField(fileService, "storage", storage);
+//        //when
+//        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
+//        //then
+//        fileService.setAvatar(multipartFile, account);
+//        assertTrue(account.getAvatar().contains(link));
+//    }
+//
+//    @Test
+//    void testSetPictureSuccess() throws NoSuchFieldException, IllegalAccessException {
+//        //given
+//        Course course = new Course();
+//        setField(fileService, "storage", storage);
+//        //when
+//        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
+//        //then
+//        fileService.setPicture(multipartFile, course);
+//        assertTrue(course.getPictureLink().contains(link));
+//    }
+//
+//    @Test
+//    void testSetVideoSuccess() throws NoSuchFieldException, IllegalAccessException {
+//        //given
+//        Lesson lesson = new Lesson();
+//        setField(fileService, "storage", storage);
+//        //when
+//        when(storage.writer(any(BlobInfo.class))).thenReturn(writeChannel);
+//        //then
+//        fileService.setVideo(multipartFile, lesson);
+//        assertTrue(lesson.getVideoLink().contains(link));
+//    }
+//
+//    @Test
+//    void testSetAvatarFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+//        //given
+//        Account account = new Account();
+//        setMethod(fileService);
+//        //then
+//        assertThrows(AppException.class, () -> fileService.setAvatar(multipartFile, account));
+//    }
+//
+//    @Test
+//    void testSetPictureFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+//        //given
+//        Course course = new Course();
+//        setMethod(fileService);
+//        //then
+//        assertThrows(AppException.class, () -> fileService.setPicture(multipartFile, course));
+//    }
+//
+//    @Test
+//    void testSetVideoFail() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+//        //given
+//        Lesson lesson = new Lesson();
+//        setMethod(fileService);
+//        //then
+//        assertThrows(AppException.class, () -> fileService.setVideo(multipartFile, lesson));
+//    }
+//
+//    @Test
+//    void testUploadFileFailRuntimeException() throws NoSuchFieldException, IllegalAccessException {
+//        //given
+//        setField(fileService, "storage", storage);
+//        //when
+//        //then
+//        assertThrows(RuntimeException.class, () -> fileService.uploadFile(multipartFile));
+//    }
 
     @Test
     void testDownloadFileAsResourceSuccess() throws NoSuchFieldException, IllegalAccessException {

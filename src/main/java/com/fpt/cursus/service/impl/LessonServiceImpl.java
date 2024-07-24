@@ -57,10 +57,11 @@ public class LessonServiceImpl implements LessonService {
         this.fileService = fileService;
         this.fileUtil = fileUtil;
     }
+
     @Override
     public List<String> uploadLessonFromExcel(Long chapterId, MultipartFile excelFile) throws IOException {
         List<String> uploadedFileUrls = new ArrayList<>();
-
+        String folder = accountUtil.getCurrentAccount().getUsername();
         try (InputStream inputStream = excelFile.getInputStream()) {
             Workbook workbook = new XSSFWorkbook(inputStream);
             Sheet sheet = workbook.getSheetAt(0);
@@ -82,7 +83,8 @@ public class LessonServiceImpl implements LessonService {
                     lesson.setStatus(LessonStatus.ACTIVE);
                     MultipartFile file = getFileFromPath(videoLink);
                     if (file != null && fileUtil.isVideo(file)) {
-                        fileService.setVideo(file, lesson);
+                        String link = fileService.linkSave(file, folder);
+                        lesson.setVideoLink(link);
                     }
                     lessonRepo.save(lesson);
                 }
@@ -103,50 +105,58 @@ public class LessonServiceImpl implements LessonService {
             return null;
         }
     }
+
     @Override
     public Lesson createLesson(Long chapterId, CreateLessonDto request) {
         Chapter chapter = chapterService.findChapterById(chapterId);
         Account account = accountUtil.getCurrentAccount();
+        String folder = account.getUsername();
         Date date = new Date();
         Lesson lesson = modelMapper.map(request, Lesson.class);
-        lesson.setVideoLink(null);
         lesson.setChapter(chapter);
         lesson.setCreatedDate(date);
         lesson.setCreatedBy(account.getUsername());
         lesson.setStatus(LessonStatus.ACTIVE);
-        if (fileUtil.isVideo(request.getVideoLink())) {
-            fileService.setVideo(request.getVideoLink(), lesson);
+        if (request.getVideoLink() == null) {
+            lesson.setVideoLink(null);
+        } else if (fileUtil.isVideo(request.getVideoLink())) {
+            String link = fileService.linkSave(request.getVideoLink(), folder);
+            lesson.setVideoLink(link);
         } else {
             throw new AppException(ErrorCode.FILE_INVALID_VIDEO);
         }
         return lessonRepo.save(lesson);
     }
-    @Override
 
+    @Override
     public Lesson findLessonById(Long id) {
-        return lessonRepo.findLessonById(id);
+        Lesson lesson = lessonRepo.findLessonById(id);
+        lesson.setVideoLink(fileService.getSignedImageUrl(lesson.getVideoLink()));
+        return lesson;
     }
-    @Override
 
+    @Override
     public Lesson deleteLessonById(Long id) {
         Lesson lesson = this.findLessonById(id);
         lesson.setChapter(null);
         lesson.setStatus(LessonStatus.DELETED);
         return lessonRepo.save(lesson);
     }
-    @Override
 
+    @Override
     public Lesson updateLesson(Long id, CreateLessonDto request) {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.STRICT)
                 .setSkipNullEnabled(true);
         Lesson lesson = this.findLessonById(id);
+        String folder = accountUtil.getCurrentAccount().getUsername();
         mapper.map(request, lesson);
         lesson.setUpdatedDate(new Date());
         if (request.getVideoLink() != null) {
             if (fileUtil.isVideo(request.getVideoLink())) {
-                fileService.setVideo(request.getVideoLink(), lesson);
+                String link = fileService.linkSave(request.getVideoLink(), folder);
+                lesson.setVideoLink(link);
             } else {
                 throw new AppException(ErrorCode.FILE_INVALID_VIDEO);
             }
@@ -154,22 +164,30 @@ public class LessonServiceImpl implements LessonService {
         lesson.setUpdatedBy(accountUtil.getCurrentAccount().getUsername());
         return lessonRepo.save(lesson);
     }
-    @Override
 
+    @Override
     public List<Lesson> findAllByChapterId(Long id) {
         List<Lesson> lessons = lessonRepo.findAllByChapterId(id);
         if (lessons == null) {
             throw new AppException(ErrorCode.LESSON_NOT_FOUND);
+        } else {
+            for (Lesson lesson : lessons) {
+                lesson.setVideoLink(fileService.getSignedImageUrl(lesson.getVideoLink()));
+            }
         }
         return lessons;
     }
-    @Override
 
+    @Override
     public List<Lesson> findAll() {
-        return lessonRepo.findAll();
+        List<Lesson> lessons = lessonRepo.findAll();
+        for (Lesson lesson : lessons) {
+            lesson.setVideoLink(fileService.getSignedImageUrl(lesson.getVideoLink()));
+        }
+        return lessons;
     }
-    @Override
 
+    @Override
     public void save(Lesson lesson) {
         lessonRepo.save(lesson);
     }

@@ -27,7 +27,6 @@ public interface OtpRepo extends JpaRepository<Otp, Long> {
     @Query("DELETE FROM Otp o WHERE o.valid = false OR o.otpGeneratedTime < :time")
     void deleteInvalidOrExpiredOtps(@Param("time") LocalDateTime time);
 
-
     @Transactional
     @Modifying
     @Query("UPDATE Otp SET valid = false WHERE email = :email AND valid = true")

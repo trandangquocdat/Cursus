@@ -52,5 +52,15 @@ public interface AccountService {
 
     Account getAccountByUsername(String username);
 
+    List<Long> getSubscribersUsers(Account account);
+
+    void subscribeInstructor(Long id);
+
+    void unsubscribeInstructor(Long id);
+
     Account getAccountByEmail(String email);
+
+    void uploadAvatar(MultipartFile avatar, String folder, Account account);
+
+    Account getProfile();
 }

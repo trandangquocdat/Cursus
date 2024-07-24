@@ -1,9 +1,7 @@
 package com.fpt.cursus.util;
 
 import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.repository.AccountRepo;
 import io.jsonwebtoken.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,18 +11,12 @@ import java.util.Map;
 
 @Component
 public class TokenHandler {
-    private final AccountRepo accountRepo;
     @Value("${spring.security.jwt.secret-key}")
     private String secretKey;
     @Value("${spring.security.jwt.access-token-expiration}")
     private long accessTokenExpiration;
     @Value("${spring.security.jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
-
-    @Autowired
-    public TokenHandler(AccountRepo accountRepo) {
-        this.accountRepo = accountRepo;
-    }
 
     // create token (encode)
     public String generateAccessToken(Account account) {

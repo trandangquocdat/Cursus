@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
@@ -39,7 +38,6 @@ public class FeedbackController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(apiRes);
     }
-
 
     @DeleteMapping("/feedback/delete")
     public ResponseEntity<Object> deleteFeedback(@RequestParam Long id) {
