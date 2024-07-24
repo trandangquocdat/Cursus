@@ -37,7 +37,7 @@ public class CourseController {
 
     @PutMapping(value = "/course/update", consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
-    public ResponseEntity<Object> updateCourse(@RequestParam Long id, @RequestBody @Valid UpdateCourseDto request) {
+    public ResponseEntity<Object> updateCourse(@RequestParam Long id, @ModelAttribute @Valid UpdateCourseDto request) {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.updateCourse(id, request));
 
     }
