@@ -39,7 +39,7 @@ class FilterExceptionHandlerTest {
         AuthenticationException authenticationException = mock(AuthenticationException.class);
 
         //When
-        filterExceptionHandler.commence(request,response,authenticationException);
+        filterExceptionHandler.commence(request, response, authenticationException);
 
         //Then
         verify(resolver).resolveException(eq(request), eq(response), isNull(), argThat(arg ->
