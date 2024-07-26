@@ -1,21 +1,16 @@
 package com.fpt.cursus.controller;
 
-import com.fpt.cursus.exception.exceptions.AppException;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.service.FileService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 
@@ -27,16 +22,17 @@ public class FileUploadController {
 
     private final FileService storageService;
 
+    @Autowired
     public FileUploadController(FileService storageService) {
         this.storageService = storageService;
     }
 
-    @GetMapping("/files/upload")
+    @PostMapping("/files/upload")
     public String handleFileUpload(@RequestParam("file") MultipartFile file) {
         try {
             // Start the file upload process
-            storageService.uploadFile(file);
-            return "File uploaded successfully!";
+            storageService.uploadFile(file, file.getOriginalFilename());
+            return "File uploaded successfully: " + file.getOriginalFilename();
         } catch (IOException e) {
             e.printStackTrace(); // Handle exception as needed
             return "File upload failed: " + e.getMessage();

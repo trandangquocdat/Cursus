@@ -1,43 +1,33 @@
 package com.fpt.cursus.service.impl;
 
-
-import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.entity.Course;
-import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.service.AccountService;
-import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.FileService;
-import com.fpt.cursus.service.LessonService;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class FileServiceImpl implements FileService {
-    private final AccountService accountService;
-    private final CourseService courseService;
-    private final LessonService lessonService;
-    private SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${firebase.storage.bucket}")
     private String bucketName;
@@ -46,14 +36,8 @@ public class FileServiceImpl implements FileService {
     private Storage storage;
 
     @Autowired
-    public FileServiceImpl(@Lazy AccountService accountService,
-                           @Lazy CourseService courseService,
-                           @Lazy LessonService lessonService,
-                           SimpMessagingTemplate messagingTemplate
+    public FileServiceImpl(SimpMessagingTemplate messagingTemplate
     ) {
-        this.accountService = accountService;
-        this.courseService = courseService;
-        this.lessonService = lessonService;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -68,9 +52,8 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void uploadFile(MultipartFile file) throws IOException {
-        String fileName = generateUniqueFileName(file.getOriginalFilename());
-        BlobId blobId = BlobId.of(bucketName, fileName);
+    public void uploadFile(MultipartFile file, String filename) throws IOException {
+        BlobId blobId = BlobId.of(bucketName, filename);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(file.getContentType()).build();
 
         try (WriteChannel writer = storage.writer(blobInfo)) {
@@ -95,44 +78,33 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    public String getSignedImageUrl(String filename) {
+        URL signedUrl = storage.signUrl(
+                BlobInfo.newBuilder(BlobId.of(bucketName, filename)).build(),
+                15, TimeUnit.MINUTES,
+                Storage.SignUrlOption.withV4Signature());
+        return signedUrl.toString();
+    }
+
     private void sendProgressUpdate(double progress) {
         // Send progress update to client with sessionId using WebSocket
-        messagingTemplate.convertAndSend( "/topic/upload-status", String.valueOf(progress));
+        messagingTemplate.convertAndSend("/topic/upload-status", String.valueOf(progress));
     }
 
     @Override
-    public void setAvatar(MultipartFile file, Account account) {
-        String fileName = generateUniqueFileName(file.getOriginalFilename());
-        String link = generateDownloadUrl(fileName);
-        account.setAvatar(link);
-        accountService.saveAccount(account);
+    public String linkSave(MultipartFile file, String folder) {
+        String fileName = generateUniqueFileName(folder, file.getOriginalFilename());
+        try {
+            uploadFile(file, fileName);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAIL);
+        }
+        return fileName;
     }
 
-    @Override
-    public void setPicture(MultipartFile file, Course course) {
-        String fileName = generateUniqueFileName(file.getOriginalFilename());
-        String link = generateDownloadUrl(fileName);
-        course.setPictureLink(link);
-        courseService.saveCourse(course);
-    }
-
-    @Override
-    public boolean setVideo(MultipartFile file, Lesson lesson) {
-        String fileName = generateUniqueFileName(file.getOriginalFilename());
-        String link = generateDownloadUrl(fileName);
-        lesson.setVideoLink(link);
-        lessonService.save(lesson);
-        return true;
-    }
-
-
-    private String generateDownloadUrl(String fileName) {
-        return String.format("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media", bucketName, fileName);
-    }
-
-    private String generateUniqueFileName(String originalFileName) {
+    private String generateUniqueFileName(String folderName, String originalFileName) {
         String uniqueId = UUID.randomUUID().toString();
-        return uniqueId + "_" + originalFileName;
+        return folderName + "/" + uniqueId + "_" + originalFileName;
     }
 
     @Override

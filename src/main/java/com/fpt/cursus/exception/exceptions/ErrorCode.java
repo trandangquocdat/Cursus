@@ -2,7 +2,6 @@ package com.fpt.cursus.exception.exceptions;
 
 import lombok.Getter;
 
-
 @Getter
 public enum ErrorCode {
 
@@ -15,6 +14,7 @@ public enum ErrorCode {
     USER_ROLE_CAN_NOT_SELECTED(604, "This role can not be selected"),
     REFRESH_TOKEN_NOT_VALID(605, "Refresh token not valid"),
     REFRESH_TOKEN_EXPIRED(606, "Refresh token expired"),
+    TOKEN_INVALID(607, "Token invalid"),
     //Register error - 61x
     USERNAME_EXISTS(610, "Username already exists"),
     USERNAME_SIZE_INVALID(611, "Username must be between 4 and 18 characters"),
@@ -45,7 +45,10 @@ public enum ErrorCode {
     OTP_INVALID(660, "Wrong OTP"),
     OTP_EXPIRED(661, "OTP expired"),
     OTP_NOT_FOUND(662, "OTP not found"),
+    //
+    AVATAR_EMPTY(670, "Avatar can not be empty"),
     //Course error - 70x
+
     COURSE_NOT_FOUND(700, "Course not found"),
     COURSE_SIZE_INVALID(701, "Course name must be less than 200 characters"),
     COURSE_PRICE_NULL(702, "Price of course can not be null"),
@@ -86,12 +89,16 @@ public enum ErrorCode {
     //
     FEEDBACK_NOT_FOUND(760, "Feedback not found"),
     FEEDBACK_INVALID_RATING(761, "Invalid rating"),
-
+    //
+    QUIZ_NOT_FOUND(770, "Quiz not found"),
+    QUIZ_READ_FAIL(771, "Quiz read fail"),
+    DUPLICATE_QUESTION_ID(772, "Cannot have duplicate question id"),
+    //
     INVALID_OFFSET(800, "Invalid Page"),
     ;
 
-    private int code;
-    private String message;
+    private final int code;
+    private final String message;
 
     ErrorCode(int code, String message) {
         this.code = code;

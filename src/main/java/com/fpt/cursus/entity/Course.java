@@ -21,6 +21,7 @@ public class Course {
     private long id;
     @Column(unique = true)
     private String name;
+    @Column(columnDefinition = "TEXT")
     private String description;
     private String pictureLink;
     private double price;
@@ -42,4 +43,7 @@ public class Course {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     private List<Feedback> feedback;
+
+    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL)
+    private Quiz quiz;
 }

@@ -70,7 +70,7 @@ class ChapterControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = standaloneSetup(new ChapterController(chapterService, apiResUtil))
+        mockMvc = standaloneSetup(new ChapterController(chapterService))
                 .alwaysDo(print())
                 .build();
     }
@@ -212,7 +212,7 @@ class ChapterControllerTest {
 
         List<Chapter> chapters = Collections.singletonList(chapter);
 
-        ApiRes<List<Chapter>> apiRes = new ApiRes<>();
+        ApiRes<Object> apiRes = new ApiRes<>();
         apiRes.setData(chapters);
 
         // Mocking the chapterService.findAll() method
@@ -220,7 +220,7 @@ class ChapterControllerTest {
 
         // Mocking ApiRes response
         when(apiResUtil.returnApiRes(any(), any(), any(), any()))
-                .thenReturn((ApiRes) apiRes);
+                .thenReturn(apiRes);
 
         // then
         mockMvc.perform(get("/chapter/get-all")

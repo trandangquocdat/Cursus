@@ -20,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -47,21 +46,6 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults()).csrf(AbstractHttpConfigurer::disable).addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
-
-
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-//        httpSecurity.cors(Customizer.withDefaults())
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/ws/**").permitAll() // Permit WebSocket connections
-//                        .anyRequest().authenticated()
-//                )
-//                .httpBasic(Customizer.withDefaults())
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
-//        return httpSecurity.build();
-//    }
-
 
     @Bean
     public UserDetailsService userDetailsService() {

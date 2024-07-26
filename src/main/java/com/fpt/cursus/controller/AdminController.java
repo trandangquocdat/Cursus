@@ -63,8 +63,11 @@ public class AdminController {
 
     @GetMapping("/admin/view-instructor")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Object> viewVerifyingInstructor(@RequestParam InstructorStatus status) {
-        return ResponseEntity.ok(accountService.getInstructorByInstStatus(status));
+    public ResponseEntity<Object> viewVerifyingInstructor(@RequestParam InstructorStatus status,
+                                                          @RequestParam(required = false) String sortBy,
+                                                          @RequestParam(defaultValue = "1", required = false) int offset,
+                                                          @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return ResponseEntity.ok(accountService.getInstructorByInstStatus(status, offset, pageSize, sortBy));
     }
 
     @GetMapping("/admin/view-instructor-and-student")
@@ -84,7 +87,7 @@ public class AdminController {
 
     @PatchMapping("/admin/set-admin")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Object> setAdmin(@RequestParam String email) {
-        return ResponseEntity.ok(accountService.setAdmin(email));
+    public ResponseEntity<Object> setAdmin(@RequestParam String username) {
+        return ResponseEntity.ok(accountService.setAdmin(username));
     }
 }

@@ -29,5 +29,7 @@ public class Orders {
     @Transient
     private List<Long> orderCourse;
 
+    @OneToMany(mappedBy = "orders")
+    private List<OrdersDetail> ordersDetails;
 
 }

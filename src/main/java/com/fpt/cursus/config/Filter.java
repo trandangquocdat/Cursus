@@ -3,6 +3,8 @@ package com.fpt.cursus.config;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.exception.exceptions.AuthException;
 import com.fpt.cursus.repository.AccountRepo;
+import com.fpt.cursus.repository.BlackListIPRepo;
+import com.fpt.cursus.service.ApiLogService;
 import com.fpt.cursus.util.TokenHandler;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
@@ -27,22 +29,41 @@ public class Filter extends OncePerRequestFilter {
     private final HandlerExceptionResolver resolver;
     private final TokenHandler tokenHandler;
     private final AccountRepo accountRepo;
+    private final ApiLogService apiLogService;
+    private final BlackListIPRepo blackListIPRepo;
 
     @Autowired
     public Filter(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver,
                   TokenHandler tokenHandler,
-                  AccountRepo accountRepo) {
+                  AccountRepo accountRepo, ApiLogService apiLogService, BlackListIPRepo blackListIPRepo) {
         this.resolver = resolver;
         this.tokenHandler = tokenHandler;
         this.accountRepo = accountRepo;
+        this.apiLogService = apiLogService;
+        this.blackListIPRepo = blackListIPRepo;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+        String ipAddress = request.getRemoteAddr();
+        // Kiểm tra nếu IP bị cấm
+        if (blackListIPRepo.findByIpAddress(ipAddress).isPresent()) {
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.getWriter().write("Your IP is banned due to excessive requests.");
+            return;
+        }
+
+        // Ghi log truy cập
+        apiLogService.logAccess(ipAddress, request.getRequestURI());
+
+
         String token = getToken(request);
         String uri = request.getRequestURI();
         if (uri.contains("login") || uri.contains("register") || uri.contains("swagger-ui") || uri.contains("v3")
-                || uri.contains("auth") || uri.contains("token") || uri.contains("order/update-status") ) {
+                || uri.contains("auth") || uri.contains("token") || uri.contains("order/update-status")) {
             filterChain.doFilter(request, response);
         } else {
             if (token == null) {
@@ -62,6 +83,17 @@ public class Filter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             filterChain.doFilter(request, response);
         }
+    }
+
+    public String getFullURL(HttpServletRequest request) {
+        StringBuilder requestURL = new StringBuilder(request.getRequestURL().toString());
+        String queryString = request.getQueryString();
+
+        if (queryString != null) {
+            requestURL.append("?").append(queryString);
+        }
+
+        return requestURL.toString();
     }
 
     public String getToken(HttpServletRequest request) {

@@ -6,8 +6,6 @@ import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.OtpService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,25 +26,22 @@ public class AccountController {
     private final OtpService otpService;
 
     @Autowired
-    public AccountController(AccountService accountService,
-                             OtpService otpService) {
+    public AccountController(AccountService accountService, OtpService otpService) {
         this.accountService = accountService;
         this.otpService = otpService;
     }
 
     @Operation(summary = "Register new account", description = "API Register new account, auto send otp to email")
-
     @PostMapping(value = "/register", consumes = "multipart/form-data")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Account created"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
-    })
     public ResponseEntity<Object> register(@Valid @ModelAttribute RegisterReqDto registerReqDto) {
         Account newAccount = accountService.register(registerReqDto);
+        //send otp
         String otp = otpService.generateOtp();
         otpService.updateOldOtps(registerReqDto.getEmail());
         otpService.sendOtpEmail(registerReqDto.getEmail(), otp);
         otpService.saveOtp(registerReqDto.getEmail(), otp);
+        //set avatar
+        accountService.uploadAvatar(registerReqDto.getAvatar(), registerReqDto.getUsername(), newAccount);
         return ResponseEntity.status(HttpStatus.CREATED).body(newAccount);
     }
 
@@ -87,12 +82,12 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body("Check your email to reset password");
     }
 
-    @PutMapping("/auth/reset-password")
-    public ResponseEntity<Object> resetPassword(@RequestParam String email, @RequestParam String otp, @RequestBody @Valid ResetPasswordDto resetPasswordDto) {
+    @PatchMapping("/auth/reset-password")
+    public ResponseEntity<Object> resetPassword(@RequestParam String email, @RequestParam String otp,
+                                                @RequestBody @Valid ResetPasswordDto resetPasswordDto) {
         accountService.resetPassword(email, otp, resetPasswordDto);
         return ResponseEntity.status(HttpStatus.OK).body("Reset password successfully");
     }
-
 
 }
 

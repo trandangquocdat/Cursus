@@ -30,9 +30,9 @@ public interface AccountService {
 
     Account sendCv(MultipartFile file);
 
-    List<Account> getInstructorByInstStatus(InstructorStatus status);
+    Page<Account> getInstructorByInstStatus(InstructorStatus status, int offset, int pageSize, String sortBy);
 
-    List<Account> getInstructorByName(String name);
+    Page<Account> getInstructorByName(String name, int offset, int pageSize, String sortBy);
 
     String regenerateOtp(String email);
 
@@ -51,4 +51,22 @@ public interface AccountService {
     void saveAccount(Account account);
 
     Account getAccountByUsername(String username);
+
+    List<Long> getSubscribersUsers(Account account);
+
+    void subscribeInstructor(Long id);
+
+    void unsubscribeInstructor(Long id);
+
+    Account getAccountByEmail(String email);
+
+    void uploadAvatar(MultipartFile avatar, String folder, Account account);
+
+    Account getProfile();
+
+    Page<Account> getAllInstructor(int offset, int pageSize, String sortBy);
+
+    Page<Account> getSubscribers(int offset, int pageSize, String sortBy);
+
+    Page<Account> getSubscribing(int offset, int pageSize, String sortBy);
 }

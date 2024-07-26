@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.io.IOException;
 
 @ControllerAdvice
-public class GlobaExceptionHandler {
+public class GlobalExceptionHandler {
     private final ApiResUtil apiResUtil;
 
     @Autowired
-    public GlobaExceptionHandler(ApiResUtil apiResUtil) {
+    public GlobalExceptionHandler(ApiResUtil apiResUtil) {
         this.apiResUtil = apiResUtil;
     }
 

@@ -20,7 +20,6 @@ public interface LessonService {
 
     List<Lesson> findAllByChapterId(Long id);
 
-
     List<Lesson> findAll();
 
     void save(Lesson lesson);
