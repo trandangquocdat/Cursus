@@ -141,24 +141,32 @@ class AdminControllerTest {
                         content().json(objectMapper.writeValueAsString(course)));
     }
 
-//    @Test
-//    void viewVerifyingInstructorSuccess() throws Exception {
-//        //given
-//        List<Account> accounts = new ArrayList<>();
-//        Account account = new Account();
-//        account.setId(1L);
-//        account.setRole(Role.INSTRUCTOR);
-//        accounts.add(account);
-//        //when
-//        when(accountService.getInstructorByInstStatus(any(InstructorStatus.class)))
-//                .thenReturn(accounts);
-//        //then
-//        mockMvc.perform(get("/admin/view-instructor")
-//                        .param("status", InstructorStatus.APPROVED.toString())
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpectAll(status().isOk(),
-//                        content().json(objectMapper.writeValueAsString(accounts)));
-//    }
+    @Test
+    void viewVerifyingInstructorSuccess() throws Exception {
+        //given
+        List<Account> accounts = new ArrayList<>();
+        Account account = new Account();
+        account.setId(1L);
+        account.setRole(Role.INSTRUCTOR);
+        accounts.add(account);
+        int offset = 1;
+        int pageSize = 10;
+        String sortBy = "id";
+        Pageable pageable = PageRequest.of(offset, pageSize, Sort.by(sortBy));
+        Page<Account> page = new PageImpl<>(accounts, pageable, accounts.size());
+        //when
+        when(accountService.getInstructorByInstStatus(any(InstructorStatus.class), anyInt(), anyInt(), anyString()))
+                .thenReturn(page);
+        //then
+        mockMvc.perform(get("/admin/view-instructor")
+                        .param("status", InstructorStatus.APPROVED.toString())
+                        .param("sortBy", "id")
+                        .param("offset", "1")
+                        .param("pageSize", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(page)));
+    }
 
     @Test
     void viewListSuccess() throws Exception {
