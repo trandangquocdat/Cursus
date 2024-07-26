@@ -377,7 +377,7 @@ public class CourseServiceImpl implements CourseService {
         return courses;
     }
     private List<StudiedCourse> getStudiedCourses(Account account) {
-        if (account.getStudiedCourseJson() == null || account.getStudiedCourseJson().isEmpty()) {
+            if (account.getStudiedCourseJson() == null || account.getStudiedCourseJson().isEmpty()) {
             return new ArrayList<>();
         }
         try {
@@ -398,6 +398,10 @@ public class CourseServiceImpl implements CourseService {
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
         }
+    }
+
+    public void publicSaveWishListCourse(Account account, List<Long> wishListCourses) {
+
     }
 
     private void saveWishListCourses(Account account, List<Long> wishListCourses) {
