@@ -84,20 +84,28 @@ class UserControllerTest {
                         content().json(objectMapper.writeValueAsString(account)));
     }
 
-//    @Test
-//    void testGetInstructor() throws Exception {
-//        //given
-//        Account account = new Account();
-//        account.setRole(Role.INSTRUCTOR);
-//        List<Account> accounts = List.of(account);
-//        //when
-//        when(accountService.getInstructorByName(anyString())).thenReturn(accounts);
-//        //then
-//        mockMvc.perform(get("/view-instructor")
-//                        .param("name", "name"))
-//                .andExpectAll(status().isOk(),
-//                        content().json(objectMapper.writeValueAsString(accounts)));
-//    }
+    @Test
+    void testGetInstructor() throws Exception {
+        //given
+        Account account = new Account();
+        account.setRole(Role.INSTRUCTOR);
+        List<Account> accounts = List.of(account);
+        String sortBy = "name";
+        int offset = 1;
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(offset, pageSize, Sort.by(sortBy));
+        Page<Account> page = new PageImpl<>(accounts, pageable, accounts.size());
+        //when
+        when(accountService.getInstructorByName(anyString(), anyInt(), anyInt(), anyString())).thenReturn(page);
+        //then
+        mockMvc.perform(get("/view-instructor")
+                        .param("name", "name")
+                        .param("sortBy", sortBy)
+                        .param("offset", "1")
+                        .param("pageSize", "10"))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(page)));
+    }
 
     @Test
     void testAddToWishList() throws Exception {
@@ -254,5 +262,65 @@ class UserControllerTest {
         mockMvc.perform(get("/instructor-dashboard"))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(res)));
+    }
+
+    @Test
+    void testGetAllInstructor() throws Exception {
+        //given
+        Account account = new Account();
+        account.setRole(Role.INSTRUCTOR);
+        List<Account> accounts = List.of(account);
+        String sortBy = "name";
+        int offset = 1;
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(offset, pageSize, Sort.by(sortBy));
+        Page<Account> page = new PageImpl<>(accounts, pageable, accounts.size());
+        //when
+        when(accountService.getAllInstructor(anyInt(), anyInt(), anyString())).thenReturn(page);
+        //then
+        mockMvc.perform(get("/view-all-instructor")
+                        .param("sortBy", sortBy)
+                        .param("offset", "1")
+                        .param("pageSize", "10"))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(page)));
+    }
+
+    @Test
+    void testViewSubscriber() throws Exception {
+        //given
+        Pageable pageable = PageRequest.of(1, 10, Sort.by("name"));
+        Account account = new Account();
+        account.setRole(Role.INSTRUCTOR);
+        List<Account> accounts = List.of(account);
+        Page<Account> page = new PageImpl<>(accounts, pageable, accounts.size());
+        //when
+        when(accountService.getSubscribers(anyInt(), anyInt(), anyString())).thenReturn(page);
+        //then
+        mockMvc.perform(get("/view-subscriber")
+                        .param("sortBy", "name")
+                        .param("offset", "1")
+                        .param("pageSize", "10"))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(page)));
+    }
+
+    @Test
+    void testViewSubscribing() throws Exception {
+        //given
+        Pageable pageable = PageRequest.of(1, 10, Sort.by("name"));
+        Account account = new Account();
+        account.setRole(Role.INSTRUCTOR);
+        List<Account> accounts = List.of(account);
+        Page<Account> page = new PageImpl<>(accounts, pageable, accounts.size());
+        //when
+        when(accountService.getSubscribing(anyInt(), anyInt(), anyString())).thenReturn(page);
+        //then
+        mockMvc.perform(get("/view-subscribing")
+                        .param("sortBy", "name")
+                        .param("offset", "1")
+                        .param("pageSize", "10"))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(page)));
     }
 }
