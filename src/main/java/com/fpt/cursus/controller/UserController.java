@@ -25,6 +25,7 @@ public class UserController {
     private final AccountService accountService;
     private final CourseService courseService;
     private final DashboardService dashboardService;
+
     @Autowired
     public UserController(AccountService accountService,
                           CourseService courseService,
@@ -44,8 +45,19 @@ public class UserController {
 
     @Operation(summary = "view instructor by name", description = "input a partial name of instructor")
     @GetMapping("/view-instructor")
-    public ResponseEntity<Object> getInstructor(@RequestParam String name) {
-        return ResponseEntity.status(HttpStatus.OK).body(accountService.getInstructorByName(name));
+    public ResponseEntity<Object> getInstructor(@RequestParam String name,
+                                                @RequestParam(required = false) String sortBy,
+                                                @RequestParam(defaultValue = "1", required = false) int offset,
+                                                @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountService
+                .getInstructorByName(name, offset, pageSize, sortBy));
+    }
+
+    @GetMapping("/view-all-instructor")
+    public ResponseEntity<Object> getAllInstructor(@RequestParam(required = false) String sortBy,
+                                                   @RequestParam(defaultValue = "1", required = false) int offset,
+                                                   @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.getAllInstructor(offset, pageSize, sortBy));
     }
 
     @PostMapping("/wishlist/add")
@@ -67,6 +79,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getWishListCourses(offset, pageSize, sortBy));
     }
+
     @PutMapping("/subscribe-instructor")
     public ResponseEntity<Object> subscribeInstructor(@RequestParam Long id) {
         accountService.subscribeInstructor(id);
@@ -79,6 +92,22 @@ public class UserController {
         accountService.unsubscribeInstructor(id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body("Unsubscribe successfully");
+    }
+    @Operation(summary = "View all subscriber(follower)")
+    @GetMapping("/view-subscriber")
+    public ResponseEntity<Object> viewSubscriber(@RequestParam(required = false) String sortBy,
+                                                 @RequestParam(defaultValue = "1", required = false) int offset,
+                                                 @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(accountService.getSubscribers(offset, pageSize, sortBy));
+    }
+    @Operation(summary = "View all subscribing(following)")
+    @GetMapping("/view-subscribing")
+    public ResponseEntity<Object> viewSubscribing(@RequestParam(required = false) String sortBy,
+                                                  @RequestParam(defaultValue = "1", required = false) int offset,
+                                                  @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(accountService.getSubscribing(offset, pageSize, sortBy));
     }
 
     @GetMapping("/enrolled-course/view-all-general")
@@ -109,6 +138,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getCourseByCreatedBy(offset, pageSize, sortBy));
     }
+
     @GetMapping("/profile")
     public ResponseEntity<Object> getProfile() {
         return ResponseEntity.status(HttpStatus.OK)

@@ -90,7 +90,11 @@ public enum ErrorCode {
     //
     FEEDBACK_NOT_FOUND(760, "Feedback not found"),
     FEEDBACK_INVALID_RATING(761, "Invalid rating"),
-
+    //
+    QUIZ_NOT_FOUND(770, "Quiz not found"),
+    QUIZ_READ_FAIL(771, "Quiz read fail"),
+    DUPLICATE_QUESTION_ID(772, "Cannot have duplicate question id"),
+    //
     INVALID_OFFSET(800, "Invalid Page"),
     ;
 

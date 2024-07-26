@@ -131,9 +131,7 @@ public class LessonServiceImpl implements LessonService {
     @Override
 
     public Lesson findLessonById(Long id) {
-        Lesson lesson = lessonRepo.findLessonById(id);
-        lesson.setVideoLink(fileService.getSignedImageUrl(lesson.getVideoLink()));
-        return lesson;
+        return lessonRepo.findById(id).orElse(null);
     }
 
     @Override
