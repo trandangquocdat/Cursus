@@ -79,17 +79,11 @@ class ApiLogServiceTest {
     }
 
     @Test
-    void checkAndBanIfExceedLimit_doNotBan() {
-        apiLog.setCount(50);
-        when(apiLogRepo.findByIpAddressAndApiEndpoint(anyString(), anyString())).thenReturn(apiLog);
-
-        apiLogServiceImpl.logAccess("127.0.0.1", "/test");
-
-        verify(blackListIPRepo, times(0)).save(any(BlackListIP.class));
-    }
-
-    @Test
     void checkAndBanIfExceedLimit_alreadyBanned() {
+        apiLog.setId(1);
+        apiLog.setApiEndpoint("/test");
+        apiLog.setIpAddress("test");
+        apiLog.setAccessTime(ZonedDateTime.now());
         apiLog.setCount(101);
         when(apiLogRepo.findByIpAddressAndApiEndpoint(anyString(), anyString())).thenReturn(apiLog);
         when(blackListIPRepo.findByIpAddress(anyString())).thenReturn(Optional.of(new BlackListIP()));

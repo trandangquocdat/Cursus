@@ -13,8 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 @ContextConfiguration(classes = {FileUtil.class})
@@ -47,6 +46,16 @@ class FileUtilTest {
             assertEquals("Test Content", new String(result.getBytes()));
             mockFile.delete();
         }
+    }
+
+    @Test
+    void testGetFileFromPathNul() {
+        //Given
+        String filePath = "test.txt";
+        //When
+        MultipartFile result = fileUtil.getFileFromPath(filePath);
+        //Then
+        assertNull(result);
     }
 
     @Test
