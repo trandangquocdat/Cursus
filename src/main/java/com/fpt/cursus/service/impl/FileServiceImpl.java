@@ -117,11 +117,12 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void setVideo(MultipartFile file, Lesson lesson) {
+    public boolean setVideo(MultipartFile file, Lesson lesson) {
         String fileName = generateUniqueFileName(file.getOriginalFilename());
         String link = generateDownloadUrl(fileName);
         lesson.setVideoLink(link);
         lessonService.save(lesson);
+        return true;
     }
 
 

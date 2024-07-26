@@ -15,6 +15,6 @@ public interface FileService {
     byte[] downloadFileAsBytes(String bucketName, String fileName);
     void setAvatar(MultipartFile file, Account account);
     void setPicture(MultipartFile file, Course course);
-    void setVideo(MultipartFile file, Lesson lesson);
+    boolean setVideo(MultipartFile file, Lesson lesson);
 }
 

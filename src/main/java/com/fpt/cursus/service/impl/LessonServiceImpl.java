@@ -93,7 +93,7 @@ public class LessonServiceImpl implements LessonService {
         return uploadedFileUrls;
     }
 
-    private MultipartFile getFileFromPath(String filePath) {
+    public MultipartFile getFileFromPath(String filePath) {
         try {
             File file = new File(filePath);
             FileInputStream fileInputStream = new FileInputStream(file);
