@@ -44,8 +44,19 @@ public class UserController {
 
     @Operation(summary = "view instructor by name", description = "input a partial name of instructor")
     @GetMapping("/view-instructor")
-    public ResponseEntity<Object> getInstructor(@RequestParam String name) {
-        return ResponseEntity.status(HttpStatus.OK).body(accountService.getInstructorByName(name));
+    public ResponseEntity<Object> getInstructor(@RequestParam String name,
+                                                @RequestParam(required = false) String sortBy,
+                                                @RequestParam(defaultValue = "1", required = false) int offset,
+                                                @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountService
+                .getInstructorByName(name, offset, pageSize, sortBy));
+    }
+
+    @GetMapping("/view-all-instructor")
+    public ResponseEntity<Object> getAllInstructor(@RequestParam(required = false) String sortBy,
+                                                   @RequestParam(defaultValue = "1", required = false) int offset,
+                                                   @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.getAllInstructor(offset, pageSize, sortBy));
     }
 
     @PostMapping("/wishlist/add")
@@ -80,6 +91,22 @@ public class UserController {
         accountService.unsubscribeInstructor(id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body("Unsubscribe successfully");
+    }
+    @Operation(summary = "View all subscriber(follower)")
+    @GetMapping("/view-subscriber")
+    public ResponseEntity<Object> viewSubscriber(@RequestParam(required = false) String sortBy,
+                                                 @RequestParam(defaultValue = "1", required = false) int offset,
+                                                 @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(accountService.getSubscribers(offset, pageSize, sortBy));
+    }
+    @Operation(summary = "View all subscribing(following)")
+    @GetMapping("/view-subscribing")
+    public ResponseEntity<Object> viewSubscribing(@RequestParam(required = false) String sortBy,
+                                                  @RequestParam(defaultValue = "1", required = false) int offset,
+                                                  @RequestParam(defaultValue = "10", required = false) int pageSize) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(accountService.getSubscribing(offset, pageSize, sortBy));
     }
 
     @GetMapping("/enrolled-course/view-all-general")

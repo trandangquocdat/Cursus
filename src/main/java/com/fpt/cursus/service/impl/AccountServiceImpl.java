@@ -238,9 +238,9 @@ public class AccountServiceImpl implements AccountService {
             accountRepo.save(account);
 
             // save subscribing
-            List<Long> listSubscribing = getSubscribingsUsers(currentAccount);
+            List<Long> listSubscribing = getSubscribingUsers(currentAccount);
             listSubscribing.add(id);
-            saveSubscribingsUsers(currentAccount, listSubscribing);
+            saveSubscribingUsers(currentAccount, listSubscribing);
             accountRepo.save(currentAccount);
         }
     }
@@ -256,31 +256,48 @@ public class AccountServiceImpl implements AccountService {
         accountRepo.save(account);
 
         // save subscribing
-        List<Long> listSubscribing = getSubscribingsUsers(currentAccount);
+        List<Long> listSubscribing = getSubscribingUsers(currentAccount);
         listSubscribing.remove(id);
-        saveSubscribingsUsers(currentAccount, listSubscribing);
+        saveSubscribingUsers(currentAccount, listSubscribing);
         accountRepo.save(currentAccount);
     }
 
     @Override
-    public List<Account> getInstructorByInstStatus(InstructorStatus status) {
-        List<Account> accounts = accountRepo.findAccountByInstructorStatus(status);
-        for (Account account : accounts) {
-            if (account.getAvatar() != null) {
-                account.setAvatar(fileService.getSignedImageUrl(account.getAvatar()));
-            }
-        }
-        if (accounts.isEmpty()) {
-            throw new AppException(ErrorCode.USER_NOT_FOUND);
-        }
-        return accounts;
+    public Page<Account> getInstructorByInstStatus(InstructorStatus status, int offset, int pageSize, String sortBy) {
+        pageUtil.checkOffset(offset);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+        Page<Account> accountsPage = accountRepo.findAccountByInstructorStatus(status, pageable);
+        List<Account> accountsWithAvatars = setAvatar(accountsPage.getContent());
+        return new PageImpl<>(accountsWithAvatars, pageable, accountsPage.getTotalElements());
     }
 
     @Override
-    public List<Account> getInstructorByName(String name) {
-        List<Account> accounts = accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%", InstructorStatus.APPROVED);
+    public Page<Account> getInstructorByName(String name, int offset, int pageSize, String sortBy) {
+        pageUtil.checkOffset(offset);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+        Page<Account> accounts = accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%", InstructorStatus.APPROVED, pageable);
+        List<Account> accountsWithAvatars = setAvatar(accounts.getContent());
+        return new PageImpl<>(accountsWithAvatars, pageable, accounts.getTotalElements());
+    }
+
+    @Override
+    public Page<Account> getAllInstructor(int offset, int pageSize, String sortBy) {
+        pageUtil.checkOffset(offset);
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+        Page<Account> accountsPage = accountRepo.findAccountByInstructorStatus(InstructorStatus.APPROVED, pageable);
+        List<Account> accountsWithAvatars = setAvatar(accountsPage.getContent());
+        return new PageImpl<>(accountsWithAvatars, pageable, accountsPage.getTotalElements());
+    }
+
+    public List<Account> setAvatar(List<Account> accounts) {
         if (accounts.isEmpty()) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
+        } else {
+            for (Account account : accounts) {
+                if (account.getAvatar() != null) {
+                    account.setAvatar(fileService.getSignedImageUrl(account.getAvatar()));
+                }
+            }
         }
         return accounts;
     }
@@ -377,13 +394,11 @@ public class AccountServiceImpl implements AccountService {
     public Page<Account> getListOfStudentAndInstructor(Role role, int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+
         if (role != null) {
             return accountRepo.findAccountByRole(role, pageable);
         } else {
-            List<Account> instructorList = accountRepo.findAccountByRole(Role.INSTRUCTOR);
-            List<Account> studentList = accountRepo.findAccountByRole(Role.STUDENT);
-            studentList.addAll(instructorList);
-            return new PageImpl<>(studentList, pageable, studentList.size());
+            return accountRepo.findAccountByRoleIn(List.of(Role.STUDENT, Role.INSTRUCTOR), pageable);
         }
     }
 
@@ -415,6 +430,41 @@ public class AccountServiceImpl implements AccountService {
         return account;
     }
 
+    @Override
+    public Page<Account> getSubscribers(int offset, int pageSize, String sortBy) {
+        pageUtil.checkOffset(offset);
+
+        // Convert offset to page number for Pageable
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+
+        // Get the current account
+        Account account = accountUtil.getCurrentAccount();
+        List<Long> subscribers = getSubscribersUsers(account);
+
+        // Fetch paginated subscribers
+
+        Page<Account> accountsPage = accountRepo.findByIdIn(subscribers, pageable);
+        List<Account> accountsWithAvatars = setAvatar(accountsPage.getContent());
+        return new PageImpl<>(accountsWithAvatars, pageable, accountsPage.getTotalElements());
+    }
+
+    @Override
+    public Page<Account> getSubscribing(int offset, int pageSize, String sortBy) {
+        pageUtil.checkOffset(offset);
+
+        // Convert offset to page number for Pageable
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+
+        // Get the current account
+        Account account = accountUtil.getCurrentAccount();
+        List<Long> subscribing = getSubscribingUsers(account);
+
+        // Fetch paginated subscribers
+        Page<Account> accountsPage = accountRepo.findByIdIn(subscribing, pageable);
+        List<Account> accountsWithAvatars = setAvatar(accountsPage.getContent());
+        return new PageImpl<>(accountsWithAvatars, pageable, accountsPage.getTotalElements());
+    }
+
     public List<Long> getSubscribersUsers(Account account) {
         if (account.getSubscribersJson() == null || account.getSubscribersJson().isEmpty()) {
             return new ArrayList<>();
@@ -436,7 +486,7 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    private List<Long> getSubscribingsUsers(Account account) {
+    private List<Long> getSubscribingUsers(Account account) {
         if (account.getSubscribingJson() == null || account.getSubscribingJson().isEmpty()) {
             return new ArrayList<>();
         }
@@ -448,9 +498,9 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    private void saveSubscribingsUsers(Account account, List<Long> subscribingsUsers) {
+    private void saveSubscribingUsers(Account account, List<Long> subscribingUsers) {
         try {
-            account.setSubscribingJson(objectMapper.writeValueAsString(subscribingsUsers));
+            account.setSubscribingJson(objectMapper.writeValueAsString(subscribingUsers));
             this.saveAccount(account);
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);

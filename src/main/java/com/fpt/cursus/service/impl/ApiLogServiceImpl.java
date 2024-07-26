@@ -1,9 +1,9 @@
 package com.fpt.cursus.service.impl;
 
 import com.fpt.cursus.entity.ApiLog;
-import com.fpt.cursus.entity.BlackListIP;
+import com.fpt.cursus.entity.BackListIP;
 import com.fpt.cursus.repository.ApiLogRepo;
-import com.fpt.cursus.repository.BlackListIPRepo;
+import com.fpt.cursus.repository.BackListIPRepo;
 import com.fpt.cursus.service.ApiLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,16 +17,15 @@ public class ApiLogServiceImpl implements ApiLogService {
 
     private final ApiLogRepo apiLogRepo;
 
-    private final BlackListIPRepo blackListIPRepo;
+    private final BackListIPRepo backListIPRepo;
 
-    @Autowired
-    public ApiLogServiceImpl(ApiLogRepo apiLogRepo, BlackListIPRepo blackListIPRepo) {
+    public ApiLogServiceImpl(ApiLogRepo apiLogRepo, BackListIPRepo backListIPRepo) {
         this.apiLogRepo = apiLogRepo;
-        this.blackListIPRepo = blackListIPRepo;
+        this.backListIPRepo = backListIPRepo;
     }
 
     @Transactional
-    @Scheduled(fixedRate = 10000) // delete mỗi 10 giây
+    @Scheduled(fixedRate = 10000)
     public void deleteOldCounts() {
         ZonedDateTime timeDeleteRecord = ZonedDateTime.now().minusSeconds(10);
         apiLogRepo.deleteByAccessTimeBefore(timeDeleteRecord);
@@ -52,11 +51,13 @@ public class ApiLogServiceImpl implements ApiLogService {
 
     private void checkAndBanIfExceedLimit(String ipAddress, String apiEndpoint, ZonedDateTime now) {
         ApiLog log = apiLogRepo.findByIpAddressAndApiEndpoint(ipAddress, apiEndpoint);
-        if (log != null && log.getCount() > 100 && blackListIPRepo.findByIpAddress(ipAddress).isEmpty()) {
-            BlackListIP bannedIp = new BlackListIP();
-            bannedIp.setIpAddress(ipAddress);
-            bannedIp.setBanTime(now);
-            blackListIPRepo.save(bannedIp);
+        if (log != null && log.getCount() > 50) {
+            if (!backListIPRepo.findByIpAddress(ipAddress).isPresent()) {
+                BackListIP bannedIp = new BackListIP();
+                bannedIp.setIpAddress(ipAddress);
+                bannedIp.setBanTime(now);
+                backListIPRepo.save(bannedIp);
+            }
         }
 
     }

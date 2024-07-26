@@ -23,11 +23,13 @@ public interface AccountRepo extends JpaRepository<Account, Long> {
 
     Page<Account> findAccountByRole(Role role, Pageable pageable);
 
-    List<Account> findAccountByRole(Role role);
+    Page<Account> findAccountByInstructorStatus(InstructorStatus status, Pageable pageable);
 
-    List<Account> findAccountByInstructorStatus(InstructorStatus status);
+    Page<Account> findByIdIn(List<Long> ids, Pageable pageable);
 
-    List<Account> findByFullNameLikeAndInstructorStatus(String partialName, InstructorStatus status);
+    Page<Account> findAccountByRoleIn(List<Role> roles, Pageable pageable);
+
+    Page<Account> findByFullNameLikeAndInstructorStatus(String name, InstructorStatus status, Pageable pageable);
 
     boolean existsByUsername(String username);
 
