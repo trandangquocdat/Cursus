@@ -92,6 +92,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body("Unsubscribe successfully");
     }
+
     @Operation(summary = "View all subscriber(follower)")
     @GetMapping("/view-subscriber")
     public ResponseEntity<Object> viewSubscriber(@RequestParam(required = false) String sortBy,
@@ -100,6 +101,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(accountService.getSubscribers(offset, pageSize, sortBy));
     }
+
     @Operation(summary = "View all subscribing(following)")
     @GetMapping("/view-subscribing")
     public ResponseEntity<Object> viewSubscribing(@RequestParam(required = false) String sortBy,

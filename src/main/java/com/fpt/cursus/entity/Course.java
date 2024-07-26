@@ -1,7 +1,6 @@
 package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fpt.cursus.enums.Category;
 import com.fpt.cursus.enums.CourseStatus;

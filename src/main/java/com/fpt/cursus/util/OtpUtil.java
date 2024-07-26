@@ -7,13 +7,6 @@ import java.util.Random;
 
 @Component
 public class OtpUtil {
-    final
-    EmailUtil emailUtil;
-
-    @Autowired
-    public OtpUtil(EmailUtil emailUtil) {
-        this.emailUtil = emailUtil;
-    }
 
     public String generateOtp() {
         Random random = new Random();

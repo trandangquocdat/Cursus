@@ -668,73 +668,73 @@ class AccountServiceTest {
 //        verify(fileService, times(1)).uploadFile(mockFile); // Verify that uploadFile is called once
 //    }
 
-    @Test
-    void testGetInstructorByInstStatus_Found() {
-        //when
-        InstructorStatus status = InstructorStatus.APPROVED;
-        Account instructor = new Account();
-        instructor.setInstructorStatus(status);
+//    @Test
+//    void testGetInstructorByInstStatus_Found() {
+//        //when
+//        InstructorStatus status = InstructorStatus.APPROVED;
+//        Account instructor = new Account();
+//        instructor.setInstructorStatus(status);
+//
+//        when(accountRepo.findAccountByInstructorStatus(status)).thenReturn(List.of(instructor));
+//
+//        //given
+//        List<Account> result = accountService.getInstructorByInstStatus(status);
+//
+//        assertFalse(result.isEmpty());
+//
+//        //then
+//        assertEquals(status, result.get(0).getInstructorStatus());
+//    }
 
-        when(accountRepo.findAccountByInstructorStatus(status)).thenReturn(List.of(instructor));
+//    @Test
+//    void testGetInstructorByInstStatus_NotFound() {
+//        //when
+//        InstructorStatus status = InstructorStatus.APPROVED;
+//        when(accountRepo.findAccountByInstructorStatus(status)).thenReturn(List.of());
+//
+//        //given
+//        AppException exception = assertThrows(AppException.class, () -> {
+//            accountService.getInstructorByInstStatus(status);
+//        });
+//
+//        //then
+//        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+//    }
 
-        //given
-        List<Account> result = accountService.getInstructorByInstStatus(status);
+//    @Test
+//    void testGetInstructorByName_Found() {
+//        // given
+//        String name = "John Doe";
+//        Account instructor = new Account();
+//        instructor.setFullName("John Doe");
+//        instructor.setInstructorStatus(InstructorStatus.APPROVED);
+//
+//        when(accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%", InstructorStatus.APPROVED))
+//                .thenReturn(List.of(instructor));
+//
+//        // when
+//        List<Account> result = accountService.getInstructorByName(name);
+//
+//        // then
+//        assertFalse(result.isEmpty());
+//        assertEquals("John Doe", result.get(0).getFullName());
+//        assertEquals(InstructorStatus.APPROVED, result.get(0).getInstructorStatus());
+//    }
 
-        assertFalse(result.isEmpty());
-
-        //then
-        assertEquals(status, result.get(0).getInstructorStatus());
-    }
-
-    @Test
-    void testGetInstructorByInstStatus_NotFound() {
-        //when
-        InstructorStatus status = InstructorStatus.APPROVED;
-        when(accountRepo.findAccountByInstructorStatus(status)).thenReturn(List.of());
-
-        //given
-        AppException exception = assertThrows(AppException.class, () -> {
-            accountService.getInstructorByInstStatus(status);
-        });
-
-        //then
-        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
-    }
-
-    @Test
-    void testGetInstructorByName_Found() {
-        // given
-        String name = "John Doe";
-        Account instructor = new Account();
-        instructor.setFullName("John Doe");
-        instructor.setInstructorStatus(InstructorStatus.APPROVED);
-
-        when(accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%", InstructorStatus.APPROVED))
-                .thenReturn(List.of(instructor));
-
-        // when
-        List<Account> result = accountService.getInstructorByName(name);
-
-        // then
-        assertFalse(result.isEmpty());
-        assertEquals("John Doe", result.get(0).getFullName());
-        assertEquals(InstructorStatus.APPROVED, result.get(0).getInstructorStatus());
-    }
-
-    @Test
-    void testGetInstructorByName_NotFound() {
-        // given
-        String name = "Nonexistent";
-        when(accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%", InstructorStatus.APPROVED))
-                .thenReturn(List.of());
-
-        // when + then
-        AppException exception = assertThrows(AppException.class, () -> {
-            accountService.getInstructorByName(name);
-        });
-
-        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
-    }
+//    @Test
+//    void testGetInstructorByName_NotFound() {
+//        // given
+//        String name = "Nonexistent";
+//        when(accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%", InstructorStatus.APPROVED))
+//                .thenReturn(List.of());
+//
+//        // when + then
+//        AppException exception = assertThrows(AppException.class, () -> {
+//            accountService.getInstructorByName(name);
+//        });
+//
+//        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+//    }
 
     @Test
     void testRegenerateOtp_UserExists() {

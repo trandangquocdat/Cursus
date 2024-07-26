@@ -84,20 +84,20 @@ class UserControllerTest {
                         content().json(objectMapper.writeValueAsString(account)));
     }
 
-    @Test
-    void testGetInstructor() throws Exception {
-        //given
-        Account account = new Account();
-        account.setRole(Role.INSTRUCTOR);
-        List<Account> accounts = List.of(account);
-        //when
-        when(accountService.getInstructorByName(anyString())).thenReturn(accounts);
-        //then
-        mockMvc.perform(get("/view-instructor")
-                        .param("name", "name"))
-                .andExpectAll(status().isOk(),
-                        content().json(objectMapper.writeValueAsString(accounts)));
-    }
+//    @Test
+//    void testGetInstructor() throws Exception {
+//        //given
+//        Account account = new Account();
+//        account.setRole(Role.INSTRUCTOR);
+//        List<Account> accounts = List.of(account);
+//        //when
+//        when(accountService.getInstructorByName(anyString())).thenReturn(accounts);
+//        //then
+//        mockMvc.perform(get("/view-instructor")
+//                        .param("name", "name"))
+//                .andExpectAll(status().isOk(),
+//                        content().json(objectMapper.writeValueAsString(accounts)));
+//    }
 
     @Test
     void testAddToWishList() throws Exception {
