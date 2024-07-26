@@ -76,6 +76,50 @@ class DashboardServiceTest {
         assertEquals(1, res.getTotalCourses());
         assertEquals(100.0, res.getTotalSales());
         assertEquals(1, res.getTotalStudents());
+        assertEquals(0, res.getTotalEnroll());
+        assertEquals(2, res.getCurrentSubscribers());
+    }
+
+    @Test
+    void testGetInstructorDashboardResWithStudiedCourses() {
+        //given
+        Account account = new Account();
+        account.setUsername("username");
+
+        List<Course> courses = new ArrayList<>();
+        Course course = new Course();
+        course.setId(1L);
+        courses.add(course);
+
+        List<OrdersDetail> ordersDetails = new ArrayList<>();
+        OrdersDetail ordersDetail = new OrdersDetail();
+        ordersDetail.setPrice(100.0);
+        Orders orders = new Orders();
+        orders.setCreatedBy("username");
+        ordersDetail.setOrders(orders);
+        ordersDetails.add(ordersDetail);
+
+        List<StudiedCourse> studiedCourses = new ArrayList<>();
+        StudiedCourse studiedCourse = new StudiedCourse();
+        studiedCourse.setCourseId(1L);
+        StudiedCourse studiedCourse2 = new StudiedCourse();
+        studiedCourse2.setCourseId(2L);
+        studiedCourses.add(studiedCourse);
+        studiedCourses.add(studiedCourse2);
+
+        List<Long> subscribers = List.of(1L, 2L);
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(courseService.getCourseByCreatedBy(anyString())).thenReturn(courses);
+        when(orderService.findAllByIdIn(anyList())).thenReturn(ordersDetails);
+        when(accountService.getAccountByUsername(anyString())).thenReturn(account);
+        when(courseService.getStudiedCourses(account)).thenReturn(studiedCourses);
+        when(accountService.getSubscribersUsers(any(Account.class))).thenReturn(subscribers);
+        //then
+        InstructorDashboardRes res = dashboardService.getInstructorDashboardRes();
+        assertEquals(1, res.getTotalCourses());
+        assertEquals(100.0, res.getTotalSales());
+        assertEquals(1, res.getTotalStudents());
         assertEquals(1, res.getTotalEnroll());
         assertEquals(2, res.getCurrentSubscribers());
     }
