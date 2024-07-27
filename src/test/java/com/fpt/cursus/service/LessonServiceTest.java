@@ -11,6 +11,11 @@ import com.fpt.cursus.repository.LessonRepo;
 import com.fpt.cursus.service.impl.LessonServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
 import com.fpt.cursus.util.FileUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,8 +26,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,25 +68,138 @@ public class LessonServiceTest {
     private Long chapterId;
     private Long lessonId;
     private Lesson lesson;
+    private MultipartFile excelFile;
 
     @BeforeEach
     void setUp() {
         mockAccount = new Account();
         mockAccount.setUsername("testUser");
         mockVideo = new MockMultipartFile("video", "video.mp4", "video/mp4", "".getBytes());
-        mockNonVideo = new MockMultipartFile("video", "testfile.txt", "text/plain", "".getBytes());
+        mockNonVideo = new MockMultipartFile("video", "testing.txt", "text/plain", "".getBytes());
         chapterId = 1L;
         lessonId = 1L;
         lesson = new Lesson();
         lesson.setId(lessonId);
+        lesson.setChapter(new Chapter());
+        lesson.setStatus(LessonStatus.ACTIVE);
+        lesson.setCreatedBy(mockAccount.getUsername());
     }
 
-//    private MultipartFile invokeGetFileFromPath(Object targetObject, String filePath) throws NoSuchMethodException,
-//            InvocationTargetException, IllegalAccessException {
-//        Method method = targetObject.getClass().getDeclaredMethod("getFileFromPath", String.class);
-//        method.setAccessible(true);
-//        return (MultipartFile) method.invoke(targetObject, filePath);
-//    }
+    private MockMultipartFile createMockExcelFile() throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row row = sheet.createRow(0);
+        row.createCell(0).setCellValue("Column1");
+        row.createCell(1).setCellValue("Column2");
+
+        Row row2 = sheet.createRow(1);
+        row2.createCell(0).setCellValue("Value1");
+        row2.createCell(1).setCellValue("Value2");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        byte[] excelBytes = outputStream.toByteArray();
+
+        return new MockMultipartFile("file", "example.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new ByteArrayInputStream(excelBytes));
+    }
+
+    @Test
+    void uploadLessonFromExcel_Success() throws IOException {
+        MockMultipartFile excelFile = createMockExcelFile();
+        Chapter mockChapter = new Chapter();
+        mockChapter.setId(chapterId);
+
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+
+        LessonServiceImpl lessonServiceSpy = spy(lessonService);
+        List<String> result = lessonServiceSpy.uploadLessonFromExcel(chapterId, excelFile);
+
+        assertNotNull(result);
+    }
+
+    private MockMultipartFile createMockExcelFile2() throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row row = sheet.createRow(0);
+        row.createCell(0).setCellValue("Video Link");
+        row.createCell(1).setCellValue("Lesson Name");
+        row.createCell(2).setCellValue("Description");
+
+        Row dataRow = sheet.createRow(1);
+        dataRow.createCell(0).setCellValue("video.mp4");
+        dataRow.createCell(1).setCellValue("Lesson 1");
+        dataRow.createCell(2).setCellValue("Description 1");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        byte[] excelBytes = outputStream.toByteArray();
+
+        return new MockMultipartFile("file", "example.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new ByteArrayInputStream(excelBytes));
+    }
+
+    @Test
+    void uploadLessonFromExcel_InvalidVideo() throws IOException {
+        MockMultipartFile excelFile = createMockExcelFile();
+
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+
+        List<String> result = lessonService.uploadLessonFromExcel(chapterId, excelFile);
+
+        assertNotNull(result);
+        verify(lessonRepo, never()).save(any(Lesson.class));
+    }
+
+    @Test
+    void uploadLessonFromExcel_IOException() throws IOException {
+        MultipartFile mockExcelFile = mock(MultipartFile.class);
+        when(mockExcelFile.getInputStream()).thenThrow(new IOException("Failed to read Excel file"));
+
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+
+        IOException exception = assertThrows(IOException.class, () -> {
+            lessonService.uploadLessonFromExcel(chapterId, mockExcelFile);
+        });
+
+        assertEquals("Failed to read Excel file", exception.getMessage());
+    }
+
+    @Test
+    void uploadLessonFromExcel_InvalidFilePath() throws IOException {
+        MockMultipartFile excelFile = createMockExcelFile();
+
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+
+        List<String> result = lessonService.uploadLessonFromExcel(chapterId, excelFile);
+
+        assertNotNull(result);
+        verify(lessonRepo, never()).save(any(Lesson.class));
+    }
+
+    @Test
+    void testGetFileFromPath() throws IOException {
+        File file = File.createTempFile("test", ".txt");
+        file.deleteOnExit();
+
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            MockMultipartFile mockFile = new MockMultipartFile(file.getName(), file.getName(), "application/octet-stream", fileInputStream);
+
+            MultipartFile result = lessonService.getFileFromPath(file.getAbsolutePath());
+
+            assertNotNull(result);
+            assertEquals(mockFile.getName(), result.getName());
+        }
+    }
+
+    @Test
+    void testGetFileFromPath_InvalidPath() {
+        MultipartFile result = lessonService.getFileFromPath("invalid_path");
+
+        assertNull(result);
+    }
 
     @Test
     void testCreateLesson() {
@@ -121,8 +244,32 @@ public class LessonServiceTest {
     }
 
     @Test
+    void testCreateLesson_Null() {
+        CreateLessonDto request = new CreateLessonDto();
+        request.setVideoLink(null);
+        lesson.setName("new lesson");
+
+        Chapter chapter = new Chapter();
+        chapter.setId(chapterId);
+
+        when(chapterService.findChapterById(chapterId)).thenReturn(chapter);
+        when(modelMapper.map(request, Lesson.class)).thenReturn(lesson);
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+        when(lessonRepo.save(any(Lesson.class))).thenReturn(lesson);
+
+        Lesson awnserLesson = lessonService.createLesson(chapterId, request);
+
+        assertNotNull(awnserLesson);
+        assertEquals(chapterId, awnserLesson.getChapter().getId());
+        assertEquals(lessonId, awnserLesson.getId());
+        assertEquals(lesson.getName(), awnserLesson.getName());
+        assertEquals(lesson.getStatus(), awnserLesson.getStatus());
+        assertNull(awnserLesson.getVideoLink());
+    }
+
+    @Test
     void testFindLessonById() {
-        when(lessonRepo.findLessonById(lessonId)).thenReturn(lesson);
+        when(lessonRepo.findById(lessonId)).thenReturn(Optional.ofNullable(lesson));
 
         Lesson foundLesson = lessonService.findLessonById(lessonId);
 
@@ -132,9 +279,7 @@ public class LessonServiceTest {
 
     @Test
     void testDeleteLessonById() {
-        lesson.setChapter(new Chapter());
-
-        when(lessonRepo.findLessonById(lessonId)).thenReturn(lesson);
+        when(lessonRepo.findById(lessonId)).thenReturn(Optional.ofNullable(lesson));
         when(lessonRepo.save(any(Lesson.class))).thenReturn(lesson);
 
         Lesson deletedLesson = lessonService.deleteLessonById(lessonId);
@@ -146,17 +291,13 @@ public class LessonServiceTest {
 
     @Test
     void testUpdateLesson() {
-        Long lessonId = 1L;
         CreateLessonDto request = new CreateLessonDto();
         request.setVideoLink(mockVideo);
 
-        Lesson existingLesson = new Lesson();
-        existingLesson.setId(lessonId);
-
-        when(lessonRepo.findLessonById(lessonId)).thenReturn(existingLesson);
+        when(lessonRepo.findById(lessonId)).thenReturn(Optional.ofNullable(lesson));
         when(fileUtil.isVideo(request.getVideoLink())).thenReturn(true);
         when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
-        when(lessonRepo.save(any(Lesson.class))).thenReturn(existingLesson);
+        when(lessonRepo.save(any(Lesson.class))).thenReturn(lesson);
 
         Lesson updatedLesson = lessonService.updateLesson(lessonId, request);
 
@@ -165,15 +306,13 @@ public class LessonServiceTest {
     }
 
     @Test
-    void testUpdateLessonFailed() {
+    void testUpdateLessonFailed_NotVideo() {
         CreateLessonDto request = new CreateLessonDto();
         request.setVideoLink(mockNonVideo);
 
-        Lesson existingLesson = new Lesson();
-        existingLesson.setId(lessonId);
-
-        when(lessonRepo.findLessonById(lessonId)).thenReturn(existingLesson);
+        when(lessonRepo.findById(lessonId)).thenReturn(Optional.ofNullable(lesson));
         when(fileUtil.isVideo(request.getVideoLink())).thenReturn(false);
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
 
         AppException exception = assertThrows(AppException.class, () -> {
             lessonService.updateLesson(lessonId, request);
@@ -182,51 +321,17 @@ public class LessonServiceTest {
         assertEquals(ErrorCode.FILE_INVALID_VIDEO, exception.getErrorCode());
     }
 
-//    @Test
-//    void testUploadLessonFromExcel() throws IOException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-//        byte[] excelBytes;
-//        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-//            Sheet sheet = workbook.createSheet("Sheet1");
-//            Row headerRow = sheet.createRow(0);
-//            headerRow.createCell(0).setCellValue("videoLink");
-//            headerRow.createCell(1).setCellValue("lessonName");
-//            headerRow.createCell(2).setCellValue("description");
-//
-//            Row dataRow = sheet.createRow(1);
-//            dataRow.createCell(0).setCellValue("video.mp4");
-//            dataRow.createCell(1).setCellValue("Lesson 1");
-//            dataRow.createCell(2).setCellValue("Description 1");
-//
-//            workbook.write(out);
-//            excelBytes = out.toByteArray();
-//        }
-//
-//        MultipartFile excelFile = new MockMultipartFile(
-//                "file",
-//                "test.xlsx",
-//                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-//                new ByteArrayInputStream(excelBytes)
-//        );
-//
-//        MockMultipartFile videoFile = new MockMultipartFile(
-//                "file",
-//                "video.mp4",
-//                "video/mp4",
-//                "This is a video file content".getBytes()
-//        );
-//
-//
-//        when(invokeGetFileFromPath(lessonService, "video.mp4")).thenReturn(videoFile);
-//        when(fileUtil.isVideo(any(MultipartFile.class))).thenReturn(true);
-//        when(fileService.uploadFile(any(MultipartFile.class))).thenReturn("uploadedFileUrl");
-//        when(lessonRepo.save(any(Lesson.class))).thenAnswer(invocation -> invocation.getArgument(0));
-//
-//        List<String> uploadedFileUrls = lessonService.uploadLessonFromExcel(chapterId, excelFile);
-//
-//        assertNotNull(uploadedFileUrls);
-//        assertEquals(1, uploadedFileUrls.size());
-//        assertEquals("uploadedFileUrl", uploadedFileUrls.get(0));
-//    }
+    @Test
+    void testUpdateLessonFailed_Null() {
+        CreateLessonDto request = new CreateLessonDto();
+        request.setVideoLink(null);
+
+        when(lessonRepo.findById(lessonId)).thenReturn(Optional.ofNullable(lesson));
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+        when(lessonRepo.save(any(Lesson.class))).thenReturn(lesson);
+
+        lessonService.updateLesson(lessonId, request);
+    }
 
     @Test
     void testFindAllByChapterId() {
