@@ -21,6 +21,7 @@ import com.fpt.cursus.service.impl.AccountServiceImpl;
 import com.fpt.cursus.util.*;
 import com.google.common.net.HttpHeaders;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -78,6 +78,8 @@ class AccountServiceTest {
     private PageUtil pageUtil;
     @Mock
     private FirebaseAuth firebaseAuth;
+    @Mock
+    private FirebaseToken firebaseToken;
     private HttpServletRequest mockRequest;
     private Account account;
     private RegisterReqDto registerReqDto;
@@ -87,7 +89,7 @@ class AccountServiceTest {
     @BeforeEach
     void setUp() {
         account = new Account();
-        account.setUsername("testuser");
+        account.setUsername("testUser");
         account.setEmail("test@example.com");
         account.setFullName("Test User");
         account.setPhone("0123456789");
@@ -97,7 +99,7 @@ class AccountServiceTest {
         account.setCreatedDate(new Date());
 
         instructorAccount = new Account();
-        instructorAccount.setUsername("testinstructor");
+        instructorAccount.setUsername("testInstructor");
         instructorAccount.setEmail("testIn@example.com");
         instructorAccount.setFullName("Test Instructor");
         instructorAccount.setPhone("098765432");
@@ -110,7 +112,7 @@ class AccountServiceTest {
         MockMultipartFile mockAvatarFile = new MockMultipartFile("avatar", "avatar.png", "image/png", "dummy content".getBytes());
 
         registerReqDto = RegisterReqDto.builder()
-                .username("testuser")
+                .username("testUser")
                 .password("password")
                 .email("test@example.com")
                 .fullName("Test User")
@@ -120,19 +122,18 @@ class AccountServiceTest {
                 .build();
 
         loginReqDto = new LoginReqDto();
-        loginReqDto.setUsername("testuser");
+        loginReqDto.setUsername("testUser");
         loginReqDto.setPassword("password");
 
         mockRequest = mock(HttpServletRequest.class);
-        reset(firebaseAuth);
 
     }
 
     @Test
     void testRegister_Success() {
         // Given
-        RegisterReqDto registerReqDto = RegisterReqDto.builder()
-                .username("testuser")
+        registerReqDto = RegisterReqDto.builder()
+                .username("testUser")
                 .password("password123")
                 .email("test@example.com")
                 .fullName("Test User")
@@ -140,8 +141,8 @@ class AccountServiceTest {
                 .gender(Gender.MALE)
                 .build();
 
-        Account account = new Account();
-        account.setUsername("testuser");
+        account = new Account();
+        account.setUsername("testUser");
         account.setEmail("test@example.com");
         account.setPassword("encodedPassword");
         account.setRole(Role.STUDENT);
@@ -230,7 +231,7 @@ class AccountServiceTest {
     }
 
     @Test
-    void testUploadAvatar_ValidImage() throws IOException {
+    void testUploadAvatar_ValidImage() {
         // Given
         MockMultipartFile avatar = new MockMultipartFile("avatar", "avatar.jpg", "image/jpeg", new byte[]{1, 2, 3});
         when(fileUtil.isImage(any(MultipartFile.class))).thenReturn(true);
@@ -304,11 +305,11 @@ class AccountServiceTest {
     void testLogin_AccountInactive() {
         // Given
         LoginReqDto loginReqDto1 = new LoginReqDto();
-        loginReqDto1.setUsername("testuser");
+        loginReqDto1.setUsername("testUser");
         loginReqDto1.setPassword("password");
 
         Account account1 = new Account();
-        account1.setUsername("testuser");
+        account1.setUsername("testUser");
         account1.setPassword("password");
         account1.setStatus(UserStatus.INACTIVE);
 
@@ -491,10 +492,10 @@ class AccountServiceTest {
     }
 
     private Account createAccount(String username, Role role) {
-        Account account = new Account();
-        account.setUsername(username);
-        account.setRole(role);
-        return account;
+        Account account1 = new Account();
+        account1.setUsername(username);
+        account1.setRole(role);
+        return account1;
     }
 
     @Test
@@ -507,7 +508,7 @@ class AccountServiceTest {
         List<Account> studentList = Arrays.asList(createAccount("student1", Role.STUDENT), createAccount("student2", Role.STUDENT));
         Page<Account> studentPage = new PageImpl<>(studentList);
 
-        when(pageUtil.getPageable(sortBy, offset - 1, pageSize)).thenReturn(PageRequest.of(offset - 1, pageSize, Sort.by(sortBy)));
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(PageRequest.of(0, pageSize, Sort.by(sortBy)));
         when(accountRepo.findAccountByRole(eq(role), any(Pageable.class))).thenReturn(studentPage);
 
         // When
@@ -530,7 +531,7 @@ class AccountServiceTest {
         List<Account> instructorList = Arrays.asList(createAccount("instructor1", Role.INSTRUCTOR), createAccount("instructor2", Role.INSTRUCTOR));
         Page<Account> instructorPage = new PageImpl<>(instructorList);
 
-        when(pageUtil.getPageable(sortBy, offset - 1, pageSize)).thenReturn(PageRequest.of(offset - 1, pageSize, Sort.by(sortBy)));
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(PageRequest.of(0, pageSize, Sort.by(sortBy)));
         when(accountRepo.findAccountByRole(eq(role), any(Pageable.class))).thenReturn(instructorPage);
 
         // When
@@ -541,43 +542,6 @@ class AccountServiceTest {
         assertEquals("instructor1", result.getContent().get(0).getUsername());
         assertEquals("instructor2", result.getContent().get(1).getUsername());
         verify(accountRepo, times(1)).findAccountByRole(eq(role), any(Pageable.class));
-    }
-
-    @Test
-    void testGetListOfStudentAndInstructor_RoleNull() {
-        // Given
-        Role role = null;
-        int offset = 1;
-        int pageSize = 10;
-        String sortBy = "username";
-        List<Account> instructorList = new ArrayList<>();
-        instructorList.add(createAccount("instructor1", Role.INSTRUCTOR));
-        instructorList.add(createAccount("instructor2", Role.INSTRUCTOR));
-
-        List<Account> studentList = new ArrayList<>();
-        studentList.add(createAccount("student1", Role.STUDENT));
-        studentList.add(createAccount("student2", Role.STUDENT));
-
-        List<Account> combinedList = new ArrayList<>(studentList);
-        combinedList.addAll(instructorList);
-
-        Page<Account> combinedPage = new PageImpl<>(combinedList);
-
-        when(pageUtil.getPageable(sortBy, offset - 1, pageSize)).thenReturn(PageRequest.of(offset - 1, pageSize, Sort.by(sortBy)));
-        when(accountRepo.findAccountByRole(Role.INSTRUCTOR)).thenReturn(instructorList);
-        when(accountRepo.findAccountByRole(Role.STUDENT)).thenReturn(studentList);
-
-        // When
-        Page<Account> result = accountService.getListOfStudentAndInstructor(role, offset, pageSize, sortBy);
-
-        // Then
-        assertEquals(4, result.getTotalElements());
-        assertEquals("student1", result.getContent().get(0).getUsername());
-        assertEquals("student2", result.getContent().get(1).getUsername());
-        assertEquals("instructor1", result.getContent().get(2).getUsername());
-        assertEquals("instructor2", result.getContent().get(3).getUsername());
-        verify(accountRepo, times(1)).findAccountByRole(Role.INSTRUCTOR);
-        verify(accountRepo, times(1)).findAccountByRole(Role.STUDENT);
     }
 
     @Test
@@ -594,34 +558,11 @@ class AccountServiceTest {
         verify(pageUtil, times(1)).checkOffset(invalidOffset);
     }
 
-    @Test
-    void testGetListOfStudentAndInstructor_NullSortBy() {
-        // Given
-        Role role = Role.STUDENT;
-        int offset = 1;
-        int pageSize = 10;
-        String sortBy = null;
-        List<Account> studentList = Arrays.asList(createAccount("student1", Role.STUDENT), createAccount("student2", Role.STUDENT));
-        Page<Account> studentPage = new PageImpl<>(studentList);
-
-        when(pageUtil.getPageable(sortBy, offset - 1, pageSize)).thenReturn(PageRequest.of(offset - 1, pageSize));
-        when(accountRepo.findAccountByRole(eq(role), any(Pageable.class))).thenReturn(studentPage);
-
-        // When
-        Page<Account> result = accountService.getListOfStudentAndInstructor(role, offset, pageSize, sortBy);
-
-        // Then
-        assertEquals(2, result.getTotalElements());
-        assertEquals("student1", result.getContent().get(0).getUsername());
-        assertEquals("student2", result.getContent().get(1).getUsername());
-        verify(accountRepo, times(1)).findAccountByRole(eq(role), any(Pageable.class));
-    }
-
-    private Account createAccount(String username, String avatar) {
-        Account account = new Account();
-        account.setUsername(username);
-        account.setAvatar(avatar);
-        return account;
+    private Account createAccount(String avatar) {
+        Account account1 = new Account();
+        account1.setUsername("user");
+        account1.setAvatar(avatar);
+        return account1;
     }
 
     @Test
@@ -629,7 +570,7 @@ class AccountServiceTest {
         // Given
         String avatarFilename = "avatar.jpg";
         String signedUrl = "http://signed-url";
-        Account account = createAccount("user", avatarFilename);
+        account = createAccount(avatarFilename);
 
         when(accountUtil.getCurrentAccount()).thenReturn(account);
         when(fileService.getSignedImageUrl(avatarFilename)).thenReturn(signedUrl);
@@ -648,7 +589,7 @@ class AccountServiceTest {
     @Test
     void testGetProfile_WithoutAvatar() {
         // Given
-        Account account = createAccount("user", (String) null);
+        account = createAccount(null);
 
         when(accountUtil.getCurrentAccount()).thenReturn(account);
 
@@ -664,10 +605,10 @@ class AccountServiceTest {
     }
 
     private Account createAccount1(String email, String avatar) {
-        Account account = new Account();
-        account.setEmail(email);
-        account.setAvatar(avatar);
-        return account;
+        Account account1 = new Account();
+        account1.setEmail(email);
+        account1.setAvatar(avatar);
+        return account1;
     }
 
     @Test
@@ -676,7 +617,7 @@ class AccountServiceTest {
         String email = "test@example.com";
         String avatarFilename = "avatar.jpg";
         String signedUrl = "http://signed-url";
-        Account account = createAccount1(email, avatarFilename);
+        account = createAccount1(email, avatarFilename);
 
         when(accountRepo.findByEmail(email)).thenReturn(Optional.of(account));
         when(fileService.getSignedImageUrl(avatarFilename)).thenReturn(signedUrl);
@@ -696,7 +637,7 @@ class AccountServiceTest {
     void testGetAccountByEmail_WithoutAvatar() {
         // Given
         String email = "test@example.com";
-        Account account = createAccount1(email, (String) null);
+        account = createAccount1(email, (String) null);
 
         when(accountRepo.findByEmail(email)).thenReturn(Optional.of(account));
 
@@ -731,12 +672,12 @@ class AccountServiceTest {
         String email = "test@example.com";
         String otp = "123456";
         ResetPasswordDto resetPasswordDto = new ResetPasswordDto();
-        resetPasswordDto.setPassword("newpassword");
-        resetPasswordDto.setConfirmPassword("newpassword");
+        resetPasswordDto.setPassword("newPassword");
+        resetPasswordDto.setConfirmPassword("newPassword");
 
-        Account account = new Account();
+        account = new Account();
         account.setEmail(email);
-        account.setPassword("oldpassword");
+        account.setPassword("oldPassword");
 
         Otp userOtp = new Otp();
         userOtp.setEmail(email);
@@ -762,10 +703,10 @@ class AccountServiceTest {
         String email = "test@example.com";
         String otp = "123456";
         ResetPasswordDto resetPasswordDto = new ResetPasswordDto();
-        resetPasswordDto.setPassword("newpassword");
-        resetPasswordDto.setConfirmPassword("newpassword");
+        resetPasswordDto.setPassword("newPassword");
+        resetPasswordDto.setConfirmPassword("newPassword");
 
-        Account account = new Account();
+        account = new Account();
         account.setEmail(email);
         account.setPassword("oldpassword");
 
@@ -793,12 +734,12 @@ class AccountServiceTest {
         String email = "test@example.com";
         String otp = "123456";
         ResetPasswordDto resetPasswordDto = new ResetPasswordDto();
-        resetPasswordDto.setPassword("newpassword");
-        resetPasswordDto.setConfirmPassword("newpassword");
+        resetPasswordDto.setPassword("newPassword");
+        resetPasswordDto.setConfirmPassword("newPassword");
 
-        Account account = new Account();
+        account = new Account();
         account.setEmail(email);
-        account.setPassword("oldpassword");
+        account.setPassword("oldPassword");
 
         Otp userOtp = new Otp();
         userOtp.setEmail(email);
@@ -819,7 +760,6 @@ class AccountServiceTest {
         verify(otpService, times(1)).saveOtp(userOtp.getEmail(), userOtp.getOtp());
         assertFalse(userOtp.getValid());
     }
-
 
     @Test
     void testSaveAccount() {
@@ -952,30 +892,6 @@ class AccountServiceTest {
         verify(accountRepo, never()).save(any(Account.class));
     }
 
-//    @Test
-//    void testSendCv() throws IOException {
-//        // Given
-//        MockMultipartFile mockFile = new MockMultipartFile("cv", "cv.pdf", "application/pdf", "CV content".getBytes());
-//        Account account = new Account();
-//        account.setCvLink(null);
-//        account.setInstructorStatus(null);
-//
-//        when(accountUtil.getCurrentAccount()).thenReturn(account);
-//        when(fileUtil.isPDF(mockFile)).thenReturn(true);
-//
-//        // Mock the uploadFile method to do nothing
-//        doNothing().when(fileService).uploadFile(any(MultipartFile.class));
-//        when(accountRepo.save(any(Account.class))).thenReturn(account);
-//
-//        // When
-//        accountService.sendCv(mockFile);
-//
-//        // Then
-//        assertEquals(InstructorStatus.WAITING, account.getInstructorStatus()); // Ensure the instructor status is updated
-//        verify(accountRepo, times(1)).save(account); // Verify that the account is saved
-//        verify(fileService, times(1)).uploadFile(mockFile); // Verify that uploadFile is called once
-//    }
-
     @Test
     void testSendCv_InvalidFile() {
         MockMultipartFile mockFile = new MockMultipartFile("cv", "cv.txt", "text/plain", "CV content".getBytes());
@@ -989,96 +905,21 @@ class AccountServiceTest {
         verify(accountRepo, never()).save(account);
     }
 
-//    @Test
-//    void testSendCv_FileUploadFail() throws IOException {
-//        // Given
-//        MockMultipartFile mockFile = new MockMultipartFile("cv", "cv.pdf", "application/pdf", "CV content".getBytes());
-//        Account account = new Account();
-//        account.setCvLink(null);
-//        account.setInstructorStatus(null);
-//
-//        when(accountUtil.getCurrentAccount()).thenReturn(account);
-//        when(fileUtil.isPDF(mockFile)).thenReturn(true);
-//
-//        // Mock the uploadFile method to throw IOException
-//        doThrow(new IOException("Upload failed")).when(fileService).uploadFile(any(MultipartFile.class));
-//
-//        // When
-//        AppException exception = assertThrows(AppException.class, () -> accountService.sendCv(mockFile));
-//
-//        // Then
-//        assertEquals(ErrorCode.FILE_UPLOAD_FAIL, exception.getErrorCode());
-//        verify(accountRepo, never()).save(account); // Verify that save is never called
-//        verify(fileService, times(1)).uploadFile(mockFile); // Verify that uploadFile is called once
-//    }
-
-//    @Test
-//    void testGetInstructorByInstStatus_Found() {
-//        //when
-//        InstructorStatus status = InstructorStatus.APPROVED;
-//        Account instructor = new Account();
-//        instructor.setInstructorStatus(status);
-//
-//        when(accountRepo.findAccountByInstructorStatus(status)).thenReturn(List.of(instructor));
-//
-//        //given
-//        List<Account> result = accountService.getInstructorByInstStatus(status);
-//
-//        assertFalse(result.isEmpty());
-//
-//        //then
-//        assertEquals(status, result.get(0).getInstructorStatus());
-//    }
-
-//    @Test
-//    void testGetInstructorByInstStatus_NotFound() {
-//        //when
-//        InstructorStatus status = InstructorStatus.APPROVED;
-//        when(accountRepo.findAccountByInstructorStatus(status)).thenReturn(List.of());
-//
-//        //given
-//        AppException exception = assertThrows(AppException.class, () -> {
-//            accountService.getInstructorByInstStatus(status);
-//        });
-//
-//        //then
-//        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
-//    }
-
-//    @Test
-//    void testGetInstructorByName_Found() {
-//        // given
-//        String name = "John Doe";
-//        Account instructor = new Account();
-//        instructor.setFullName("John Doe");
-//        instructor.setInstructorStatus(InstructorStatus.APPROVED);
-//
-//        when(accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%", InstructorStatus.APPROVED))
-//                .thenReturn(List.of(instructor));
-//
-//        // when
-//        List<Account> result = accountService.getInstructorByName(name);
-//
-//        // then
-//        assertFalse(result.isEmpty());
-//        assertEquals("John Doe", result.get(0).getFullName());
-//        assertEquals(InstructorStatus.APPROVED, result.get(0).getInstructorStatus());
-//    }
-
-//    @Test
-//    void testGetInstructorByName_NotFound() {
-//        // given
-//        String name = "Nonexistent";
-//        when(accountRepo.findByFullNameLikeAndInstructorStatus("%" + name + "%", InstructorStatus.APPROVED))
-//                .thenReturn(List.of());
-//
-//        // when + then
-//        AppException exception = assertThrows(AppException.class, () -> {
-//            accountService.getInstructorByName(name);
-//        });
-//
-//        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
-//    }
+    @Test
+    void testSendCv_Success() {
+        //given
+        MockMultipartFile mockFile = new MockMultipartFile("cv", "cv.pdf", "application/pdf", "CV content".getBytes());
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(fileUtil.isPDF(mockFile)).thenReturn(true);
+        when(fileService.linkSave(any(MultipartFile.class), anyString())).thenReturn("cv.pdf");
+        when(accountRepo.save(account)).thenReturn(account);
+        //then
+        Account result = accountService.sendCv(mockFile);
+        assertEquals("cv.pdf", result.getCvLink());
+        assertEquals(InstructorStatus.WAITING, result.getInstructorStatus());
+        verify(accountRepo, times(1)).save(account);
+    }
 
     @Test
     void testRegenerateOtp_UserExists() {
@@ -1119,7 +960,7 @@ class AccountServiceTest {
     @Test
     void testSetStatusAccount_Success() {
         // Given
-        String username = "testuser";
+        String username = "testUser";
         UserStatus newStatus = UserStatus.ACTIVE;
         Account existingAccount = new Account();
         existingAccount.setUsername(username);
@@ -1140,12 +981,11 @@ class AccountServiceTest {
         verify(accountRepo, times(1)).save(any(Account.class));
     }
 
-
     @Test
     void testRefreshToken_Valid() {
         //when
         String token = "validAccessToken";
-        String username = "testuser";
+        String username = "testUser";
         when(mockRequest.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + token);
         when(tokenHandler.getInfoByToken(token)).thenReturn(username);
 
@@ -1245,6 +1085,21 @@ class AccountServiceTest {
     }
 
     @Test
+    void testSubscribeInstructor() throws JsonProcessingException {
+        //given
+        Account account1 = new Account();
+        account1.setId(1L);
+        account1.setSubscribersJson("[1]");
+        //when
+        when(accountRepo.findById(anyLong())).thenReturn(Optional.of(account1));
+        when(accountUtil.getCurrentAccount()).thenReturn(account1);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(List.of(1L));
+        //then
+        accountService.subscribeInstructor(1L);
+        verify(accountRepo, times(0)).save(account1);
+    }
+
+    @Test
     void testSubscribeInstructor_JsonProcessingException() throws Exception {
         // Given
         instructorAccount.setId(1L);
@@ -1288,12 +1143,10 @@ class AccountServiceTest {
                 .when(objectMapper).readValue(eq(invalidJsonForSubscribing), any(TypeReference.class));
 
         // Then
-        AppException exception = assertThrows(AppException.class, () -> {
-            accountService.unsubscribeInstructor(instructorAccount.getId());
-        });
+        AppException exception = assertThrows(AppException.class, () ->
+                accountService.unsubscribeInstructor(instructorAccount.getId()));
         assertEquals(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL, exception.getErrorCode());
     }
-
 
     @Test
     void testGetSubscribingsAndSubcriberUsers_BeEmpty() throws Exception {
@@ -1302,10 +1155,10 @@ class AccountServiceTest {
         instructorAccount.setId(1L);
         account.setId(2L);
 
-        String emptysubcriberJson = "";
-        String emptysubcribingJson = "";
-        account.setSubscribingJson(emptysubcribingJson);
-        instructorAccount.setSubscribersJson(emptysubcriberJson);
+        String emptySubcriberJson = "";
+        String emptySubcribingJson = "";
+        account.setSubscribingJson(emptySubcribingJson);
+        instructorAccount.setSubscribersJson(emptySubcriberJson);
 
         //when
         when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
@@ -1347,5 +1200,199 @@ class AccountServiceTest {
         assertEquals(objectMapper.writeValueAsString(expectedSubscriberList), instructorAccount.getSubscribersJson());
 
     }
+
+    @Test
+    void testRefreshTokenNotStartWith() {
+        //given
+        String token = "validAccessToken";
+        String username = "testUser";
+
+        Account mockAccount = new Account();
+        mockAccount.setUsername(username);
+
+        //when
+        when(mockRequest.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(token);
+
+        //then
+        assertThrows(AppException.class,
+                () -> accountService.refreshToken(mockRequest),
+                ErrorCode.REFRESH_TOKEN_NOT_VALID.getMessage());
+    }
+
+    @Test
+    void testApproveInstructorByIdWaiting() {
+        //given
+        account.setInstructorStatus(InstructorStatus.WAITING);
+        //when
+        when(accountRepo.findById(anyLong())).thenReturn(Optional.of(account));
+        when(accountRepo.save(any(Account.class))).thenReturn(account);
+        //then
+        Account result = accountService.approveInstructorById(1L, InstructorStatus.WAITING);
+        assertEquals(InstructorStatus.WAITING, result.getInstructorStatus());
+    }
+
+    @Test
+    void testGetInstructorByInstStatusSuccess() {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("username"));
+        List<Account> accountList = new ArrayList<>();
+        account.setAvatar("avatar.jpg");
+        accountList.add(account);
+        Page<Account> accountPage = new PageImpl<>(accountList, pageable, accountList.size());
+        //when
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(pageable);
+        when(accountRepo.findAccountByInstructorStatus(any(InstructorStatus.class), any(Pageable.class)))
+                .thenReturn(accountPage);
+        when(fileService.getSignedImageUrl(anyString())).thenReturn("http://avatar.jpg");
+        //then
+        Page<Account> result = accountService.getInstructorByInstStatus(InstructorStatus.APPROVED,
+                0, 10, "username");
+        assertEquals(1, result.getTotalElements());
+        assertEquals("http://avatar.jpg", result.getContent().get(0).getAvatar());
+    }
+
+    @Test
+    void testGetInstructorByInstStatusUserNotFound() {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("username"));
+        //when
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(pageable);
+        when(accountRepo.findAccountByInstructorStatus(any(InstructorStatus.class), any(Pageable.class)))
+                .thenReturn(Page.empty());
+        //then
+        assertThrows(AppException.class, () -> accountService.getInstructorByInstStatus(InstructorStatus.APPROVED,
+                0, 10, "username"), ErrorCode.USER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    void testGetInstructorByInstStatusAvatarNull() {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("username"));
+        List<Account> accountList = new ArrayList<>();
+        account.setAvatar(null);
+        accountList.add(account);
+        Page<Account> accountPage = new PageImpl<>(accountList, pageable, accountList.size());
+        //when
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(pageable);
+        when(accountRepo.findAccountByInstructorStatus(any(InstructorStatus.class), any(Pageable.class)))
+                .thenReturn(accountPage);
+        //then
+        Page<Account> result = accountService.getInstructorByInstStatus(InstructorStatus.APPROVED,
+                0, 10, "username");
+        assertEquals(1, result.getTotalElements());
+        assertNull(result.getContent().get(0).getAvatar());
+    }
+
+    @Test
+    void getInstructorByNameSuccess() {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("username"));
+        List<Account> accountList = new ArrayList<>();
+        account.setAvatar("avatar.jpg");
+        accountList.add(account);
+        Page<Account> accountPage = new PageImpl<>(accountList, pageable, accountList.size());
+        //when
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(pageable);
+        when(accountRepo.findByFullNameLikeAndInstructorStatus(anyString(), any(InstructorStatus.class), any(Pageable.class)))
+                .thenReturn(accountPage);
+        when(fileService.getSignedImageUrl(anyString())).thenReturn("http://avatar.jpg");
+        //then
+        Page<Account> result = accountService.getInstructorByName("test", 0, 10, "username");
+        assertEquals(1, result.getTotalElements());
+        assertEquals("http://avatar.jpg", result.getContent().get(0).getAvatar());
+    }
+
+    @Test
+    void getAllInstructorSuccess() {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("username"));
+        List<Account> accountList = new ArrayList<>();
+        account.setAvatar("avatar.jpg");
+        accountList.add(account);
+        Page<Account> accountPage = new PageImpl<>(accountList, pageable, accountList.size());
+        //when
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(pageable);
+        when(accountRepo.findAccountByInstructorStatus(any(InstructorStatus.class), any(Pageable.class)))
+                .thenReturn(accountPage);
+        when(fileService.getSignedImageUrl(anyString())).thenReturn("http://avatar.jpg");
+        //then
+        Page<Account> result = accountService.getAllInstructor(0, 10, "username");
+        assertEquals(1, result.getTotalElements());
+        assertEquals("http://avatar.jpg", result.getContent().get(0).getAvatar());
+    }
+
+    @Test
+    void testResetPasswordPasswordNotMatch() {
+        //given
+        ResetPasswordDto resetPasswordDto = new ResetPasswordDto();
+        resetPasswordDto.setPassword("newPassword");
+        resetPasswordDto.setConfirmPassword("newPassword1");
+        //then
+        assertThrows(AppException.class, () -> {
+                    accountService.resetPassword("email", "otp", resetPasswordDto);
+                },
+                ErrorCode.PASSWORD_NOT_MATCH.getMessage());
+    }
+
+    @Test
+    void testGetListOfStudentAndInstructorRoleNull() {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("username"));
+        List<Account> accountList = new ArrayList<>();
+        accountList.add(account);
+        Page<Account> accountPage = new PageImpl<>(accountList, pageable, accountList.size());
+        //when
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(pageable);
+        when(accountRepo.findAccountByRoleIn(anyList(), any(Pageable.class)))
+                .thenReturn(accountPage);
+        //then
+        Page<Account> result = accountService.getListOfStudentAndInstructor(null, 0, 10, "username");
+        assertEquals(1, result.getTotalElements());
+    }
+
+    @Test
+    void testGetSubscribersSuccess() throws JsonProcessingException {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("username"));
+        List<Account> accountList = new ArrayList<>();
+        account.setSubscribersJson("[1]");
+        account.setAvatar("avatar.jpg");
+        accountList.add(account);
+        Page<Account> accountPage = new PageImpl<>(accountList, pageable, accountList.size());
+        //when
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(pageable);
+        when(accountRepo.findByIdIn(anyList(), any(Pageable.class)))
+                .thenReturn(accountPage);
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(List.of(1L));
+        when(fileService.getSignedImageUrl(anyString())).thenReturn("http://avatar.jpg");
+        //then
+        Page<Account> result = accountService.getSubscribers(0, 10, "username");
+        assertEquals(1, result.getTotalElements());
+        assertEquals("http://avatar.jpg", result.getContent().get(0).getAvatar());
+    }
+
+    @Test
+    void testGetSubscribingSuccess() throws JsonProcessingException {
+        //given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("username"));
+        List<Account> accountList = new ArrayList<>();
+        account.setSubscribingJson("[1]");
+        account.setAvatar("avatar.jpg");
+        accountList.add(account);
+        Page<Account> accountPage = new PageImpl<>(accountList, pageable, accountList.size());
+        //when
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(pageable);
+        when(accountRepo.findByIdIn(anyList(), any(Pageable.class)))
+                .thenReturn(accountPage);
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(List.of(1L));
+        when(fileService.getSignedImageUrl(anyString())).thenReturn("http://avatar.jpg");
+        //then
+        Page<Account> result = accountService.getSubscribing(0, 10, "username");
+        assertEquals(1, result.getTotalElements());
+        assertEquals("http://avatar.jpg", result.getContent().get(0).getAvatar());
+    }
+
 }
 
