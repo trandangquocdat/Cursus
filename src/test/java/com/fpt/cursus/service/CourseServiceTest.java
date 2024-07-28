@@ -1203,4 +1203,49 @@ class CourseServiceTest {
                 () -> courseService.createCourse(createCourseDto),
                 ErrorCode.COURSE_PRICE_INVALID.getMessage());
     }
+
+    @Test
+    void testAddStudiedLessonFail() throws JsonProcessingException {
+        //given
+        Lesson lesson = new Lesson();
+        lesson.setId(1L);
+        Chapter chapter = new Chapter();
+        chapter.setId(1L);
+        Course course = new Course();
+        course.setId(1L);
+        chapter.setCourse(course);
+        lesson.setChapter(chapter);
+
+        account.setStudiedCourseJson("[]");
+
+        List<StudiedCourse> studiedCourses = new ArrayList<>();
+        StudiedCourse studiedCourse = new StudiedCourse();
+        studiedCourse.setCourseId(1L);
+        studiedCourse.setChapterId(2L);
+        studiedCourse.setLessonId(2L);
+        studiedCourses.add(studiedCourse);
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(lessonService.findLessonById(anyLong())).thenReturn(lesson);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(studiedCourses);
+        when(objectMapper.writeValueAsString(anyList())).thenThrow(JsonProcessingException.class);
+        //then
+        assertThrows(AppException.class,
+                () -> courseService.addStudiedLesson(1L),
+                ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL.getMessage());
+    }
+
+    @Test
+    void testRemoveFromWishListFail() throws JsonProcessingException {
+        //given
+        account.setWishListCourseJson("");
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(objectMapper.writeValueAsString(anyList())).thenThrow(JsonProcessingException.class);
+        //then
+        assertThrows(AppException.class,
+                () -> courseService.removeFromWishList(1L),
+                ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL.getMessage());
+    }
+
 }

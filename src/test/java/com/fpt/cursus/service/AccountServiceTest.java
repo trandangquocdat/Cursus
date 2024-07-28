@@ -39,6 +39,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -1392,6 +1394,48 @@ class AccountServiceTest {
         Page<Account> result = accountService.getSubscribing(0, 10, "username");
         assertEquals(1, result.getTotalElements());
         assertEquals("http://avatar.jpg", result.getContent().get(0).getAvatar());
+    }
+
+    @Test
+    void testUnsubscribeInstructorFail() throws Exception {
+
+        //given
+        instructorAccount.setId(1L);
+        account.setId(2L);
+        List<Long> subcribing = List.of(1L, 3L); //của user
+        List<Long> subcriber = List.of(2L, 4L);  // của instructor
+        String subcribingJson = objectMapper.writeValueAsString(subcribing);
+        String subcriberJson = objectMapper.writeValueAsString(subcriber);
+        account.setSubscribingJson(subcribingJson);
+        instructorAccount.setSubscribersJson(subcriberJson);
+
+        //when
+        when(accountRepo.findById(instructorAccount.getId())).thenReturn(Optional.of(instructorAccount));
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(objectMapper.writeValueAsString(anyList())).thenThrow(JsonProcessingException.class);
+        //then
+        assertThrows(AppException.class,
+                () -> accountService.unsubscribeInstructor(instructorAccount.getId()),
+                ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL.getMessage());
+    }
+
+    @Test
+    void testSaveSubscribingUsersFail() throws Exception {
+        //given
+        List<Long> subcribing = List.of(1L, 3L); //của user
+        //when
+        when(objectMapper.writeValueAsString(anyList())).thenThrow(JsonProcessingException.class);
+        //then
+        assertThrows(InvocationTargetException.class,
+                () -> setMethod(accountService, account, subcribing),
+                ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL.getMessage());
+    }
+
+    private void setMethod(Object targetObject, Object... args)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method method = targetObject.getClass().getDeclaredMethod("saveSubscribingUsers", Account.class, List.class);
+        method.setAccessible(true);
+        method.invoke(targetObject, args);
     }
 
 }

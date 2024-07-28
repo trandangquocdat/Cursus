@@ -4,10 +4,7 @@ package com.fpt.cursus.service;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.service.impl.FileServiceImpl;
 import com.google.cloud.WriteChannel;
-import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.BlobInfo;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageException;
+import com.google.cloud.storage.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,15 +29,6 @@ class FileServiceTest {
 
     @InjectMocks
     private FileServiceImpl fileService;
-
-    @Mock
-    private AccountService accountService;
-
-    @Mock
-    private CourseService courseService;
-
-    @Mock
-    private LessonService lessonService;
 
     @Mock
     private SimpMessagingTemplate messagingTemplate;
