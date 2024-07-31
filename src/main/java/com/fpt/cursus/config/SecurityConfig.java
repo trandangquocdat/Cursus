@@ -43,7 +43,9 @@ public class SecurityConfig {
         httpSecurity.cors(Customizer.withDefaults()).authorizeHttpRequests(auth ->
                         auth.requestMatchers("/**").permitAll()
                                 .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults()).csrf(AbstractHttpConfigurer::disable).addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
+                .httpBasic(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
 

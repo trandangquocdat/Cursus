@@ -5,6 +5,7 @@ import com.fpt.cursus.dto.response.InstructorDashboardRes;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.OrdersDetail;
+import com.fpt.cursus.enums.OrderStatus;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.DashboardService;
@@ -12,7 +13,6 @@ import com.fpt.cursus.service.OrderService;
 import com.fpt.cursus.util.AccountUtil;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -36,27 +36,19 @@ public class DashboardServiceImpl implements DashboardService {
     public InstructorDashboardRes getInstructorDashboardRes() {
         InstructorDashboardRes res = new InstructorDashboardRes();
         Account account = accountUtil.getCurrentAccount();
-        List<Long> courseIds = courseService.
-                getCourseByCreatedBy(account.getUsername()).stream().map(Course::getId).toList();
-        List<OrdersDetail> ordersDetails = orderService.findAllByIdIn(courseIds);
+        List<Course> courses = courseService.getCourseByCreatedBy(account.getUsername());
+        List<Long> courseIds = courses.stream().map(Course::getId).toList();
+        List<OrdersDetail> ordersDetails = orderService.findAllByCourseIdIn(courseIds);
+        ordersDetails.removeIf(ordersDetail -> !ordersDetail.getStatus().equals(OrderStatus.PAID));
         Double totalSales = 0.0;
         long totalStudents = 0L;
         long totalEnroll = 0L;
-        List<String> studentNames = new ArrayList<>();
         for (OrdersDetail ordersDetail : ordersDetails) {
             totalSales += ordersDetail.getPrice();
             totalStudents += 1;
-            studentNames.add(ordersDetail.getOrders().getCreatedBy());
         }
-        for (String studentName : studentNames) {
-            Account student = accountService.getAccountByUsername(studentName);
-            List<StudiedCourse> studiedCourses = courseService.getStudiedCourses(student);
-            List<Long> courseIds2 = studiedCourses.stream().map(StudiedCourse::getCourseId).toList();
-            for (Long courseId : courseIds2) {
-                if (!courseIds.contains(courseId)) {
-                    totalEnroll += 1;
-                }
-            }
+        for (Course course : courses) {
+            totalEnroll += course.getEnroller();
         }
         res.setCurrentSubscribers(accountService.getSubscribersUsers(account).size());
         res.setTotalCourses(courseIds.size());

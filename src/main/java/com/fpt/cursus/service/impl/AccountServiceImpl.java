@@ -26,7 +26,6 @@ import com.google.firebase.auth.FirebaseToken;
 import jakarta.servlet.http.HttpServletRequest;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -66,8 +65,6 @@ public class AccountServiceImpl implements AccountService {
     private long accessTokenExpiration;
     @Value("${spring.otp.expiration}")
     private long otpExpiration;
-
-    @Autowired
     public AccountServiceImpl(AccountRepo accountRepo,
                               PasswordEncoder passwordEncoder,
                               AuthenticationManager authenticationManager,

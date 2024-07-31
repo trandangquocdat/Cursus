@@ -31,10 +31,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -181,6 +180,21 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public Course getDetailCourseById(Long id) {
+        Course course = courseRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
+        course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        return course;
+    }
+
+    @Override
+    public GeneralCourse getGeneralCourseById(Long id) {
+        Course course = courseRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.COURSE_NOT_FOUND));
+        GeneralCourse generalCourse = modelMapper.map(course, GeneralCourse.class);
+        generalCourse.setPictureLink(fileService.getSignedImageUrl(generalCourse.getPictureLink()));
+        return generalCourse;
+    }
+
+    @Override
     public Page<Course> getCourseByStatus(CourseStatus status, int offset, int pageSize, String sortBy) {
         pageUtil.checkOffset(offset);
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
@@ -267,6 +281,9 @@ public class CourseServiceImpl implements CourseService {
         List<Long> wishListCourses = getWishListCourses(account);
         Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
         Page<Course> courses = courseRepo.findByIdInAndStatus(wishListCourses, CourseStatus.PUBLISHED, pageable);
+        for (Course course : courses) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
         return convertToGeneralCoursePage(courses);
     }
 
@@ -293,13 +310,21 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public double percentDoneCourse(Long courseId) {
         Account account = accountUtil.getCurrentAccount();
+        if(!getEnrolledCoursesJson(account).contains(courseId)) {
+            throw new AppException(ErrorCode.COURSE_NOT_ENROLLED);
+        }
         List<StudiedCourse> studiedCourses = getStudiedCourses(account);
 
         long completedLessons = studiedCourses.stream().filter(sc -> sc.getCourseId().equals(courseId)).count();
-
         int totalLessons = getTotalLesson(courseId);
 
-        return totalLessons == 0 ? 0 : (double) completedLessons / totalLessons;
+        if (totalLessons == 0) {
+            return 0;
+        }
+
+        double percentage = (double) completedLessons / totalLessons * 100;
+        BigDecimal roundedPercentage = BigDecimal.valueOf(percentage).setScale(2, RoundingMode.HALF_UP);
+        return roundedPercentage.doubleValue();
     }
 
     private int getTotalLesson(Long courseId) {
@@ -360,6 +385,7 @@ public class CourseServiceImpl implements CourseService {
         generalCourse.setDescription(course.getDescription());
         generalCourse.setPictureLink(course.getPictureLink());
         generalCourse.setPrice(course.getPrice());
+        generalCourse.setEnroller(course.getEnroller());
         generalCourse.setRating(course.getRating());
         generalCourse.setCategory(course.getCategory());
         generalCourse.setStatus(course.getStatus());
@@ -441,6 +467,10 @@ public class CourseServiceImpl implements CourseService {
         }
         return courses;
     }
+    @Override
+    public List<Category> getAllCategory(){
+        return Arrays.asList(Category.values());
+    }
 
     public List<StudiedCourse> getStudiedCourses(Account account) {
         if (account.getStudiedCourseJson() == null || account.getStudiedCourseJson().isEmpty()) {
@@ -453,7 +483,17 @@ public class CourseServiceImpl implements CourseService {
             throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
         }
     }
-
+    public List<Long> getEnrolledCoursesJson(Account account) {
+        if (account.getEnrolledCourseJson() == null || account.getEnrolledCourseJson().isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            return objectMapper.readValue(account.getEnrolledCourseJson(), new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
+        }
+    }
     private List<Long> getWishListCourses(Account account) {
         if (account.getWishListCourseJson() == null || account.getWishListCourseJson().isEmpty()) {
             return new ArrayList<>();

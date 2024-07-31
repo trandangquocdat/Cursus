@@ -61,4 +61,10 @@ public interface CourseService {
     Page<Course> getAllCourse(int offset, int pageSize, String sortBy);
 
     List<Course> getCourseByIdsIn(List<Long> courseIds);
+
+    List<Category> getAllCategory();
+
+    GeneralCourse getGeneralCourseById(Long id);
+
+    Course getDetailCourseById(Long id);
 }

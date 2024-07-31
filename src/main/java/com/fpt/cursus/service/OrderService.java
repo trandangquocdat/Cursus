@@ -15,4 +15,6 @@ public interface OrderService {
     void setOrder(Orders order, List<Long> ids, double price);
 
     List<OrdersDetail> findAllByIdIn(List<Long> ids);
+
+    List<OrdersDetail> findAllByCourseIdIn(List<Long> courseIds);
 }

@@ -3,6 +3,7 @@ package com.fpt.cursus.controller;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.DashboardService;
+import com.fpt.cursus.service.EnrollCourseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,14 +25,16 @@ public class UserController {
     private final AccountService accountService;
     private final CourseService courseService;
     private final DashboardService dashboardService;
-
+    private final EnrollCourseService enrollCourseService;
     @Autowired
     public UserController(AccountService accountService,
                           CourseService courseService,
-                          DashboardService dashboardService) {
+                          DashboardService dashboardService,
+                          EnrollCourseService enrollCourseService) {
         this.accountService = accountService;
         this.courseService = courseService;
         this.dashboardService = dashboardService;
+        this.enrollCourseService = enrollCourseService;
     }
 
     @Operation(summary = "Send verifying instructor to admin",
@@ -120,6 +123,12 @@ public class UserController {
                 .body(courseService.getGeneralEnrolledCourses(sortBy, offset, pageSize));
     }
 
+    @GetMapping("/enrolled-course/view-detail-by-id")
+    public ResponseEntity<Object> viewDetailCourseById(@RequestParam Long id) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(courseService.getDetailCourseById(id));
+    }
+
     @GetMapping("/enrolled-course/view-all-detail")
     public ResponseEntity<Object> viewDetailEnrolledCourses(@RequestParam(required = false) String sortBy,
                                                             @RequestParam(defaultValue = "1", required = false) int offset,
@@ -152,4 +161,10 @@ public class UserController {
                 .body(dashboardService.getInstructorDashboardRes());
     }
 
+    @PutMapping("/enroll-course")
+    public ResponseEntity<Object> enrollCourse(@RequestParam Long id) {
+        enrollCourseService.enrollCourse(id);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body("Enroll successfully");
+    }
 }

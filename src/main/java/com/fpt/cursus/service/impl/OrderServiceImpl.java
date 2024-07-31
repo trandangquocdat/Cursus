@@ -216,4 +216,13 @@ public class OrderServiceImpl implements OrderService {
         }
         return ordersDetails;
     }
+
+    @Override
+    public List<OrdersDetail> findAllByCourseIdIn(List<Long> courseIds) {
+        List<OrdersDetail> ordersDetails = ordersDetailRepo.findAllByCourseIdIn(courseIds);
+        if (ordersDetails.isEmpty()) {
+            throw new AppException(ErrorCode.ORDER_NOT_FOUND);
+        }
+        return ordersDetails;
+    }
 }
