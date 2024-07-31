@@ -39,7 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class LessonServiceTest {
+class LessonServiceTest {
 
     @Mock
     private LessonRepo lessonRepo;
@@ -68,7 +68,6 @@ public class LessonServiceTest {
     private Long chapterId;
     private Long lessonId;
     private Lesson lesson;
-    private MultipartFile excelFile;
 
     @BeforeEach
     void setUp() {
@@ -85,7 +84,159 @@ public class LessonServiceTest {
         lesson.setCreatedBy(mockAccount.getUsername());
     }
 
-    private MockMultipartFile createMockExcelFile() throws IOException {
+    @Test
+    void uploadLessonFromExcel_Success() throws IOException {
+
+        File file = File.createTempFile("test", ".txt");
+        file.deleteOnExit();
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row row = sheet.createRow(0);
+        row.createCell(0).setCellValue(file.getAbsolutePath());
+        row.createCell(1).setCellValue("Test Lesson");
+        row.createCell(2).setCellValue("This is a test lesson");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        byte[] excelBytes = outputStream.toByteArray();
+
+        MockMultipartFile excelFile = new MockMultipartFile("file",
+                "example.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                new ByteArrayInputStream(excelBytes));
+
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+        when(fileUtil.isVideo(any(MultipartFile.class))).thenReturn(true);
+        when(fileService.linkSave(any(MultipartFile.class), anyString())).thenReturn("uploaded/link");
+
+        List<String> result = lessonService.uploadLessonFromExcel(chapterId, excelFile);
+
+        assertNotNull(result);
+        verify(lessonRepo, times(1)).save(any(Lesson.class));
+        verify(fileService, times(1)).linkSave(any(MultipartFile.class), anyString());
+    }
+
+    @Test
+    void uploadLessonFromExcel_NotVideo() throws IOException {
+
+        File file = File.createTempFile("test", ".txt");
+        file.deleteOnExit();
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row row = sheet.createRow(0);
+        row.createCell(0).setCellValue(file.getAbsolutePath());
+        row.createCell(1).setCellValue("Test Lesson");
+        row.createCell(2).setCellValue("This is a test lesson");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        byte[] excelBytes = outputStream.toByteArray();
+
+        MockMultipartFile excelFile = new MockMultipartFile("file",
+                "example.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                new ByteArrayInputStream(excelBytes));
+
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+        when(fileUtil.isVideo(any(MultipartFile.class))).thenReturn(false);
+
+        List<String> result = lessonService.uploadLessonFromExcel(chapterId, excelFile);
+
+        assertNotNull(result);
+        verify(lessonRepo, times(1)).save(any(Lesson.class));
+        verify(fileService, never()).linkSave(any(MultipartFile.class), anyString());
+    }
+
+    @Test
+    void uploadLessonFromExcel_FileNull() throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row row = sheet.createRow(0);
+        row.createCell(0).setCellValue("https://www.youtube.com/watch?v=123456");
+        row.createCell(1).setCellValue("Test Lesson");
+        row.createCell(2).setCellValue("This is a test lesson");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        byte[] excelBytes = outputStream.toByteArray();
+
+        MockMultipartFile excelFile = new MockMultipartFile("file",
+                "example.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                new ByteArrayInputStream(excelBytes));
+
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+
+        List<String> result = lessonService.uploadLessonFromExcel(chapterId, excelFile);
+
+        assertNotNull(result);
+        verify(lessonRepo, times(1)).save(any(Lesson.class));
+        verify(fileService, never()).linkSave(any(MultipartFile.class), anyString());
+    }
+
+    @Test
+    void uploadLessonFromExcel_VideoLinkCellNull() throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row row = sheet.createRow(0);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        byte[] excelBytes = outputStream.toByteArray();
+
+        MockMultipartFile excelFile = new MockMultipartFile("file",
+                "example.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                new ByteArrayInputStream(excelBytes));
+        ;
+
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+
+        List<String> result = lessonService.uploadLessonFromExcel(chapterId, excelFile);
+
+        assertNotNull(result);
+        verify(lessonRepo, never()).save(any(Lesson.class));
+    }
+
+    @Test
+    void uploadLessonFromExcel_LessonNameCellNull() throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row row = sheet.createRow(0);
+        row.createCell(0).setCellValue("Column1");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        byte[] excelBytes = outputStream.toByteArray();
+
+        MockMultipartFile excelFile = new MockMultipartFile("file",
+                "example.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                new ByteArrayInputStream(excelBytes));
+        ;
+
+        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
+
+        List<String> result = lessonService.uploadLessonFromExcel(chapterId, excelFile);
+
+        assertNotNull(result);
+        verify(lessonRepo, never()).save(any(Lesson.class));
+    }
+
+    @Test
+    void uploadLessonFromExcel_InvalidVideo() throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Sheet1");
 
@@ -102,48 +253,11 @@ public class LessonServiceTest {
         workbook.close();
         byte[] excelBytes = outputStream.toByteArray();
 
-        return new MockMultipartFile("file", "example.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new ByteArrayInputStream(excelBytes));
-    }
-
-    @Test
-    void uploadLessonFromExcel_Success() throws IOException {
-        MockMultipartFile excelFile = createMockExcelFile();
-        Chapter mockChapter = new Chapter();
-        mockChapter.setId(chapterId);
-
-        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
-
-        LessonServiceImpl lessonServiceSpy = spy(lessonService);
-        List<String> result = lessonServiceSpy.uploadLessonFromExcel(chapterId, excelFile);
-
-        assertNotNull(result);
-    }
-
-    private MockMultipartFile createMockExcelFile2() throws IOException {
-        Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Sheet1");
-
-        Row row = sheet.createRow(0);
-        row.createCell(0).setCellValue("Video Link");
-        row.createCell(1).setCellValue("Lesson Name");
-        row.createCell(2).setCellValue("Description");
-
-        Row dataRow = sheet.createRow(1);
-        dataRow.createCell(0).setCellValue("video.mp4");
-        dataRow.createCell(1).setCellValue("Lesson 1");
-        dataRow.createCell(2).setCellValue("Description 1");
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        workbook.write(outputStream);
-        workbook.close();
-        byte[] excelBytes = outputStream.toByteArray();
-
-        return new MockMultipartFile("file", "example.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new ByteArrayInputStream(excelBytes));
-    }
-
-    @Test
-    void uploadLessonFromExcel_InvalidVideo() throws IOException {
-        MockMultipartFile excelFile = createMockExcelFile();
+        MockMultipartFile excelFile = new MockMultipartFile("file",
+                "example.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                new ByteArrayInputStream(excelBytes));
+        ;
 
         when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
 
@@ -165,18 +279,6 @@ public class LessonServiceTest {
         });
 
         assertEquals("Failed to read Excel file", exception.getMessage());
-    }
-
-    @Test
-    void uploadLessonFromExcel_InvalidFilePath() throws IOException {
-        MockMultipartFile excelFile = createMockExcelFile();
-
-        when(accountUtil.getCurrentAccount()).thenReturn(mockAccount);
-
-        List<String> result = lessonService.uploadLessonFromExcel(chapterId, excelFile);
-
-        assertNotNull(result);
-        verify(lessonRepo, never()).save(any(Lesson.class));
     }
 
     @Test

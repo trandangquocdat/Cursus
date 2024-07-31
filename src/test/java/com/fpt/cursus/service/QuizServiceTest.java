@@ -124,7 +124,7 @@ class QuizServiceTest {
         when(accountUtil.getCurrentAccount()).thenReturn(new Account());
         when(courseService.getCourseById(anyLong())).thenReturn(new Course());
         when(quizRepo.save(any(Quiz.class))).thenReturn(mockQuiz);
-        Quiz createdQuiz = quizService.createQuiz(mockExcelFile,1l,"TestName");
+        Quiz createdQuiz = quizService.createQuiz(mockExcelFile, 1l, "TestName");
 
         //Then
         assertNotNull(createdQuiz);
@@ -149,7 +149,7 @@ class QuizServiceTest {
         when(accountUtil.getCurrentAccount()).thenReturn(new Account());
         when(courseService.getCourseById(anyLong())).thenReturn(new Course());
         when(quizRepo.save(any(Quiz.class))).thenReturn(mockQuiz);
-        Quiz createdQuiz = quizService.createQuiz(mockExcelFile,1l,"TestName");
+        Quiz createdQuiz = quizService.createQuiz(mockExcelFile, 1l, "TestName");
 
         //Then
         assertNotNull(createdQuiz);
@@ -168,7 +168,7 @@ class QuizServiceTest {
         when(mockExcelFile.getInputStream()).thenThrow(new IOException());
 
         //Then
-        assertThrows(AppException.class, () -> quizService.createQuiz(mockExcelFile,1l,"TestName"));
+        assertThrows(AppException.class, () -> quizService.createQuiz(mockExcelFile, 1l, "TestName"));
 
     }
 
