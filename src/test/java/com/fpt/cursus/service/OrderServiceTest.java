@@ -1,5 +1,6 @@
 package com.fpt.cursus.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.cursus.dto.request.PaymentDto;
 import com.fpt.cursus.entity.Account;
@@ -18,10 +19,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import javax.crypto.Mac;
 import java.lang.reflect.Field;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,8 +37,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
-    @Mock
-    ObjectMapper objectMapper;
     @InjectMocks
     private OrderServiceImpl orderService;
     @Mock
@@ -150,7 +153,7 @@ class OrderServiceTest {
     }
 
     @Test
-    void testOrderSuccessSuccess() {
+    void testOrderSuccessSuccess() throws JsonProcessingException {
         //given
         String txnRef = "1";
         String responseCode = "00";
@@ -163,6 +166,7 @@ class OrderServiceTest {
         Orders result = orderService.orderSuccess(txnRef, responseCode);
 
         assertEquals(OrderStatus.PAID, result.getStatus());
+        verify(enrollCourseService, times(1)).enrollCourseAfterPay(anyList(), anyString());
     }
 
     @Test
@@ -207,4 +211,35 @@ class OrderServiceTest {
                 () -> orderService.createPaymentUrl(paymentDto),
                 ErrorCode.COURSE_NOT_FOUND.getMessage());
     }
+
+    @Test
+    void testCreatePaymentUrlORDER_GENERATE_HMAC_FAIL() throws NoSuchFieldException,
+            IllegalAccessException {
+        //given
+        List<Long> courseIds = new ArrayList<>();
+        courseIds.add(1L);
+        paymentDto.setCourseId(courseIds);
+        List<Course> courses = new ArrayList<>();
+        Course course = new Course();
+        course.setPrice(1000);
+        courses.add(course);
+
+        setField(orderService, "tmnCode", "tmnCode");
+        setField(orderService, "secretKey", "secretKey");
+        setField(orderService, "currCode", "VND");
+        setField(orderService, "vnpUrl", "vnpUrl");
+        setField(orderService, "returnUrl", "returnUrl");
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(courseService.getCourseByIdsIn(anyList())).thenReturn(courses);
+        when(courseService.getCourseById(anyLong())).thenReturn(course);
+        try (MockedStatic<Mac> mockedMac = mockStatic(Mac.class)) {
+            mockedMac.when(() -> Mac.getInstance(anyString())).thenThrow(new NoSuchAlgorithmException());
+
+            assertThrows(AppException.class,
+                    () -> orderService.createPaymentUrl(paymentDto),
+                    ErrorCode.ORDER_GENERATE_HMAC_FAIL.getMessage());
+        }
+    }
+
 }
