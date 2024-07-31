@@ -1,66 +1,64 @@
 package com.fpt.cursus.service.impl;
 
 import com.fpt.cursus.entity.ApiLog;
-import com.fpt.cursus.entity.BackListIP;
 import com.fpt.cursus.repository.ApiLogRepo;
-import com.fpt.cursus.repository.BackListIPRepo;
 import com.fpt.cursus.service.ApiLogService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZonedDateTime;
-
+import java.util.Date;
+import java.util.List;
 
 @Service
 public class ApiLogServiceImpl implements ApiLogService {
-
     private final ApiLogRepo apiLogRepo;
 
-    private final BackListIPRepo backListIPRepo;
-
-    public ApiLogServiceImpl(ApiLogRepo apiLogRepo, BackListIPRepo backListIPRepo) {
+    public ApiLogServiceImpl(ApiLogRepo apiLogRepo) {
         this.apiLogRepo = apiLogRepo;
-        this.backListIPRepo = backListIPRepo;
     }
 
-    @Transactional
-    @Scheduled(fixedRate = 10000)
-    public void deleteOldCounts() {
-        ZonedDateTime timeDeleteRecord = ZonedDateTime.now().minusSeconds(10);
-        apiLogRepo.deleteByAccessTimeBefore(timeDeleteRecord);
+    public static String extractIdValue(String queryString, String idParam) {
+        int startIndex = queryString.indexOf(idParam) + idParam.length();
+        int endIndex = queryString.indexOf("&", startIndex);
+        if (endIndex == -1) { // If there is no "&" after the id parameter
+            endIndex = queryString.length();
+        }
+        return queryString.substring(startIndex, endIndex);
     }
 
-    public void logAccess(String ipAddress, String apiEndpoint) {
-        ZonedDateTime now = ZonedDateTime.now();
-        ApiLog existingLog = apiLogRepo.findByIpAddressAndApiEndpoint(ipAddress, apiEndpoint);
-        if (existingLog != null) {
-            existingLog.setCount(existingLog.getCount() + 1);
-            apiLogRepo.save(existingLog);
-        } else {
-            ApiLog newLog = new ApiLog();
-            newLog.setIpAddress(ipAddress);
-            newLog.setApiEndpoint(apiEndpoint);
-            newLog.setCount(1);
-            newLog.setAccessTime(now);
-            apiLogRepo.save(newLog);
+    @Override
+    public void saveApiLog(String requestUrl, String queryString) {
+        String[] possibleIdParams = {"courseId=", "id="};
+        boolean foundIdParam = false;
+        String idValue = null;
+
+        for (String idParam : possibleIdParams) {
+            if (queryString != null && queryString.contains(idParam)) {
+                idValue = idParam.concat(extractIdValue(queryString, idParam));
+                foundIdParam = true;
+                break;
+            }
         }
 
-        checkAndBanIfExceedLimit(ipAddress, apiEndpoint, now);
-    }
-    private void checkAndBanIfExceedLimit(String ipAddress, String apiEndpoint, ZonedDateTime now) {
-        ApiLog log = apiLogRepo.findByIpAddressAndApiEndpoint(ipAddress, apiEndpoint);
-        if (log != null && log.getCount() > 50) {
-            if (!backListIPRepo.findByIpAddress(ipAddress).isPresent()) {
-                BackListIP bannedIp = new BackListIP();
-                bannedIp.setIpAddress(ipAddress);
-                bannedIp.setBanTime(now);
-                backListIPRepo.save(bannedIp);
+        if (foundIdParam) {
+            List<ApiLog> apiLogs = apiLogRepo.findByRequestUrl(requestUrl);
+            List<String> queryStringList = apiLogs.stream().map(ApiLog::getQueryString).toList();
+
+            if (!queryStringList.contains(idValue)) {
+                ApiLog apiLog = new ApiLog();
+                apiLog.setRequestUrl(requestUrl);
+                apiLog.setQueryString(queryString);
+                apiLog.setCount(1);
+                apiLog.setAccessTime(new Date());
+                apiLogRepo.save(apiLog);
+            } else {
+                for (ApiLog apiLog : apiLogs) {
+                    if (queryStringList.contains(idValue)) {
+                        apiLog.setCount(apiLog.getCount() + 1);
+                        apiLogRepo.save(apiLog);
+                        break;
+                    }
+                }
             }
         }
     }
-
-
 }
-

@@ -78,4 +78,16 @@ public class CourseController {
                 .body(courseService.getGeneralCourseByName(name, offset, pageSize, sortBy));
     }
 
+    @GetMapping("/category")
+    public ResponseEntity<Object> getAllCategory() {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(courseService.getAllCategory());
+    }
+
+    @GetMapping("/course/view-general-by-id")
+    public ResponseEntity<Object> viewCourseById(@RequestParam Long id) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(courseService.getGeneralCourseById(id));
+    }
+
 }

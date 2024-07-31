@@ -3,9 +3,9 @@ package com.fpt.cursus.config;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.exception.exceptions.AuthException;
 import com.fpt.cursus.repository.AccountRepo;
-import com.fpt.cursus.repository.BackListIPRepo;
+import com.fpt.cursus.repository.BlackListIpRepo;
 import com.fpt.cursus.service.ApiLogService;
-import com.fpt.cursus.service.impl.ApiLogServiceImpl;
+import com.fpt.cursus.service.IpLogService;
 import com.fpt.cursus.util.TokenHandler;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
@@ -24,44 +24,65 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class Filter extends OncePerRequestFilter {
     private final HandlerExceptionResolver resolver;
     private final TokenHandler tokenHandler;
     private final AccountRepo accountRepo;
+    private final IpLogService ipLogService;
     private final ApiLogService apiLogService;
-    private final BackListIPRepo backListIPRepo;
+    private final BlackListIpRepo blackListIpRepo;
+    private final Set<String> whitelistUris;
 
     @Autowired
     public Filter(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver,
                   TokenHandler tokenHandler,
-                  AccountRepo accountRepo, ApiLogService apiLogService, BackListIPRepo backListIPRepo) {
+                  AccountRepo accountRepo,
+                  IpLogService ipLogService,
+                  BlackListIpRepo blackListIpRepo,
+                  ApiLogService apiLogService) {
         this.resolver = resolver;
         this.tokenHandler = tokenHandler;
         this.accountRepo = accountRepo;
+        this.ipLogService = ipLogService;
+        this.blackListIpRepo = blackListIpRepo;
         this.apiLogService = apiLogService;
-        this.backListIPRepo = backListIPRepo;
+        whitelistUris = new HashSet<>();
+        whitelistUris.add("/login");
+        whitelistUris.add("/register");
+        whitelistUris.add("/swagger-ui");
+        whitelistUris.add("/v3");
+        whitelistUris.add("/auth");
+        whitelistUris.add("/token");
+        whitelistUris.add("/order/update-status");
+        whitelistUris.add("/course/view-all-general");
+        whitelistUris.add("/course/view-general-by-name");
+        whitelistUris.add("/course/view-general-by-category");
+        whitelistUris.add("/category");
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String ipAddress = request.getRemoteAddr();
-        // Kiểm tra nếu IP bị cấm
-        if (backListIPRepo.findByIpAddress(ipAddress).isPresent()) {
+        if (blackListIpRepo.findByIpAddress(ipAddress).isPresent()) {
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.getWriter().write("Your IP is banned due to excessive requests.");
             return;
         }
-
-        // Ghi log truy cập
-        apiLogService.logAccess(ipAddress, request.getRequestURI());
-
+        String uri = request.getRequestURI();
+        String query = request.getQueryString();
+        if (query != null) {
+            apiLogService.saveApiLog(uri, request.getQueryString());
+        }
+        ipLogService.logAccess(ipAddress, uri);
 
         String token = getToken(request);
-        String uri = request.getRequestURI();
-        if (uri.contains("login") || uri.contains("register") || uri.contains("swagger-ui") || uri.contains("v3")
-                || uri.contains("auth") || uri.contains("token") || uri.contains("order/update-status") ) {
+
+        boolean isWhitelisted = whitelistUris.stream().anyMatch(uri::contains);
+        if (isWhitelisted) {
             filterChain.doFilter(request, response);
         } else {
             if (token == null) {

@@ -1,9 +1,12 @@
 package com.fpt.cursus.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.Date;
+
+import java.time.ZonedDateTime;
 
 @Entity
 @Getter
@@ -11,15 +14,16 @@ import java.util.Date;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApiLog {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class IpLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(length = 300)
-    private String requestUrl;
+    private String ipAddress;
     @Column(length = 800)
-    private String queryString;
+    private String apiEndpoint;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
-    private Date accessTime;
+    private ZonedDateTime accessTime;
     private double count;
+
 }

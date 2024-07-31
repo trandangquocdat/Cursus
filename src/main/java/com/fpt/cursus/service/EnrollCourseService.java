@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface EnrollCourseService {
     void enrollCourseAfterPay(List<Long> ids, String username) throws JsonProcessingException;
+    void enrollCourse(Long id);
 }

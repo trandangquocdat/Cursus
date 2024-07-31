@@ -141,6 +141,7 @@ public class OrderServiceImpl implements OrderService {
         }
         return result.toString();
     }
+
     @Override
     public Orders orderSuccess(String txnRef, String responseCode) {
         Long id = Long.parseLong(txnRef);
@@ -167,6 +168,7 @@ public class OrderServiceImpl implements OrderService {
         }
         return ordersRepo.save(order);
     }
+
     @Override
     public void setOrder(Orders order, List<Long> ids, double price) {
         order.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
@@ -209,6 +211,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrdersDetail> findAllByIdIn(List<Long> ids) {
         List<OrdersDetail> ordersDetails = ordersDetailRepo.findAllByIdIn(ids);
+        if (ordersDetails.isEmpty()) {
+            throw new AppException(ErrorCode.ORDER_NOT_FOUND);
+        }
+        return ordersDetails;
+    }
+
+    @Override
+    public List<OrdersDetail> findAllByCourseIdIn(List<Long> courseIds) {
+        List<OrdersDetail> ordersDetails = ordersDetailRepo.findAllByCourseIdIn(courseIds);
         if (ordersDetails.isEmpty()) {
             throw new AppException(ErrorCode.ORDER_NOT_FOUND);
         }
