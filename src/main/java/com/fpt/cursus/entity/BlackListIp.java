@@ -15,7 +15,7 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BlackListIP {
+public class BlackListIp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
