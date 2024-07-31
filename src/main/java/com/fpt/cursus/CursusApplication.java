@@ -23,8 +23,8 @@ public class CursusApplication {
         SpringApplication.run(CursusApplication.class, args);
     }
 
-    @PostConstruct
-    public void init() {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC+7:00"));
-    }
+//    @PostConstruct
+//    public void init() {
+//        TimeZone.setDefault(TimeZone.getTimeZone("UTC+7:00"));
+//    }
 }

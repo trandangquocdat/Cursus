@@ -24,7 +24,7 @@ public class ProcessController {
         return ResponseEntity.ok(courseService.addStudiedLesson(lessonId));
     }
 
-    @PutMapping("/process/percent-done")
+    @GetMapping("/process/percent-done")
     public ResponseEntity<Object> percentDoneCourse(@RequestParam Long courseId) {
         return ResponseEntity.ok(courseService.percentDoneCourse(courseId));
     }

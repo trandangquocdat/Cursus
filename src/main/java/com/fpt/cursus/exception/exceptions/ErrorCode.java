@@ -90,7 +90,15 @@ public enum ErrorCode {
     //
     FEEDBACK_NOT_FOUND(760, "Feedback not found"),
     FEEDBACK_INVALID_RATING(761, "Invalid rating"),
-
+    //
+    QUIZ_NOT_FOUND(770, "Quiz not found"),
+    QUIZ_READ_FAIL(771, "Quiz read fail"),
+    DUPLICATE_QUESTION_ID(772, "Cannot have duplicate question id"),
+    //
+    COURSE_ENROLL_FAIL(780, "Course enroll fail"),
+    COURSE_ENROLL_EXISTS(781, "Course already enrolled"),
+    COURSE_NOT_ENROLLED(782, "Course not enrolled"),
+    //
     INVALID_OFFSET(800, "Invalid Page"),
     ;
 

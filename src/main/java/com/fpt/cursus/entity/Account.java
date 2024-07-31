@@ -26,6 +26,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+
 public class Account implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +43,6 @@ public class Account implements UserDetails {
     @Email
     private String email;
     private String phone;
-
     @Enumerated(EnumType.STRING)
     private Role role;
     @Enumerated(EnumType.STRING)
@@ -64,6 +64,9 @@ public class Account implements UserDetails {
     private String subscribingJson;
 
     @Column(columnDefinition = "TEXT")
+    private String purchasedCourseJson;
+
+    @Column(columnDefinition = "TEXT")
     private String enrolledCourseJson;
 
     @Column(columnDefinition = "TEXT")
@@ -71,7 +74,6 @@ public class Account implements UserDetails {
 
     @Column(columnDefinition = "TEXT")
     private String studiedCourseJson;
-
 
     @JsonProperty("authority")
     public String getAuthority() {
