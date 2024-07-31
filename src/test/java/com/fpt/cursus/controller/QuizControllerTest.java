@@ -1,138 +1,173 @@
 package com.fpt.cursus.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fpt.cursus.dto.object.UserAnswerDto;
 import com.fpt.cursus.dto.request.CheckAnswerReq;
 import com.fpt.cursus.dto.response.QuizRes;
 import com.fpt.cursus.dto.response.QuizResultRes;
 import com.fpt.cursus.entity.Quiz;
-import com.fpt.cursus.service.*;
+import com.fpt.cursus.service.QuizService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
-
-@ExtendWith(MockitoExtension.class)
-@WebMvcTest(QuizController.class)
-@ContextConfiguration(classes = {
-        QuizService.class
-})
 class QuizControllerTest {
 
-    @MockBean
+    @Mock
     private QuizService quizService;
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    private QuizResultRes mockQuizResultRes;
-    private QuizRes mockQuizRes;
-    private CheckAnswerReq checkAnswerReq;
+    @InjectMocks
+    private QuizController quizController;
 
     @BeforeEach
     void setUp() {
-        mockMvc = standaloneSetup(new QuizController(quizService))
-                .alwaysDo(print())
-                .build();
-
-        mockQuizRes = new QuizRes();
-        Quiz mockQuiz = new Quiz();
-        mockQuiz.setId(1L);
-        mockQuiz.setName("TestQuiz");
-        mockQuiz.setCreatedBy("TestUser");
-        mockQuizRes.setQuiz(mockQuiz);
-
-        mockQuizResultRes = new QuizResultRes();
-        mockQuizResultRes.setScore(0.25);
-        mockQuizResultRes.setWrong(0);
-        mockQuizResultRes.setSkipped(0);
-        mockQuizResultRes.setCorrect(1);
-
-        UserAnswerDto userAnswerDto = new UserAnswerDto();
-        userAnswerDto.setAnswerId("1");
-        userAnswerDto.setQuestionId(1);
-        List<UserAnswerDto> userAnswerDtoList = Arrays.asList(userAnswerDto);
-
-        checkAnswerReq = new CheckAnswerReq();
-        checkAnswerReq.setQuizId(1);
-        checkAnswerReq.setAnswers(userAnswerDtoList);
-
+        MockitoAnnotations.openMocks(this);
     }
 
-
-    @Test
-    void getQuizById() throws Exception {
-        when(quizService.getQuizById(anyLong())).thenReturn(mockQuizRes);
-
-        mockMvc.perform(get("/quiz")
-                        .param("id", "1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.quiz.id").value(1L))
-                .andExpect(jsonPath("$.quiz.name").value("TestQuiz"))
-                .andExpect(jsonPath("$.quiz.createdBy").value("TestUser"));
+    private void setUpSecurityContext() {
+        TestingAuthenticationToken authentication = new TestingAuthenticationToken("user", "password", "ADMIN");
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     @Test
-    void getAnswerById() throws Exception {
-        when(quizService.getAnswerById(anyLong())).thenReturn(mockQuizRes);
+    void testGetQuizById_Success() {
+        Long quizId = 1L;
+        QuizRes quizRes = new QuizRes();
+        when(quizService.getQuizById(quizId)).thenReturn(quizRes);
 
-        mockMvc.perform(get("/quiz/answer")
-                        .param("id", "1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.quiz.id").value(1L))
-                .andExpect(jsonPath("$.quiz.name").value("TestQuiz"))
-                .andExpect(jsonPath("$.quiz.createdBy").value("TestUser"));
+        ResponseEntity<Object> response = quizController.getQuizById(quizId);
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(quizRes, response.getBody());
+        verify(quizService, times(1)).getQuizById(quizId);
     }
 
     @Test
-    void createQuiz() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Test Data".getBytes());
-        when(quizService.createQuiz(any(MultipartFile.class), anyLong(), anyString())).thenReturn(mockQuizRes.getQuiz());
+    void testGetQuizById_Failure() {
+        Long quizId = 1L;
+        when(quizService.getQuizById(quizId)).thenThrow(new RuntimeException("Quiz not found"));
 
-        mockMvc.perform(multipart("/quiz")
-                        .file(file)
-                        .param("courseId", "1")
-                        .param("name", "TestQuiz")
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("TestQuiz"))
-                .andExpect(jsonPath("$.createdBy").value("TestUser"));
+        Exception exception = null;
+        try {
+            quizController.getQuizById(quizId);
+        } catch (Exception e) {
+            exception = e;
+        }
+
+        assertNotNull(exception);
+        assertEquals("Quiz not found", exception.getMessage());
+        verify(quizService, times(1)).getQuizById(quizId);
     }
 
     @Test
-    void scoringQuiz() throws Exception {
-        when(quizService.scoringQuiz(any(CheckAnswerReq.class))).thenReturn(mockQuizResultRes);
+    void testGetAnswerById_Success() {
+        setUpSecurityContext();
+        Long answerId = 1L;
+        QuizRes quizRes = new QuizRes();
+        when(quizService.getAnswerById(answerId)).thenReturn(quizRes);
 
-        mockMvc.perform(put("/quiz/scoring")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(checkAnswerReq)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.correct").value(1))
-                .andExpect(jsonPath("$.wrong").value(0))
-                .andExpect(jsonPath("$.skipped").value(0))
-                .andExpect(jsonPath("$.score").value(0.25));
+        ResponseEntity<Object> response = quizController.getAnswerById(answerId);
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(quizRes, response.getBody());
+        verify(quizService, times(1)).getAnswerById(answerId);
+    }
+
+    @Test
+    void testGetAnswerById_Failure() {
+        setUpSecurityContext();
+        Long answerId = 1L;
+        when(quizService.getAnswerById(answerId)).thenThrow(new RuntimeException("Answer not found"));
+
+        Exception exception = null;
+        try {
+            quizController.getAnswerById(answerId);
+        } catch (Exception e) {
+            exception = e;
+        }
+
+        assertNotNull(exception);
+        assertEquals("Answer not found", exception.getMessage());
+        verify(quizService, times(1)).getAnswerById(answerId);
+    }
+
+    @Test
+    void testCreateQuiz_Success() {
+        MockMultipartFile file = new MockMultipartFile("file", "test.xlsx", MediaType.MULTIPART_FORM_DATA_VALUE, "Test content".getBytes());
+        Long courseId = 1L;
+        String name = "Test Quiz";
+        Quiz quiz = new Quiz();
+        when(quizService.createQuiz(any(MultipartFile.class), eq(courseId), eq(name))).thenReturn(quiz);
+
+        ResponseEntity<Object> response = quizController.createQuiz(file, courseId, name);
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(quiz, response.getBody());
+        verify(quizService, times(1)).createQuiz(any(MultipartFile.class), eq(courseId), eq(name));
+    }
+
+    @Test
+    void testCreateQuiz_Failure() {
+        MockMultipartFile file = new MockMultipartFile("file", "test.xlsx", MediaType.MULTIPART_FORM_DATA_VALUE, "Test content".getBytes());
+        Long courseId = 1L;
+        String name = "Test Quiz";
+        when(quizService.createQuiz(any(MultipartFile.class), eq(courseId), eq(name))).thenThrow(new RuntimeException("Quiz creation failed"));
+
+        Exception exception = null;
+        try {
+            quizController.createQuiz(file, courseId, name);
+        } catch (Exception e) {
+            exception = e;
+        }
+
+        assertNotNull(exception);
+        assertEquals("Quiz creation failed", exception.getMessage());
+        verify(quizService, times(1)).createQuiz(any(MultipartFile.class), eq(courseId), eq(name));
+    }
+
+    @Test
+    void testScoringQuiz_Success() {
+        CheckAnswerReq request = new CheckAnswerReq();
+        QuizResultRes result = new QuizResultRes();
+        when(quizService.scoringQuiz(request)).thenReturn(result);
+
+        ResponseEntity<Object> response = quizController.scoringQuiz(request);
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(result, response.getBody());
+        verify(quizService, times(1)).scoringQuiz(request);
+    }
+
+    @Test
+    void testScoringQuiz_Failure() {
+        CheckAnswerReq request = new CheckAnswerReq();
+        when(quizService.scoringQuiz(request)).thenThrow(new RuntimeException("Scoring failed"));
+
+        Exception exception = null;
+        try {
+            quizController.scoringQuiz(request);
+        } catch (Exception e) {
+            exception = e;
+        }
+
+        assertNotNull(exception);
+        assertEquals("Scoring failed", exception.getMessage());
+        verify(quizService, times(1)).scoringQuiz(request);
     }
 }
