@@ -23,4 +23,6 @@ public class BlackListIp {
     private String ipAddress;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
     private ZonedDateTime banTime;
+    private String username;
+
 }
