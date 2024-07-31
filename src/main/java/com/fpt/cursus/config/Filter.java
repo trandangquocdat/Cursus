@@ -3,7 +3,7 @@ package com.fpt.cursus.config;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.exception.exceptions.AuthException;
 import com.fpt.cursus.repository.AccountRepo;
-import com.fpt.cursus.repository.BlackListIpRepo;
+import com.fpt.cursus.repository.BlackListIPRepo;
 import com.fpt.cursus.service.ApiLogService;
 import com.fpt.cursus.service.IpLogService;
 import com.fpt.cursus.util.TokenHandler;
@@ -34,7 +34,7 @@ public class Filter extends OncePerRequestFilter {
     private final AccountRepo accountRepo;
     private final IpLogService ipLogService;
     private final ApiLogService apiLogService;
-    private final BlackListIpRepo blackListIpRepo;
+    private final BlackListIPRepo blackListIpRepo;
     private final Set<String> whitelistUris;
 
     @Autowired
@@ -42,7 +42,7 @@ public class Filter extends OncePerRequestFilter {
                   TokenHandler tokenHandler,
                   AccountRepo accountRepo,
                   IpLogService ipLogService,
-                  BlackListIpRepo blackListIpRepo,
+                  BlackListIPRepo blackListIpRepo,
                   ApiLogService apiLogService) {
         this.resolver = resolver;
         this.tokenHandler = tokenHandler;
@@ -64,19 +64,23 @@ public class Filter extends OncePerRequestFilter {
         whitelistUris.add("/category");
     }
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String ipAddress = request.getRemoteAddr();
+        // Check ip ban
         if (blackListIpRepo.findByIpAddress(ipAddress).isPresent()) {
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.getWriter().write("Your IP is banned due to excessive requests.");
             return;
         }
+
         String uri = request.getRequestURI();
         String query = request.getQueryString();
         if (query != null) {
             apiLogService.saveApiLog(uri, request.getQueryString());
         }
+        // Save log ip
         ipLogService.logAccess(ipAddress, uri);
 
         String token = getToken(request);
@@ -101,7 +105,10 @@ public class Filter extends OncePerRequestFilter {
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             filterChain.doFilter(request, response);
+
         }
+
+
     }
 
     public String getFullURL(HttpServletRequest request) {
