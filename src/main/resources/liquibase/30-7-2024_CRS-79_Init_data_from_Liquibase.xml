@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
@@ -28,32 +28,33 @@
             <!-- Create Account table -->
             CREATE TABLE account
             (
-                id bigint NOT NULL DEFAULT nextval('account_id_seq'::regclass),
-                avatar character varying(255) COLLATE pg_catalog."default",
-                created_by character varying(255) COLLATE pg_catalog."default",
-                created_date timestamp(6) without time zone,
-                cv_link character varying(255) COLLATE pg_catalog."default",
-                email character varying(255) COLLATE pg_catalog."default",
-                enrolled_course_json text COLLATE pg_catalog."default",
-                full_name character varying(255) COLLATE pg_catalog."default",
-                gender character varying(255) COLLATE pg_catalog."default",
-                instructor_status character varying(255) COLLATE pg_catalog."default",
-                password character varying(255) COLLATE pg_catalog."default",
-                phone character varying(255) COLLATE pg_catalog."default",
-                role character varying(255) COLLATE pg_catalog."default",
-                status character varying(255) COLLATE pg_catalog."default",
-                studied_course_json text COLLATE pg_catalog."default",
-                subscribers_json text COLLATE pg_catalog."default",
-                subscribing_json text COLLATE pg_catalog."default",
-                updated_by character varying(255) COLLATE pg_catalog."default",
-                updated_date timestamp(6) without time zone,
-                username character varying(255) COLLATE pg_catalog."default",
+                id                    bigint NOT NULL DEFAULT nextval('account_id_seq'::regclass),
+                avatar                character varying(255) COLLATE pg_catalog."default",
+                created_by            character varying(255) COLLATE pg_catalog."default",
+                created_date          timestamp(6) without time zone,
+                cv_link               character varying(255) COLLATE pg_catalog."default",
+                email                 character varying(255) COLLATE pg_catalog."default",
+                enrolled_course_json  text COLLATE pg_catalog."default",
+                full_name             character varying(255) COLLATE pg_catalog."default",
+                gender                character varying(255) COLLATE pg_catalog."default",
+                instructor_status     character varying(255) COLLATE pg_catalog."default",
+                password              character varying(255) COLLATE pg_catalog."default",
+                phone                 character varying(255) COLLATE pg_catalog."default",
+                role                  character varying(255) COLLATE pg_catalog."default",
+                status                character varying(255) COLLATE pg_catalog."default",
+                studied_course_json   text COLLATE pg_catalog."default",
+                subscribers_json      text COLLATE pg_catalog."default",
+                subscribing_json      text COLLATE pg_catalog."default",
+                updated_by            character varying(255) COLLATE pg_catalog."default",
+                updated_date          timestamp(6) without time zone,
+                username              character varying(255) COLLATE pg_catalog."default",
                 wish_list_course_json text COLLATE pg_catalog."default",
                 purchased_course_json text COLLATE pg_catalog."default",
                 CONSTRAINT account_pkey PRIMARY KEY (id),
                 CONSTRAINT uk_gex1lmaqpg0ir5g1f5eftyaa1 UNIQUE (username),
                 CONSTRAINT uk_q0uja26qgu1atulenwup9rxyr UNIQUE (email),
-                CONSTRAINT account_gender_check CHECK (gender::text = ANY (ARRAY['MALE'::character varying::text, 'FEMALE'::character varying::text, 'OTHER'::character varying::text])),
+                CONSTRAINT account_gender_check CHECK (gender::text = ANY (ARRAY['MALE':: character varying ::text, 'FEMALE':: character varying ::text, 'OTHER':: character varying ::text])
+            ) ,
     CONSTRAINT account_instructor_status_check CHECK (instructor_status::text = ANY (ARRAY['REJECTED'::character varying::text, 'WAITING'::character varying::text, 'APPROVED'::character varying::text])),
     CONSTRAINT account_role_check CHECK (role::text = ANY (ARRAY['ADMIN'::character varying::text, 'INSTRUCTOR'::character varying::text, 'STUDENT'::character varying::text])),
     CONSTRAINT account_status_check CHECK (status::text = ANY (ARRAY['INACTIVE'::character varying::text, 'ACTIVE'::character varying::text, 'DELETED'::character varying::text, 'BLOCKED'::character varying::text]))
@@ -61,166 +62,173 @@
             <!-- Create Course table -->
             CREATE TABLE course
             (
-                id bigint NOT NULL DEFAULT nextval('course_id_seq'::regclass),
-                category character varying(255) COLLATE pg_catalog."default",
-                created_by character varying(255) COLLATE pg_catalog."default",
+                id           bigint           NOT NULL DEFAULT nextval('course_id_seq'::regclass),
+                category     character varying(255) COLLATE pg_catalog."default",
+                created_by   character varying(255) COLLATE pg_catalog."default",
                 created_date timestamp(6) without time zone,
-                description text COLLATE pg_catalog."default",
-                enroller bigint NOT NULL,
-                name character varying(255) COLLATE pg_catalog."default",
+                description  text COLLATE pg_catalog."default",
+                enroller     bigint           NOT NULL,
+                name         character varying(255) COLLATE pg_catalog."default",
                 picture_link character varying(255) COLLATE pg_catalog."default",
-                price double precision NOT NULL,
-                rating real NOT NULL,
-                status character varying(255) COLLATE pg_catalog."default",
-                updated_by character varying(255) COLLATE pg_catalog."default",
+                price        double precision NOT NULL,
+                rating       real             NOT NULL,
+                status       character varying(255) COLLATE pg_catalog."default",
+                updated_by   character varying(255) COLLATE pg_catalog."default",
                 updated_date timestamp(6) without time zone,
-                version real NOT NULL,
+                version      real             NOT NULL,
                 CONSTRAINT course_pkey PRIMARY KEY (id),
                 CONSTRAINT uk_4xqvdpkafb91tt3hsb67ga3fj UNIQUE (name),
-                CONSTRAINT course_category_check CHECK (category::text = ANY (ARRAY['ALL'::character varying, 'PHYSICS'::character varying, 'CHEMISTRY'::character varying, 'COMPUTER_SCIENCE'::character varying, 'INFORMATION_TECHNOLOGY'::character varying, 'ENGINEERING'::character varying, 'FINANCE'::character varying, 'MARKETING'::character varying, 'HUMAN_RESOURCES'::character varying, 'LITERATURE'::character varying, 'HISTORY'::character varying, 'PHILOSOPHY'::character varying, 'VISUAL_ARTS'::character varying, 'MUSIC'::character varying, 'PSYCHOLOGY'::character varying, 'SOCIOLOGY'::character varying, 'ANTHROPOLOGY'::character varying, 'ECONOMICS'::character varying, 'NURSING'::character varying, 'PUBLIC_HEALTH'::character varying, 'NUTRITION'::character varying, 'LAW'::character varying, 'LANGUAGE'::character varying, 'GRAPHIC_DESIGN'::character varying, 'JOURNALISM'::character varying]::text[])),
+                CONSTRAINT course_category_check CHECK (category::text = ANY (ARRAY['ALL':: character varying, 'PHYSICS':: character varying, 'CHEMISTRY':: character varying, 'COMPUTER_SCIENCE':: character varying, 'INFORMATION_TECHNOLOGY':: character varying, 'ENGINEERING':: character varying, 'FINANCE':: character varying, 'MARKETING':: character varying, 'HUMAN_RESOURCES':: character varying, 'LITERATURE':: character varying, 'HISTORY':: character varying, 'PHILOSOPHY':: character varying, 'VISUAL_ARTS':: character varying, 'MUSIC':: character varying, 'PSYCHOLOGY':: character varying, 'SOCIOLOGY':: character varying, 'ANTHROPOLOGY':: character varying, 'ECONOMICS':: character varying, 'NURSING':: character varying, 'PUBLIC_HEALTH':: character varying, 'NUTRITION':: character varying, 'LAW':: character varying, 'LANGUAGE':: character varying, 'GRAPHIC_DESIGN':: character varying, 'JOURNALISM':: character varying]::text[])
+            ) ,
                 CONSTRAINT course_status_check CHECK (status::text = ANY (ARRAY['DRAFT'::character varying, 'VERIFYING'::character varying, 'PUBLISHED'::character varying, 'REJECTED'::character varying, 'ACTIVE'::character varying, 'DELETED'::character varying]::text[]))
                 );
             <!-- Create Chapter table -->
             CREATE TABLE chapter
             (
-                id bigint NOT NULL DEFAULT nextval('chapter_id_seq'::regclass),
-                created_by character varying(255) COLLATE pg_catalog."default",
+                id           bigint NOT NULL DEFAULT nextval('chapter_id_seq'::regclass),
+                created_by   character varying(255) COLLATE pg_catalog."default",
                 created_date timestamp(6) without time zone,
-                description text COLLATE pg_catalog."default",
-                name character varying(255) COLLATE pg_catalog."default",
-                status character varying(255) COLLATE pg_catalog."default",
-                updated_by character varying(255) COLLATE pg_catalog."default",
+                description  text COLLATE pg_catalog."default",
+                name         character varying(255) COLLATE pg_catalog."default",
+                status       character varying(255) COLLATE pg_catalog."default",
+                updated_by   character varying(255) COLLATE pg_catalog."default",
                 updated_date timestamp(6) without time zone,
-                course_id bigint,
+                course_id    bigint,
                 CONSTRAINT chapter_pkey PRIMARY KEY (id),
                 CONSTRAINT fkhhaina8rg7bpmg1qesiluu8vu FOREIGN KEY (course_id)
                     REFERENCES public.course (id) MATCH SIMPLE
                     ON UPDATE NO ACTION
                     ON DELETE NO ACTION,
-                CONSTRAINT chapter_status_check CHECK (status::text = ANY (ARRAY['ACTIVE'::character varying, 'DELETED'::character varying]::text[]))
+                CONSTRAINT chapter_status_check CHECK (status::text = ANY (ARRAY['ACTIVE':: character varying, 'DELETED':: character varying]::text[])
+            )
                 );
             <!-- Create Lesson table -->
             CREATE TABLE lesson
             (
-                chapter_id bigint,
+                chapter_id   bigint,
                 created_date timestamp(6) without time zone,
-                id bigint NOT NULL DEFAULT nextval('lesson_id_seq'::regclass),
+                id           bigint NOT NULL DEFAULT nextval('lesson_id_seq'::regclass),
                 updated_date timestamp(6) without time zone,
-                created_by character varying(255) COLLATE pg_catalog."default",
-                description text COLLATE pg_catalog."default",
-                name character varying(255) COLLATE pg_catalog."default",
-                status character varying(255) COLLATE pg_catalog."default",
-                updated_by character varying(255) COLLATE pg_catalog."default",
-                video_link character varying(255) COLLATE pg_catalog."default",
+                created_by   character varying(255) COLLATE pg_catalog."default",
+                description  text COLLATE pg_catalog."default",
+                name         character varying(255) COLLATE pg_catalog."default",
+                status       character varying(255) COLLATE pg_catalog."default",
+                updated_by   character varying(255) COLLATE pg_catalog."default",
+                video_link   character varying(255) COLLATE pg_catalog."default",
                 CONSTRAINT lesson_pkey PRIMARY KEY (id),
                 CONSTRAINT fkyd2sg2b1awfx3br81o66mrwl FOREIGN KEY (chapter_id)
                     REFERENCES public.chapter (id) MATCH SIMPLE
                     ON UPDATE NO ACTION
                     ON DELETE NO ACTION,
-                CONSTRAINT lesson_status_check CHECK (status::text = ANY (ARRAY['ACTIVE'::character varying, 'DELETED'::character varying]::text[]))
+                CONSTRAINT lesson_status_check CHECK (status::text = ANY (ARRAY['ACTIVE':: character varying, 'DELETED':: character varying]::text[])
+            )
                 );
             <!-- Create ip_log table -->
 
             CREATE TABLE ip_log
             (
-                id bigint NOT NULL DEFAULT nextval('ip_log_id_seq'::regclass),
-                access_time timestamp(6) with time zone,
-                                             api_endpoint character varying(800) COLLATE pg_catalog."default",
-                count double precision NOT NULL,
-                ip_address character varying(255) COLLATE pg_catalog."default",
+                id           bigint           NOT NULL DEFAULT nextval('ip_log_id_seq'::regclass),
+                access_time  timestamp(6) with time zone,
+                api_endpoint character varying(800) COLLATE pg_catalog."default",
+                count        double precision NOT NULL,
+                ip_address   character varying(255) COLLATE pg_catalog."default",
                 CONSTRAINT ip_log_pkey PRIMARY KEY (id)
-                );
+            );
 
             <!-- Create api_log table -->
             CREATE TABLE api_log
             (
-                id bigint NOT NULL DEFAULT nextval('api_log_id_seq'::regclass),
-                access_time timestamp(6) without time zone,
-                count double precision NOT NULL,
+                id           bigint           NOT NULL DEFAULT nextval('api_log_id_seq'::regclass),
+                access_time  timestamp(6) without time zone,
+                count        double precision NOT NULL,
                 query_string character varying(800) COLLATE pg_catalog."default",
-                request_url character varying(300) COLLATE pg_catalog."default",
+                request_url  character varying(300) COLLATE pg_catalog."default",
                 CONSTRAINT api_log_pkey PRIMARY KEY (id)
-                );
+            );
 
             <!-- Create black_list_ip table -->
 
             CREATE TABLE black_list_ip
-            (ban_time timestamp(6) with time zone,
-             id bigint NOT NULL DEFAULT nextval('black_listip_id_seq'::regclass),
-             ip_address character varying(255) COLLATE pg_catalog."default",
-             username character varying(255) COLLATE pg_catalog."default",
-             CONSTRAINT black_listip_pkey PRIMARY KEY (id),
-             CONSTRAINT black_listip_ip_address_key UNIQUE (ip_address)
+            (
+                ban_time   timestamp(6) with time zone,
+                id         bigint NOT NULL DEFAULT nextval('black_listip_id_seq'::regclass),
+                ip_address character varying(255) COLLATE pg_catalog."default",
+                username   character varying(255) COLLATE pg_catalog."default",
+                CONSTRAINT black_listip_pkey PRIMARY KEY (id),
+                CONSTRAINT black_listip_ip_address_key UNIQUE (ip_address)
             );
             <!-- Create feedback table -->
             CREATE TABLE feedback
             (
-                rating real NOT NULL,
-                course_id bigint,
+                rating       real   NOT NULL,
+                course_id    bigint,
                 created_date timestamp(6) without time zone,
-                id bigint NOT NULL DEFAULT nextval('feedback_id_seq'::regclass),
+                id           bigint NOT NULL DEFAULT nextval('feedback_id_seq'::regclass),
                 updated_date timestamp(6) without time zone,
-                content character varying(255) COLLATE pg_catalog."default",
-                created_by character varying(255) COLLATE pg_catalog."default",
-                type character varying(255) COLLATE pg_catalog."default",
+                content      character varying(255) COLLATE pg_catalog."default",
+                created_by   character varying(255) COLLATE pg_catalog."default",
+                type         character varying(255) COLLATE pg_catalog."default",
                 CONSTRAINT feedback_pkey PRIMARY KEY (id),
                 CONSTRAINT fkko7f08v61t5y67teh5jxxwrea FOREIGN KEY (course_id)
                     REFERENCES public.course (id) MATCH SIMPLE
                     ON UPDATE NO ACTION
                     ON DELETE NO ACTION,
-                CONSTRAINT feedback_type_check CHECK (type::text = ANY (ARRAY['REVIEW'::character varying, 'REPORT'::character varying]::text[]))
+                CONSTRAINT feedback_type_check CHECK (type::text = ANY (ARRAY['REVIEW':: character varying, 'REPORT':: character varying]::text[])
+            )
                 );
             <!-- Create orders table -->
             CREATE TABLE orders
             (
-                price double precision NOT NULL,
-                created_date timestamp(6) without time zone,
-                id bigint NOT NULL DEFAULT nextval('orders_id_seq'::regclass),
-                created_by character varying(255) COLLATE pg_catalog."default",
+                price             double precision NOT NULL,
+                created_date      timestamp(6) without time zone,
+                id                bigint           NOT NULL DEFAULT nextval('orders_id_seq'::regclass),
+                created_by        character varying(255) COLLATE pg_catalog."default",
                 order_course_json text COLLATE pg_catalog."default",
-                status character varying(255) COLLATE pg_catalog."default",
+                status            character varying(255) COLLATE pg_catalog."default",
                 CONSTRAINT orders_pkey PRIMARY KEY (id),
-                CONSTRAINT orders_status_check CHECK (status::text = ANY (ARRAY['PENDING'::character varying, 'PAID'::character varying, 'FAIL'::character varying]::text[]))
+                CONSTRAINT orders_status_check CHECK (status::text = ANY (ARRAY['PENDING':: character varying, 'PAID':: character varying, 'FAIL':: character varying]::text[])
+            )
                 );
             <!-- Create orders_detail table -->
             CREATE TABLE orders_detail
             (
-                price double precision,
-                course_id bigint,
+                price        double precision,
+                course_id    bigint,
                 created_date timestamp(6) without time zone,
-                id bigint NOT NULL DEFAULT nextval('orders_detail_id_seq'::regclass),
-                orders_id bigint,
-                created_by character varying(255) COLLATE pg_catalog."default",
-                status character varying(255) COLLATE pg_catalog."default",
+                id           bigint NOT NULL DEFAULT nextval('orders_detail_id_seq'::regclass),
+                orders_id    bigint,
+                created_by   character varying(255) COLLATE pg_catalog."default",
+                status       character varying(255) COLLATE pg_catalog."default",
                 CONSTRAINT orders_detail_pkey PRIMARY KEY (id),
                 CONSTRAINT fklt3mrhyikkt94xukyqrv652jd FOREIGN KEY (orders_id)
                     REFERENCES public.orders (id) MATCH SIMPLE
                     ON UPDATE NO ACTION
                     ON DELETE NO ACTION,
-                CONSTRAINT orders_detail_status_check CHECK (status::text = ANY (ARRAY['PENDING'::character varying, 'PAID'::character varying, 'FAIL'::character varying]::text[]))
+                CONSTRAINT orders_detail_status_check CHECK (status::text = ANY (ARRAY['PENDING':: character varying, 'PAID':: character varying, 'FAIL':: character varying]::text[])
+            )
                 );
             <!-- Create otp table -->
             CREATE TABLE otp
             (
-                valid boolean,
-                id bigint NOT NULL DEFAULT nextval('otp_id_seq'::regclass),
+                valid              boolean,
+                id                 bigint NOT NULL DEFAULT nextval('otp_id_seq'::regclass),
                 otp_generated_time timestamp(6) without time zone,
-                email character varying(255) COLLATE pg_catalog."default",
-                otp character varying(255) COLLATE pg_catalog."default",
+                email              character varying(255) COLLATE pg_catalog."default",
+                otp                character varying(255) COLLATE pg_catalog."default",
                 CONSTRAINT otp_pkey PRIMARY KEY (id)
             );
             <!-- Create quiz table -->
             CREATE TABLE quiz
             (
-                course_id bigint,
+                course_id    bigint,
                 created_date timestamp(6) without time zone,
-                id bigint NOT NULL DEFAULT nextval('quiz_id_seq'::regclass),
+                id           bigint NOT NULL DEFAULT nextval('quiz_id_seq'::regclass),
                 updated_date timestamp(6) without time zone,
-                created_by character varying(255) COLLATE pg_catalog."default",
-                description text COLLATE pg_catalog."default",
-                name character varying(255) COLLATE pg_catalog."default",
-                quiz_json text COLLATE pg_catalog."default",
-                updated_by character varying(255) COLLATE pg_catalog."default",
+                created_by   character varying(255) COLLATE pg_catalog."default",
+                description  text COLLATE pg_catalog."default",
+                name         character varying(255) COLLATE pg_catalog."default",
+                quiz_json    text COLLATE pg_catalog."default",
+                updated_by   character varying(255) COLLATE pg_catalog."default",
                 CONSTRAINT quiz_pkey PRIMARY KEY (id),
                 CONSTRAINT quiz_course_id_key UNIQUE (course_id),
                 CONSTRAINT fkce16mrsgeokucc022mpyev7xk FOREIGN KEY (course_id)
@@ -233,58 +241,94 @@
             CREATE TABLE user_ans
             (
                 created_date timestamp(6) without time zone,
-                id bigint NOT NULL DEFAULT nextval('user_ans_id_seq'::regclass),
-                quiz_id bigint,
-                answer_json text COLLATE pg_catalog."default",
-                created_by character varying(255) COLLATE pg_catalog."default",
+                id           bigint NOT NULL DEFAULT nextval('user_ans_id_seq'::regclass),
+                quiz_id      bigint,
+                answer_json  text COLLATE pg_catalog."default",
+                created_by   character varying(255) COLLATE pg_catalog."default",
                 CONSTRAINT user_ans_pkey PRIMARY KEY (id)
             );
             <!-- Insert sample data Account table -->
-            INSERT INTO account (id, avatar, created_by, created_date, cv_link, email, enrolled_course_json, full_name, gender, instructor_status, password, phone, role, status, studied_course_json, subscribers_json, subscribing_json, updated_by, updated_date, username, wish_list_course_json)
-            VALUES
-                (1, 'defaultAvatar.jpg', 'admin01', CURRENT_TIMESTAMP, NULL, 'admin01@gmail.com', NULL, 'Administrator CRS01', NULL, NULL, '$2a$10$5FhN2ZZy.zfGi5XTgngTmufzAGVUeg8n3W4bUxIye9Ri3kBx1FA72', '0971111111', 'ADMIN', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'admin01', NULL),
-                (2, 'defaultAvatar.jpg', 'admin02', CURRENT_TIMESTAMP, NULL, 'admin02@gmail.com', NULL, 'Administrator CRS02', NULL, NULL, '$2a$10$5FhN2ZZy.zfGi5XTgngTmufzAGVUeg8n3W4bUxIye9Ri3kBx1FA72', '0972222222', 'ADMIN', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'admin02', NULL),
-                (3, 'defaultAvatar.jpg', 'admin03', CURRENT_TIMESTAMP, NULL, 'admin03@gmail.com', NULL, 'Administrator CRS03', NULL, NULL, '$2a$10$5FhN2ZZy.zfGi5XTgngTmufzAGVUeg8n3W4bUxIye9Ri3kBx1FA72', '0972340216', 'ADMIN', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'admin03', NULL),
-                (4, 'defaultAvatar.jpg', 'admin01', CURRENT_TIMESTAMP, NULL, 'student01@gmail.com', NULL, 'Student CRS01', NULL, NULL, '$2a$10$aHo909NRhGcWrBWF3who5.BQPXZEEYnRRyJc82R1lXcqR0kPUjXCa', '0972340213', 'STUDENT', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'student01', NULL),
-                (5, 'defaultAvatar.jpg', 'admin02', CURRENT_TIMESTAMP, NULL, 'student02@gmail.com', NULL, 'Student CRS02', NULL, NULL, '$2a$10$aHo909NRhGcWrBWF3who5.BQPXZEEYnRRyJc82R1lXcqR0kPUjXCa', '0972340217', 'STUDENT', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'student02', NULL),
-                (6, 'defaultAvatar.jpg', 'admin03', CURRENT_TIMESTAMP, NULL, 'student03@gmail.com', NULL, 'Student CRS03', NULL, NULL, '$2a$10$aHo909NRhGcWrBWF3who5.BQPXZEEYnRRyJc82R1lXcqR0kPUjXCa', '0972340218', 'STUDENT', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'student03', NULL),
-                (7, 'defaultAvatar.jpg', 'admin01', CURRENT_TIMESTAMP, NULL, 'instructor01@gmail.com', NULL, 'Instructor CRS01', NULL, 'APPROVED', '$2a$10$35MOYwlJNTj6iDNt7e5XKOf//gLTacdemQ/x0ml.GwCCARMAJ.J3K', '0972340214', 'INSTRUCTOR', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'instructor01', NULL),
-                (8, 'defaultAvatar.jpg', 'admin02', CURRENT_TIMESTAMP, NULL, 'instructor02@gmail.com', NULL, 'Instructor CRS02', NULL, 'APPROVED', '$2a$10$35MOYwlJNTj6iDNt7e5XKOf//gLTacdemQ/x0ml.GwCCARMAJ.J3K', '0972340218', 'INSTRUCTOR', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'instructor02', NULL),
-                (9, 'defaultAvatar.jpg', 'admin03', CURRENT_TIMESTAMP, NULL, 'instructor03@gmail.com', NULL, 'Instructor CRS03', NULL, 'APPROVED', '$2a$10$35MOYwlJNTj6iDNt7e5XKOf//gLTacdemQ/x0ml.GwCCARMAJ.J3K', '0972340219', 'INSTRUCTOR', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'instructor03', NULL);
+            INSERT INTO account (id, avatar, created_by, created_date, cv_link, email, enrolled_course_json, full_name,
+                                 gender, instructor_status, password, phone, role, status, studied_course_json,
+                                 subscribers_json, subscribing_json, updated_by, updated_date, username,
+                                 wish_list_course_json)
+            VALUES (1, 'defaultAvatar.jpg', 'admin01', CURRENT_TIMESTAMP, NULL, 'admin01@gmail.com', NULL,
+                    'Administrator CRS01', NULL, NULL, '$2a$10$5FhN2ZZy.zfGi5XTgngTmufzAGVUeg8n3W4bUxIye9Ri3kBx1FA72',
+                    '0971111111', 'ADMIN', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'admin01', NULL),
+                   (2, 'defaultAvatar.jpg', 'admin02', CURRENT_TIMESTAMP, NULL, 'admin02@gmail.com', NULL,
+                    'Administrator CRS02', NULL, NULL, '$2a$10$5FhN2ZZy.zfGi5XTgngTmufzAGVUeg8n3W4bUxIye9Ri3kBx1FA72',
+                    '0972222222', 'ADMIN', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'admin02', NULL),
+                   (3, 'defaultAvatar.jpg', 'admin03', CURRENT_TIMESTAMP, NULL, 'admin03@gmail.com', NULL,
+                    'Administrator CRS03', NULL, NULL, '$2a$10$5FhN2ZZy.zfGi5XTgngTmufzAGVUeg8n3W4bUxIye9Ri3kBx1FA72',
+                    '0972340216', 'ADMIN', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'admin03', NULL),
+                   (4, 'defaultAvatar.jpg', 'admin01', CURRENT_TIMESTAMP, NULL, 'student01@gmail.com', NULL,
+                    'Student CRS01', NULL, NULL, '$2a$10$aHo909NRhGcWrBWF3who5.BQPXZEEYnRRyJc82R1lXcqR0kPUjXCa',
+                    '0972340213', 'STUDENT', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'student01', NULL),
+                   (5, 'defaultAvatar.jpg', 'admin02', CURRENT_TIMESTAMP, NULL, 'student02@gmail.com', NULL,
+                    'Student CRS02', NULL, NULL, '$2a$10$aHo909NRhGcWrBWF3who5.BQPXZEEYnRRyJc82R1lXcqR0kPUjXCa',
+                    '0972340217', 'STUDENT', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'student02', NULL),
+                   (6, 'defaultAvatar.jpg', 'admin03', CURRENT_TIMESTAMP, NULL, 'student03@gmail.com', NULL,
+                    'Student CRS03', NULL, NULL, '$2a$10$aHo909NRhGcWrBWF3who5.BQPXZEEYnRRyJc82R1lXcqR0kPUjXCa',
+                    '0972340218', 'STUDENT', 'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'student03', NULL),
+                   (7, 'defaultAvatar.jpg', 'admin01', CURRENT_TIMESTAMP, NULL, 'instructor01@gmail.com', NULL,
+                    'Instructor CRS01', NULL, 'APPROVED',
+                    '$2a$10$35MOYwlJNTj6iDNt7e5XKOf//gLTacdemQ/x0ml.GwCCARMAJ.J3K', '0972340214', 'INSTRUCTOR',
+                    'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'instructor01', NULL),
+                   (8, 'defaultAvatar.jpg', 'admin02', CURRENT_TIMESTAMP, NULL, 'instructor02@gmail.com', NULL,
+                    'Instructor CRS02', NULL, 'APPROVED',
+                    '$2a$10$35MOYwlJNTj6iDNt7e5XKOf//gLTacdemQ/x0ml.GwCCARMAJ.J3K', '0972340218', 'INSTRUCTOR',
+                    'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'instructor02', NULL),
+                   (9, 'defaultAvatar.jpg', 'admin03', CURRENT_TIMESTAMP, NULL, 'instructor03@gmail.com', NULL,
+                    'Instructor CRS03', NULL, 'APPROVED',
+                    '$2a$10$35MOYwlJNTj6iDNt7e5XKOf//gLTacdemQ/x0ml.GwCCARMAJ.J3K', '0972340219', 'INSTRUCTOR',
+                    'ACTIVE', NULL, NULL, NULL, NULL, NULL, 'instructor03', NULL);
 
 
             <!-- Insert sample data course table -->
-            INSERT INTO course (id, category, created_by, created_date, description, name, picture_link, price, rating, status, version, updated_by, updated_date,enroller)
-            VALUES
-                (1, 'INFORMATION_TECHNOLOGY', 'admin01', CURRENT_TIMESTAMP, 'description course 1', 'Course 1', 'defaultImage.png', 100000, 0, 'PUBLISHED', 1, NULL, NULL, 0),
-                (2, 'INFORMATION_TECHNOLOGY', 'admin02', CURRENT_TIMESTAMP, 'description course 2', 'Course 2', 'defaultImage.png', 200000, 0, 'PUBLISHED', 1, NULL, NULL, 0),
-                (3, 'COMPUTER_SCIENCE', 'admin03', CURRENT_TIMESTAMP, 'course 3', 'Course 3', 'defaultImage.png', 300000, 0, 'PUBLISHED', 1, NULL, NULL, 0);
+            INSERT INTO course (id, category, created_by, created_date, description, name, picture_link, price, rating,
+                                status, version, updated_by, updated_date, enroller)
+            VALUES (1, 'INFORMATION_TECHNOLOGY', 'admin01', CURRENT_TIMESTAMP, 'description course 1', 'Course 1',
+                    'defaultImage.png', 100000, 0, 'PUBLISHED', 1, NULL, NULL, 0),
+                   (2, 'INFORMATION_TECHNOLOGY', 'admin02', CURRENT_TIMESTAMP, 'description course 2', 'Course 2',
+                    'defaultImage.png', 200000, 0, 'PUBLISHED', 1, NULL, NULL, 0),
+                   (3, 'COMPUTER_SCIENCE', 'admin03', CURRENT_TIMESTAMP, 'course 3', 'Course 3', 'defaultImage.png',
+                    300000, 0, 'PUBLISHED', 1, NULL, NULL, 0);
 
 
             <!-- Insert sample data chapter table -->
-            INSERT INTO chapter (id, created_by, created_date, description, name, status, course_id, updated_by, updated_date)
-            VALUES
-                (1, 'admin01', CURRENT_TIMESTAMP, 'description chapter 1', 'chapter 1', 'ACTIVE', 1, NULL, NULL),
-                (2, 'admin01', CURRENT_TIMESTAMP, 'description chapter 2', 'chapter 2', 'ACTIVE', 1, NULL, NULL),
-                (3, 'admin02', CURRENT_TIMESTAMP, 'description chapter 1', 'chapter 1', 'ACTIVE', 2, NULL, NULL),
-                (4, 'admin02', CURRENT_TIMESTAMP, 'description chapter 2', 'chapter 2', 'ACTIVE', 2, NULL, NULL),
-                (5, 'admin03', CURRENT_TIMESTAMP, 'description chapter 1', 'chapter 1', 'ACTIVE', 3, NULL, NULL),
-                (6, 'admin03', CURRENT_TIMESTAMP, 'description chapter 2', 'chapter 2', 'ACTIVE', 3, NULL, NULL);
+            INSERT INTO chapter (id, created_by, created_date, description, name, status, course_id, updated_by,
+                                 updated_date)
+            VALUES (1, 'admin01', CURRENT_TIMESTAMP, 'description chapter 1', 'chapter 1', 'ACTIVE', 1, NULL, NULL),
+                   (2, 'admin01', CURRENT_TIMESTAMP, 'description chapter 2', 'chapter 2', 'ACTIVE', 1, NULL, NULL),
+                   (3, 'admin02', CURRENT_TIMESTAMP, 'description chapter 1', 'chapter 1', 'ACTIVE', 2, NULL, NULL),
+                   (4, 'admin02', CURRENT_TIMESTAMP, 'description chapter 2', 'chapter 2', 'ACTIVE', 2, NULL, NULL),
+                   (5, 'admin03', CURRENT_TIMESTAMP, 'description chapter 1', 'chapter 1', 'ACTIVE', 3, NULL, NULL),
+                   (6, 'admin03', CURRENT_TIMESTAMP, 'description chapter 2', 'chapter 2', 'ACTIVE', 3, NULL, NULL);
 
             <!-- Insert sample data lesson table -->
 
-            INSERT INTO lesson (id, created_by, created_date, description, name, status, video_link, chapter_id, updated_by, updated_date)
-            VALUES
-                (1, 'admin01', CURRENT_TIMESTAMP, 'description lesson 1', 'lesson 1', 'ACTIVE', 'videoTest.mp4', 1, NULL, NULL),
-                (2, 'admin01', CURRENT_TIMESTAMP, 'description lesson 2', 'lesson 2', 'ACTIVE', 'videoTest.mp4', 1, NULL, NULL),
-                (3, 'admin01', CURRENT_TIMESTAMP, 'description lesson 3', 'lesson 3', 'ACTIVE', 'videoTest.mp4', 1, NULL, NULL),
-                (4, 'admin01', CURRENT_TIMESTAMP, 'description lesson 4', 'lesson 4', 'ACTIVE', 'videoTest.mp4', 1, NULL, NULL),
-                (5, 'admin02', CURRENT_TIMESTAMP, 'description lesson 1', 'lesson 1', 'ACTIVE', 'videoTest.mp4', 2, NULL, NULL),
-                (6, 'admin02', CURRENT_TIMESTAMP, 'description lesson 2', 'lesson 2', 'ACTIVE', 'videoTest.mp4', 2, NULL, NULL),
-                (7, 'admin02', CURRENT_TIMESTAMP, 'description lesson 3', 'lesson 3', 'ACTIVE', 'videoTest.mp4', 2, NULL, NULL),
-                (8, 'admin03', CURRENT_TIMESTAMP, 'description lesson 1', 'lesson 1', 'ACTIVE', 'videoTest.mp4', 3, NULL, NULL),
-                (9, 'admin03', CURRENT_TIMESTAMP, 'description lesson 2', 'lesson 2', 'ACTIVE', 'videoTest.mp4', 3, NULL, NULL),
-                (10, 'admin03', CURRENT_TIMESTAMP, 'description lesson 3', 'lesson 3', 'ACTIVE', 'videoTest.mp4', 3, NULL, NULL);
+            INSERT INTO lesson (id, created_by, created_date, description, name, status, video_link, chapter_id,
+                                updated_by, updated_date)
+            VALUES (1, 'admin01', CURRENT_TIMESTAMP, 'description lesson 1', 'lesson 1', 'ACTIVE', 'videoTest.mp4', 1,
+                    NULL, NULL),
+                   (2, 'admin01', CURRENT_TIMESTAMP, 'description lesson 2', 'lesson 2', 'ACTIVE', 'videoTest.mp4', 1,
+                    NULL, NULL),
+                   (3, 'admin01', CURRENT_TIMESTAMP, 'description lesson 3', 'lesson 3', 'ACTIVE', 'videoTest.mp4', 1,
+                    NULL, NULL),
+                   (4, 'admin01', CURRENT_TIMESTAMP, 'description lesson 4', 'lesson 4', 'ACTIVE', 'videoTest.mp4', 1,
+                    NULL, NULL),
+                   (5, 'admin02', CURRENT_TIMESTAMP, 'description lesson 1', 'lesson 1', 'ACTIVE', 'videoTest.mp4', 2,
+                    NULL, NULL),
+                   (6, 'admin02', CURRENT_TIMESTAMP, 'description lesson 2', 'lesson 2', 'ACTIVE', 'videoTest.mp4', 2,
+                    NULL, NULL),
+                   (7, 'admin02', CURRENT_TIMESTAMP, 'description lesson 3', 'lesson 3', 'ACTIVE', 'videoTest.mp4', 2,
+                    NULL, NULL),
+                   (8, 'admin03', CURRENT_TIMESTAMP, 'description lesson 1', 'lesson 1', 'ACTIVE', 'videoTest.mp4', 3,
+                    NULL, NULL),
+                   (9, 'admin03', CURRENT_TIMESTAMP, 'description lesson 2', 'lesson 2', 'ACTIVE', 'videoTest.mp4', 3,
+                    NULL, NULL),
+                   (10, 'admin03', CURRENT_TIMESTAMP, 'description lesson 3', 'lesson 3', 'ACTIVE', 'videoTest.mp4', 3,
+                    NULL, NULL);
         </sql>
     </changeSet>
 

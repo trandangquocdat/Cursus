@@ -1,16 +1,10 @@
 package com.fpt.cursus.service.impl;
 
-import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.entity.IpLog;
 import com.fpt.cursus.entity.BlackListIp;
-import com.fpt.cursus.enums.UserStatus;
-import com.fpt.cursus.exception.exceptions.AppException;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.repository.AccountRepo;
-import com.fpt.cursus.repository.BlackListIPRepo;
+import com.fpt.cursus.entity.IpLog;
+import com.fpt.cursus.repository.BlackListIpRepo;
 import com.fpt.cursus.repository.IpLogRepo;
 import com.fpt.cursus.service.IpLogService;
-import com.fpt.cursus.util.AccountUtil;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +17,9 @@ public class IpLogServiceImpl implements IpLogService {
 
     private final IpLogRepo ipLogRepo;
 
-    private final BlackListIPRepo blackListIpRepo;
+    private final BlackListIpRepo blackListIpRepo;
 
-    public IpLogServiceImpl(IpLogRepo ipLogRepo, BlackListIPRepo blackListIpRepo, AccountUtil accountUtil, AccountRepo accountRepo, BlackListIPRepo blackListIPRepo) {
+    public IpLogServiceImpl(IpLogRepo ipLogRepo, BlackListIpRepo blackListIpRepo) {
         this.ipLogRepo = ipLogRepo;
         this.blackListIpRepo = blackListIpRepo;
     }
@@ -63,5 +57,5 @@ public class IpLogServiceImpl implements IpLogService {
             bannedIp.setBanTime(now);
             blackListIpRepo.save(bannedIp);
         }
-        }
     }
+}

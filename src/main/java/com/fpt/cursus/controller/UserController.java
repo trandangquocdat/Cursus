@@ -26,6 +26,7 @@ public class UserController {
     private final CourseService courseService;
     private final DashboardService dashboardService;
     private final EnrollCourseService enrollCourseService;
+
     @Autowired
     public UserController(AccountService accountService,
                           CourseService courseService,

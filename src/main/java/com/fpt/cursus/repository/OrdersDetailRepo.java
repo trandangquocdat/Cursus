@@ -12,5 +12,6 @@ public interface OrdersDetailRepo extends JpaRepository<OrdersDetail, Long> {
     List<OrdersDetail> findAllByOrdersId(Long id);
 
     List<OrdersDetail> findAllByIdIn(List<Long> ids);
+
     List<OrdersDetail> findAllByCourseIdIn(List<Long> courseIds);
 }

@@ -310,7 +310,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public double percentDoneCourse(Long courseId) {
         Account account = accountUtil.getCurrentAccount();
-        if(!getEnrolledCoursesJson(account).contains(courseId)) {
+        if (!getEnrolledCoursesJson(account).contains(courseId)) {
             throw new AppException(ErrorCode.COURSE_NOT_ENROLLED);
         }
         List<StudiedCourse> studiedCourses = getStudiedCourses(account);
@@ -467,8 +467,9 @@ public class CourseServiceImpl implements CourseService {
         }
         return courses;
     }
+
     @Override
-    public List<Category> getAllCategory(){
+    public List<Category> getAllCategory() {
         return Arrays.asList(Category.values());
     }
 
@@ -483,6 +484,7 @@ public class CourseServiceImpl implements CourseService {
             throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
         }
     }
+
     public List<Long> getEnrolledCoursesJson(Account account) {
         if (account.getEnrolledCourseJson() == null || account.getEnrolledCourseJson().isEmpty()) {
             return new ArrayList<>();
@@ -494,6 +496,7 @@ public class CourseServiceImpl implements CourseService {
             throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);
         }
     }
+
     private List<Long> getWishListCourses(Account account) {
         if (account.getWishListCourseJson() == null || account.getWishListCourseJson().isEmpty()) {
             return new ArrayList<>();
