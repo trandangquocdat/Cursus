@@ -13,7 +13,6 @@ import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Quiz;
 import com.fpt.cursus.exception.exceptions.AppException;
-import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.QuizRepo;
 import com.fpt.cursus.service.impl.QuizServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
@@ -101,13 +100,6 @@ class QuizServiceTest {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet();
         Row dataRow = sheet.createRow(0);
-        dataRow.createCell(0).setCellValue(0);
-        dataRow.createCell(1).setCellValue("Test");
-        dataRow.createCell(2).setCellValue("A");
-        dataRow.createCell(3).setCellValue("B");
-        dataRow.createCell(4).setCellValue("C");
-        dataRow.createCell(5).setCellValue("D");
-        dataRow.createCell(6).setCellValue("A");
         Row dataRow2 = sheet.createRow(1);
         dataRow2.createCell(0).setCellValue(1);
         dataRow2.createCell(1).setCellValue("Test");
@@ -115,7 +107,7 @@ class QuizServiceTest {
         dataRow2.createCell(3).setCellValue("B");
         dataRow2.createCell(4).setCellValue("C");
         dataRow2.createCell(5).setCellValue("D");
-        dataRow2.createCell(6).setCellValue("B");
+        dataRow2.createCell(6).setCellValue("A");
         Row dataRow3 = sheet.createRow(2);
         dataRow3.createCell(0).setCellValue(2);
         dataRow3.createCell(1).setCellValue("Test");
@@ -123,7 +115,7 @@ class QuizServiceTest {
         dataRow3.createCell(3).setCellValue("B");
         dataRow3.createCell(4).setCellValue("C");
         dataRow3.createCell(5).setCellValue("D");
-        dataRow3.createCell(6).setCellValue("C");
+        dataRow3.createCell(6).setCellValue("B");
         Row dataRow4 = sheet.createRow(3);
         dataRow4.createCell(0).setCellValue(3);
         dataRow4.createCell(1).setCellValue("Test");
@@ -131,9 +123,18 @@ class QuizServiceTest {
         dataRow4.createCell(3).setCellValue("B");
         dataRow4.createCell(4).setCellValue("C");
         dataRow4.createCell(5).setCellValue("D");
-        dataRow4.createCell(6).setCellValue("D");
+        dataRow4.createCell(6).setCellValue("C");
+        Row dataRow5 = sheet.createRow(4);
+        dataRow5.createCell(0).setCellValue(4);
+        dataRow5.createCell(1).setCellValue("Test");
+        dataRow5.createCell(2).setCellValue("A");
+        dataRow5.createCell(3).setCellValue("B");
+        dataRow5.createCell(4).setCellValue("C");
+        dataRow5.createCell(5).setCellValue("D");
+        dataRow5.createCell(6).setCellValue("D");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         workbook.write(baos);
+        workbook.close();
         byte[] workBookToByteArray = baos.toByteArray();
         when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
 
@@ -159,15 +160,10 @@ class QuizServiceTest {
         Sheet sheet = workbook.createSheet();
         Row dataRow = sheet.createRow(0);
         Row dataRow2 = sheet.createRow(1);
-        dataRow2.createCell(0).setCellValue(1);
-        dataRow2.createCell(1).setCellValue("Test");
-        dataRow2.createCell(2).setCellValue("A");
-        dataRow2.createCell(3).setCellValue("B");
-        dataRow2.createCell(4).setCellValue("C");
-        dataRow2.createCell(5).setCellValue("D");
         dataRow2.createCell(6).setCellValue("E");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         workbook.write(baos);
+        workbook.close();
         byte[] workBookToByteArray = baos.toByteArray();
         when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
 
@@ -189,16 +185,10 @@ class QuizServiceTest {
         Sheet sheet = workbook.createSheet();
         Row dataRow = sheet.createRow(0);
         Row dataRow2 = sheet.createRow(1);
-        dataRow2.createCell(0).setCellValue(1);
-        dataRow2.createCell(1).setCellValue("Test");
-        dataRow2.createCell(2).setCellValue("A");
-        dataRow2.createCell(3).setCellValue("B");
-        dataRow2.createCell(4).setCellValue("C");
-        dataRow2.createCell(5).setCellValue("D");
-        dataRow2.createCell(6).setCellValue("A");
         dataRow2.createCell(7).setCellValue("A");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         workbook.write(baos);
+        workbook.close();
         byte[] workBookToByteArray = baos.toByteArray();
         when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
 
@@ -220,6 +210,7 @@ class QuizServiceTest {
         Sheet sheet = workbook.createSheet();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         workbook.write(baos);
+        workbook.close();
         byte[] workBookToByteArray = baos.toByteArray();
         when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
 
@@ -242,6 +233,7 @@ class QuizServiceTest {
         Sheet sheet = workbook.createSheet();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         workbook.write(baos);
+        workbook.close();
         byte[] workBookToByteArray = baos.toByteArray();
         when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
 
@@ -257,7 +249,7 @@ class QuizServiceTest {
     }
 
     @Test
-    void createQuizFileFail() throws IOException {
+    void createQuizFileReadFail() throws IOException {
 
         //Given
         mockExcelFile = mock(MultipartFile.class);
@@ -391,7 +383,6 @@ class QuizServiceTest {
     void scoringQuizNotCorrect() throws JsonProcessingException {
 
         //Given
-        mockQuiz.setQuizJson("[{\"questionId\":1,\"questionContent\":\"TestQuestion\",\"questionScore\":0.25,\"answers\":[{\"id\":\"1\",\"content\":\"TestAnswer\",\"isCorrect\":true}]}]");
         mockAnswer.setIsCorrect(false);
         UserAnswerDto userAnswerDto = new UserAnswerDto();
         userAnswerDto.setAnswerId("1");
