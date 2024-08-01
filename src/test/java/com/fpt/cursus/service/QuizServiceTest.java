@@ -99,24 +99,42 @@ class QuizServiceTest {
         mockExcelFile = mock(MultipartFile.class);
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet();
-        Row dataRow = sheet.createRow(1);
-        dataRow.createCell(0).setCellValue(1);
-        dataRow.createCell(1).setCellValue("Test");
-        dataRow.createCell(2).setCellValue("A");
-        dataRow.createCell(3).setCellValue("B");
-        dataRow.createCell(4).setCellValue("C");
-        dataRow.createCell(5).setCellValue("D");
-        dataRow.createCell(6).setCellValue("A");
-        Row dataRow2 = sheet.createRow(2);
-        dataRow2.createCell(0).setCellValue(2);
+        Row dataRow = sheet.createRow(0);
+        Row dataRow2 = sheet.createRow(1);
+        dataRow2.createCell(0).setCellValue(1);
         dataRow2.createCell(1).setCellValue("Test");
         dataRow2.createCell(2).setCellValue("A");
         dataRow2.createCell(3).setCellValue("B");
         dataRow2.createCell(4).setCellValue("C");
         dataRow2.createCell(5).setCellValue("D");
         dataRow2.createCell(6).setCellValue("A");
+        Row dataRow3 = sheet.createRow(2);
+        dataRow3.createCell(0).setCellValue(2);
+        dataRow3.createCell(1).setCellValue("Test");
+        dataRow3.createCell(2).setCellValue("A");
+        dataRow3.createCell(3).setCellValue("B");
+        dataRow3.createCell(4).setCellValue("C");
+        dataRow3.createCell(5).setCellValue("D");
+        dataRow3.createCell(6).setCellValue("B");
+        Row dataRow4 = sheet.createRow(3);
+        dataRow4.createCell(0).setCellValue(3);
+        dataRow4.createCell(1).setCellValue("Test");
+        dataRow4.createCell(2).setCellValue("A");
+        dataRow4.createCell(3).setCellValue("B");
+        dataRow4.createCell(4).setCellValue("C");
+        dataRow4.createCell(5).setCellValue("D");
+        dataRow4.createCell(6).setCellValue("C");
+        Row dataRow5 = sheet.createRow(4);
+        dataRow5.createCell(0).setCellValue(4);
+        dataRow5.createCell(1).setCellValue("Test");
+        dataRow5.createCell(2).setCellValue("A");
+        dataRow5.createCell(3).setCellValue("B");
+        dataRow5.createCell(4).setCellValue("C");
+        dataRow5.createCell(5).setCellValue("D");
+        dataRow5.createCell(6).setCellValue("D");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         workbook.write(baos);
+        workbook.close();
         byte[] workBookToByteArray = baos.toByteArray();
         when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
 
@@ -134,6 +152,79 @@ class QuizServiceTest {
     }
 
     @Test
+    void createQuizAnswerError() throws IOException {
+
+        //Given
+        mockExcelFile = mock(MultipartFile.class);
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet();
+        Row dataRow = sheet.createRow(0);
+        Row dataRow2 = sheet.createRow(1);
+        dataRow2.createCell(6).setCellValue("E");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        workbook.write(baos);
+        workbook.close();
+        byte[] workBookToByteArray = baos.toByteArray();
+        when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
+
+        //When
+        when(accountUtil.getCurrentAccount()).thenReturn(new Account());
+        when(courseService.getCourseById(anyLong())).thenReturn(new Course());
+
+        //Then
+        assertThrows(AppException.class, ()-> quizService.createQuiz(mockExcelFile,1l,"TestName"));
+
+    }
+
+    @Test
+    void createQuizCellError() throws IOException {
+
+        //Given
+        mockExcelFile = mock(MultipartFile.class);
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet();
+        Row dataRow = sheet.createRow(0);
+        Row dataRow2 = sheet.createRow(1);
+        dataRow2.createCell(7).setCellValue("A");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        workbook.write(baos);
+        workbook.close();
+        byte[] workBookToByteArray = baos.toByteArray();
+        when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
+
+        //When
+        when(accountUtil.getCurrentAccount()).thenReturn(new Account());
+        when(courseService.getCourseById(anyLong())).thenReturn(new Course());
+
+        //Then
+        assertThrows(AppException.class, ()-> quizService.createQuiz(mockExcelFile,1l,"TestName"));
+
+    }
+
+    @Test
+    void createQuizSaveException() throws IOException {
+
+        //Given
+        mockExcelFile = mock(MultipartFile.class);
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        workbook.write(baos);
+        workbook.close();
+        byte[] workBookToByteArray = baos.toByteArray();
+        when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
+
+        //When
+        when(accountUtil.getCurrentAccount()).thenReturn(new Account());
+        when(courseService.getCourseById(anyLong())).thenReturn(new Course());
+        when(objectMapper.writeValueAsString(any(List.class))).thenThrow(JsonProcessingException.class);
+
+        //Then
+        assertThrows(AppException.class, ()-> quizService.createQuiz(mockExcelFile,1l,"TestName"));
+
+    }
+
+    @Test
     void createQuizNoData() throws IOException {
 
         //Given
@@ -142,6 +233,7 @@ class QuizServiceTest {
         Sheet sheet = workbook.createSheet();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         workbook.write(baos);
+        workbook.close();
         byte[] workBookToByteArray = baos.toByteArray();
         when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
 
@@ -157,7 +249,7 @@ class QuizServiceTest {
     }
 
     @Test
-    void createQuizFail() throws IOException {
+    void createQuizFileReadFail() throws IOException {
 
         //Given
         mockExcelFile = mock(MultipartFile.class);
@@ -187,6 +279,50 @@ class QuizServiceTest {
     }
 
     @Test
+    void getQuizByIdEmptyJsonTest() throws JsonProcessingException {
+
+        //Given
+        mockQuiz.setQuizJson(new String());
+
+        //When
+        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
+        QuizRes quizRes = quizService.getQuizById(1L);
+
+        //Then
+        assertNotNull(quizRes);
+        assertEquals(mockQuiz, quizRes.getQuiz());
+
+    }
+
+    @Test
+    void getQuizByIdNullJsonTest() throws JsonProcessingException {
+
+        //Given
+        mockQuiz.setQuizJson(null);
+
+        //When
+        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
+        QuizRes quizRes = quizService.getQuizById(1L);
+
+        //Then
+        assertNotNull(quizRes);
+        assertEquals(mockQuiz, quizRes.getQuiz());
+
+    }
+
+    @Test
+    void getQuizByIdReadJsonFailTest() throws JsonProcessingException {
+
+        //When
+        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
+        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenThrow(JsonProcessingException.class);
+
+        //Then
+        assertThrows(AppException.class, ()-> quizService.getQuizById(1L));
+
+    }
+
+    @Test
     void getAnswerById() throws JsonProcessingException {
 
         //When
@@ -202,8 +338,96 @@ class QuizServiceTest {
 
     @Test
     void scoringQuiz() throws JsonProcessingException {
+
+        //Given
         UserAnswerDto userAnswerDto = new UserAnswerDto();
         userAnswerDto.setAnswerId("1");
+        userAnswerDto.setQuestionId(1);
+        List<UserAnswerDto> userAnswerDtoList = Arrays.asList(userAnswerDto);
+        CheckAnswerReq mockCheckAnswerReq = new CheckAnswerReq();
+        mockCheckAnswerReq.setQuizId(1);
+        mockCheckAnswerReq.setAnswers(userAnswerDtoList);
+
+        //When
+        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
+        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(mockQuestions);
+        QuizResultRes quizResultRes = quizService.scoringQuiz(mockCheckAnswerReq);
+
+        //Then
+        assertNotNull(quizResultRes);
+
+    }
+
+    @Test
+    void scoringQuizDuplicateAnswer() throws JsonProcessingException {
+
+        //Given
+        UserAnswerDto userAnswerDto = new UserAnswerDto();
+        userAnswerDto.setAnswerId("1");
+        userAnswerDto.setQuestionId(1);
+        UserAnswerDto userAnswerDto2 = new UserAnswerDto();
+        userAnswerDto2.setAnswerId("1");
+        userAnswerDto2.setQuestionId(1);
+        List<UserAnswerDto> userAnswerDtoList = Arrays.asList(userAnswerDto,userAnswerDto2);
+        CheckAnswerReq mockCheckAnswerReq = new CheckAnswerReq();
+        mockCheckAnswerReq.setQuizId(1);
+        mockCheckAnswerReq.setAnswers(userAnswerDtoList);
+
+        //When
+
+        //Then
+        assertThrows(AppException.class, () -> quizService.scoringQuiz(mockCheckAnswerReq));
+    }
+
+    @Test
+    void scoringQuizNotCorrect() throws JsonProcessingException {
+
+        //Given
+        mockAnswer.setIsCorrect(false);
+        UserAnswerDto userAnswerDto = new UserAnswerDto();
+        userAnswerDto.setAnswerId("1");
+        userAnswerDto.setQuestionId(1);
+        List<UserAnswerDto> userAnswerDtoList = Arrays.asList(userAnswerDto);
+        CheckAnswerReq mockCheckAnswerReq = new CheckAnswerReq();
+        mockCheckAnswerReq.setQuizId(1);
+        mockCheckAnswerReq.setAnswers(userAnswerDtoList);
+
+        //When
+        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
+        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(mockQuestions);
+        QuizResultRes quizResultRes = quizService.scoringQuiz(mockCheckAnswerReq);
+
+        //Then
+        assertNotNull(quizResultRes);
+
+    }
+
+    @Test
+    void scoringQuizNoAnswers() throws JsonProcessingException {
+
+        //Given
+        UserAnswerDto userAnswerDto = new UserAnswerDto();
+        List<UserAnswerDto> userAnswerDtoList = Arrays.asList(userAnswerDto);
+        CheckAnswerReq mockCheckAnswerReq = new CheckAnswerReq();
+        mockCheckAnswerReq.setQuizId(1);
+        mockCheckAnswerReq.setAnswers(userAnswerDtoList);
+
+        //When
+        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
+        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(mockQuestions);
+        QuizResultRes quizResultRes = quizService.scoringQuiz(mockCheckAnswerReq);
+
+        //Then
+        assertNotNull(quizResultRes);
+
+    }
+
+    @Test
+    void scoringQuizWrongUserAnswerId() throws JsonProcessingException {
+
+        //Given
+        UserAnswerDto userAnswerDto = new UserAnswerDto();
+        userAnswerDto.setAnswerId("0");
         userAnswerDto.setQuestionId(1);
         List<UserAnswerDto> userAnswerDtoList = Arrays.asList(userAnswerDto);
         CheckAnswerReq mockCheckAnswerReq = new CheckAnswerReq();
