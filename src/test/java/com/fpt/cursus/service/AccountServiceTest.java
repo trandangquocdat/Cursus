@@ -1438,5 +1438,19 @@ class AccountServiceTest {
         method.invoke(targetObject, args);
     }
 
+    @Test
+    void testLoginHasBanned() {
+        //given
+        Authentication authentication = mock(Authentication.class);
+        account.setStatus(UserStatus.BLOCKED);
+        //when
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(account);
+        //then
+        assertThrows(AppException.class,
+                () -> accountService.login(loginReqDto),
+                ErrorCode.USER_HAS_BANNED.getMessage());
+    }
 }
 

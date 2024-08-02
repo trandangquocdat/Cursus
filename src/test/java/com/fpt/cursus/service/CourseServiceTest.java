@@ -1361,4 +1361,81 @@ class CourseServiceTest {
         assertEquals(categories.size(), result.size());
     }
 
+    @Test
+    void testGetPurchasedCoursePurchasedNull() {
+        //given
+        String sortBy = "name";
+        int pageSize = 10;
+        int offset = 1;
+        account.setPurchasedCourseJson(null);
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        //then
+        assertThrows(AppException.class,
+                () -> courseService.getPurchasedCourse(offset, pageSize, sortBy),
+                ErrorCode.COURSE_ENROLL_FAIL.getMessage());
+    }
+
+    @Test
+    void testGetPurchasedCoursePurchasedEmpty() {
+        //given
+        String sortBy = "name";
+        int pageSize = 10;
+        int offset = 1;
+        account.setPurchasedCourseJson("");
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        //then
+        assertThrows(AppException.class,
+                () -> courseService.getPurchasedCourse(offset, pageSize, sortBy),
+                ErrorCode.COURSE_ENROLL_FAIL.getMessage());
+    }
+
+    @Test
+    void testGetPurchasedCourseObjectMapperException() throws JsonProcessingException {
+        //given
+        String sortBy = "name";
+        int pageSize = 10;
+        int offset = 1;
+        account.setPurchasedCourseJson("invalid");
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class)))
+                .thenThrow(JsonProcessingException.class);
+        //then
+        assertThrows(AppException.class,
+                () -> courseService.getPurchasedCourse(offset, pageSize, sortBy),
+                ErrorCode.COURSE_ENROLL_FAIL.getMessage());
+    }
+
+    @Test
+    void testGetPurchasedCourse() throws JsonProcessingException {
+        //given
+        String sortBy = "name";
+        int pageSize = 10;
+        int offset = 1;
+        Pageable pageable = PageRequest.of(0, pageSize, Sort.by(sortBy));
+        List<Course> list = new ArrayList<>();
+        Course course = new Course();
+        course.setId(1L);
+        course.setPictureLink("link");
+        list.add(course);
+        Course course1 = new Course();
+        course1.setId(2L);
+        course1.setPictureLink("link");
+        list.add(course1);
+        Page<Course> coursePage = new PageImpl<>(list, pageable, list.size());
+        account.setPurchasedCourseJson("[1]");
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class)))
+                .thenReturn(List.of(1L));
+        when(pageUtil.getPageable(anyString(), anyInt(), anyInt())).thenReturn(pageable);
+        when(courseRepo.findByIdInAndStatus(anyList(), any(CourseStatus.class), any(Pageable.class)))
+                .thenReturn(coursePage);
+        when(fileService.getSignedImageUrl(anyString())).thenReturn("link");
+        //then
+        Page<GeneralCourse> generalCourses = courseService.getPurchasedCourse(offset, pageSize, sortBy);
+        assertEquals(coursePage.getContent().size(), generalCourses.getContent().size());
+    }
 }

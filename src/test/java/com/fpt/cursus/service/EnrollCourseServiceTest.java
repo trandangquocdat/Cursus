@@ -192,4 +192,28 @@ class EnrollCourseServiceTest {
                 ErrorCode.COURSE_ENROLL_FAIL.getMessage());
     }
 
+    @Test
+    void testEnrollCoursePurchasedNull() {
+        //given
+        account.setPurchasedCourseJson(null);
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        //then
+        assertThrows(AppException.class,
+                () -> enrollCourseService.enrollCourse(1L),
+                ErrorCode.COURSE_ENROLL_FAIL.getMessage());
+    }
+
+    @Test
+    void testEnrollCoursePurchasedEmpty() {
+        //given
+        account.setPurchasedCourseJson("");
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        //then
+        assertThrows(AppException.class,
+                () -> enrollCourseService.enrollCourse(1L),
+                ErrorCode.COURSE_ENROLL_FAIL.getMessage());
+    }
+
 }

@@ -31,7 +31,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
@@ -68,7 +67,6 @@ class UserControllerTest {
     void setUp() {
         mockMvc = standaloneSetup(new UserController(accountService, courseService,
                 dashboardService, enrollCourseService))
-                .alwaysDo(print())
                 .build();
     }
 
@@ -356,5 +354,26 @@ class UserControllerTest {
                         .param("id", Long.toString(courseId)))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(course)));
+    }
+
+    @Test
+    void testViewPurchaseCourse() throws Exception {
+        // given
+        GeneralCourse generalCourse = new GeneralCourse();
+        generalCourse.setId(1L);
+        int offset = 1;
+        int pageSize = 10;
+        String sortBy = "name";
+        Pageable pageable = PageRequest.of(offset, pageSize, Sort.by(sortBy));
+        Page<GeneralCourse> page = new PageImpl<>(List.of(generalCourse), pageable, 1);
+        //when
+        when(courseService.getPurchasedCourse(anyInt(), anyInt(), anyString())).thenReturn(page);
+        //then
+        mockMvc.perform(get("/purchased-course")
+                        .param("sortBy", sortBy)
+                        .param("offset", "1")
+                        .param("pageSize", "10"))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(page)));
     }
 }
