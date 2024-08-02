@@ -23,7 +23,7 @@ public class LessonController {
 
     private final LessonService lessonService;
 
-
+    @Autowired
     public LessonController(LessonService lessonService) {
         this.lessonService = lessonService;
     }
@@ -45,7 +45,7 @@ public class LessonController {
     @PutMapping("/lesson/update")
     @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> updateLesson(@RequestParam Long lessonId,
-                                               @RequestBody @Valid CreateLessonDto request) {
+                                               @ModelAttribute @Valid CreateLessonDto request) {
         return ResponseEntity.status(HttpStatus.OK).body(lessonService.updateLesson(lessonId, request));
     }
 

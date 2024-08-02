@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 public class CheckAnswerReq {
-    private long quizId;
     List<UserAnswerDto> answers;
+    private long quizId;
 }

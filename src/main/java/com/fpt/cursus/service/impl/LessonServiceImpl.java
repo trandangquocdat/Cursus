@@ -95,7 +95,7 @@ public class LessonServiceImpl implements LessonService {
         return uploadedFileUrls;
     }
 
-    private MultipartFile getFileFromPath(String filePath) {
+    public MultipartFile getFileFromPath(String filePath) {
         try {
             File file = new File(filePath);
             FileInputStream fileInputStream = new FileInputStream(file);
@@ -129,13 +129,11 @@ public class LessonServiceImpl implements LessonService {
     }
 
     @Override
-
     public Lesson findLessonById(Long id) {
         return lessonRepo.findById(id).orElse(null);
     }
 
     @Override
-
     public Lesson deleteLessonById(Long id) {
         Lesson lesson = this.findLessonById(id);
         lesson.setChapter(null);
@@ -144,7 +142,6 @@ public class LessonServiceImpl implements LessonService {
     }
 
     @Override
-
     public Lesson updateLesson(Long id, CreateLessonDto request) {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration()
@@ -167,7 +164,6 @@ public class LessonServiceImpl implements LessonService {
     }
 
     @Override
-
     public List<Lesson> findAllByChapterId(Long id) {
         List<Lesson> lessons = lessonRepo.findAllByChapterId(id);
         if (lessons == null) {
@@ -181,7 +177,6 @@ public class LessonServiceImpl implements LessonService {
     }
 
     @Override
-
     public List<Lesson> findAll() {
         List<Lesson> lessons = lessonRepo.findAll();
         for (Lesson lesson : lessons) {
@@ -191,7 +186,6 @@ public class LessonServiceImpl implements LessonService {
     }
 
     @Override
-
     public void save(Lesson lesson) {
         lessonRepo.save(lesson);
     }

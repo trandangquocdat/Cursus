@@ -1,9 +1,9 @@
 package com.fpt.cursus.service.impl;
 
-import com.fpt.cursus.entity.IpLog;
 import com.fpt.cursus.entity.BlackListIp;
-import com.fpt.cursus.repository.IpLogRepo;
+import com.fpt.cursus.entity.IpLog;
 import com.fpt.cursus.repository.BlackListIpRepo;
+import com.fpt.cursus.repository.IpLogRepo;
 import com.fpt.cursus.service.IpLogService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -48,17 +48,14 @@ public class IpLogServiceImpl implements IpLogService {
 
         checkAndBanIfExceedLimit(ipAddress, apiEndpoint, now);
     }
+
     private void checkAndBanIfExceedLimit(String ipAddress, String apiEndpoint, ZonedDateTime now) {
         IpLog log = ipLogRepo.findByIpAddressAndApiEndpoint(ipAddress, apiEndpoint);
         if (log != null && log.getCount() > 120 && blackListIpRepo.findByIpAddress(ipAddress).isEmpty()) {
-                BlackListIp bannedIp = new BlackListIp();
-                bannedIp.setIpAddress(ipAddress);
-                bannedIp.setBanTime(now);
-                blackListIpRepo.save(bannedIp);
-            }
-
+            BlackListIp bannedIp = new BlackListIp();
+            bannedIp.setIpAddress(ipAddress);
+            bannedIp.setBanTime(now);
+            blackListIpRepo.save(bannedIp);
+        }
     }
-
-
 }
-

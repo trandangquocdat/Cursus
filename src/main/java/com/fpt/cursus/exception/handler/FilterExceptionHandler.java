@@ -22,7 +22,6 @@ public class FilterExceptionHandler implements AuthenticationEntryPoint {
         this.resolver = resolver;
     }
 
-
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException authException) throws IOException, ServletException {
         resolver.resolveException(request, response, null, new AuthException("Forbidden", 403));

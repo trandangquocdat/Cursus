@@ -65,6 +65,7 @@ public class AccountServiceImpl implements AccountService {
     private long accessTokenExpiration;
     @Value("${spring.otp.expiration}")
     private long otpExpiration;
+
     public AccountServiceImpl(AccountRepo accountRepo,
                               PasswordEncoder passwordEncoder,
                               AuthenticationManager authenticationManager,
@@ -138,11 +139,11 @@ public class AccountServiceImpl implements AccountService {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginReqDto.getUsername(), loginReqDto.getPassword()));
             Account account = (Account) authentication.getPrincipal();
-
-            if (!account.getStatus().equals(UserStatus.ACTIVE)) {
+            if (account.getStatus().equals(UserStatus.BLOCKED)) {
+                throw new AppException(ErrorCode.USER_HAS_BANNED);
+            } else if (!account.getStatus().equals(UserStatus.ACTIVE)) {
                 throw new AppException(ErrorCode.EMAIL_UNAUTHENTICATED);
             }
-
             return buildLoginResponse(account);
         } catch (BadCredentialsException e) {
             throw new AppException(ErrorCode.PASSWORD_NOT_CORRECT);

@@ -13,5 +13,5 @@ public interface IpLogRepo extends JpaRepository<IpLog, Long> {
     @Query("SELECT COUNT(a) FROM IpLog a WHERE a.ipAddress = :ipAddress AND a.apiEndpoint = :apiEndpoint AND a.accessTime > :time")
     int countAccesses(String ipAddress, String apiEndpoint, ZonedDateTime time);
 
-    void deleteByAccessTimeBefore (ZonedDateTime time);
+    void deleteByAccessTimeBefore(ZonedDateTime time);
 }

@@ -1,6 +1,5 @@
 package com.fpt.cursus.validator;
 
-import com.fpt.cursus.validator.NotEmptyOrNullMultipartFile;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.web.multipart.MultipartFile;

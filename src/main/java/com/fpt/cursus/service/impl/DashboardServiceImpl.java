@@ -1,6 +1,5 @@
 package com.fpt.cursus.service.impl;
 
-import com.fpt.cursus.dto.object.StudiedCourse;
 import com.fpt.cursus.dto.response.InstructorDashboardRes;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;

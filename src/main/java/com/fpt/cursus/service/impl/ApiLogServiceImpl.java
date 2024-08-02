@@ -52,7 +52,7 @@ public class ApiLogServiceImpl implements ApiLogService {
                 apiLogRepo.save(apiLog);
             } else {
                 for (ApiLog apiLog : apiLogs) {
-                    if (queryStringList.contains(idValue)) {
+                    if (apiLog.getQueryString().contains(idValue)) {
                         apiLog.setCount(apiLog.getCount() + 1);
                         apiLogRepo.save(apiLog);
                         break;
@@ -60,5 +60,7 @@ public class ApiLogServiceImpl implements ApiLogService {
                 }
             }
         }
+
     }
+
 }

@@ -25,6 +25,7 @@ public class QuizController {
     public ResponseEntity<Object> getQuizById(@RequestParam("id") Long id) {
         return ResponseEntity.ok(quizService.getQuizById(id));
     }
+
     @GetMapping("/quiz/answer")
     @PreAuthorize("hasAnyAuthority('ADMIN','INSTRUCTOR')")
     public ResponseEntity<Object> getAnswerById(@RequestParam("id") Long id) {
@@ -32,10 +33,11 @@ public class QuizController {
     }
 
     @PostMapping(value = "/quiz", consumes = "multipart/form-data")
-    public ResponseEntity<Object> createQuiz(@RequestParam("file") MultipartFile file,@RequestParam Long courseId,
-                                        @RequestParam String name) {
+    public ResponseEntity<Object> createQuiz(@RequestParam("file") MultipartFile file, @RequestParam Long courseId,
+                                             @RequestParam String name) {
         return ResponseEntity.ok(quizService.createQuiz(file, courseId, name));
     }
+
     @PutMapping("/quiz/scoring")
     public ResponseEntity<Object> scoringQuiz(@RequestBody CheckAnswerReq request) {
         return ResponseEntity.ok(quizService.scoringQuiz(request));

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.ZonedDateTime;
 
+import java.time.ZonedDateTime;
 
 @Entity
 @Getter
@@ -23,4 +23,6 @@ public class BlackListIp {
     private String ipAddress;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd' 'HH:mm:ss")
     private ZonedDateTime banTime;
+    private String username;
+
 }

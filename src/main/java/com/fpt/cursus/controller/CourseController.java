@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @CrossOrigin("*")
 @SecurityRequirement(name = "api")
@@ -63,7 +62,6 @@ public class CourseController {
                                                        @RequestParam(required = false) String sortBy,
                                                        @RequestParam(defaultValue = "1", required = false) int offset,
                                                        @RequestParam(defaultValue = "10", required = false) int pageSize) {
-
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getCourseByCategory(category, offset, pageSize, sortBy));
     }
@@ -73,7 +71,6 @@ public class CourseController {
                                                    @RequestParam(required = false) String sortBy,
                                                    @RequestParam(defaultValue = "1", required = false) int offset,
                                                    @RequestParam(defaultValue = "10", required = false) int pageSize) {
-
         return ResponseEntity.status(HttpStatus.OK)
                 .body(courseService.getGeneralCourseByName(name, offset, pageSize, sortBy));
     }

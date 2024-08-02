@@ -64,19 +64,26 @@ public class Filter extends OncePerRequestFilter {
         whitelistUris.add("/category");
     }
 
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
         String ipAddress = request.getRemoteAddr();
+        // Check ip ban
         if (blackListIpRepo.findByIpAddress(ipAddress).isPresent()) {
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.getWriter().write("Your IP is banned due to excessive requests.");
             return;
         }
+
         String uri = request.getRequestURI();
         String query = request.getQueryString();
         if (query != null) {
             apiLogService.saveApiLog(uri, request.getQueryString());
         }
+        // Save log ip
         ipLogService.logAccess(ipAddress, uri);
 
         String token = getToken(request);
@@ -101,7 +108,10 @@ public class Filter extends OncePerRequestFilter {
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             filterChain.doFilter(request, response);
+
         }
+
+
     }
 
     public String getFullURL(HttpServletRequest request) {

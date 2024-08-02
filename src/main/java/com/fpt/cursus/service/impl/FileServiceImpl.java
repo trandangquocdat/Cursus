@@ -1,30 +1,18 @@
 package com.fpt.cursus.service.impl;
 
-
-import com.fpt.cursus.dto.request.RegisterReqDto;
-import com.fpt.cursus.entity.Account;
-import com.fpt.cursus.entity.Course;
-import com.fpt.cursus.entity.Lesson;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
-import com.fpt.cursus.service.AccountService;
-import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.FileService;
-import com.fpt.cursus.service.LessonService;
-import com.fpt.cursus.util.AccountUtil;
-import com.fpt.cursus.util.FileUtil;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,12 +27,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class FileServiceImpl implements FileService {
-    private final AccountService accountService;
-    private final CourseService courseService;
-    private final LessonService lessonService;
-    private SimpMessagingTemplate messagingTemplate;
-    private final FileUtil fileUtil;
-    private final AccountUtil accountUtil;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${firebase.storage.bucket}")
     private String bucketName;
@@ -53,19 +36,9 @@ public class FileServiceImpl implements FileService {
     private Storage storage;
 
     @Autowired
-    public FileServiceImpl(@Lazy AccountService accountService,
-                           @Lazy CourseService courseService,
-                           @Lazy LessonService lessonService,
-                           SimpMessagingTemplate messagingTemplate,
-                           FileUtil fileUtil,
-                           AccountUtil accountUtil
+    public FileServiceImpl(SimpMessagingTemplate messagingTemplate
     ) {
-        this.accountService = accountService;
-        this.courseService = courseService;
-        this.lessonService = lessonService;
         this.messagingTemplate = messagingTemplate;
-        this.fileUtil = fileUtil;
-        this.accountUtil = accountUtil;
     }
 
     @PostConstruct
@@ -129,12 +102,10 @@ public class FileServiceImpl implements FileService {
         return fileName;
     }
 
-
     private String generateUniqueFileName(String folderName, String originalFileName) {
         String uniqueId = UUID.randomUUID().toString();
         return folderName + "/" + uniqueId + "_" + originalFileName;
     }
-
 
     @Override
     public Resource downloadFileAsResource(String bucketName, String fileName) {

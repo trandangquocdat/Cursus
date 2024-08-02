@@ -67,4 +67,6 @@ public interface CourseService {
     GeneralCourse getGeneralCourseById(Long id);
 
     Course getDetailCourseById(Long id);
+
+    Page<GeneralCourse> getPurchasedCourse(int offset, int pageSize, String sortBy);
 }
