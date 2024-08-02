@@ -51,7 +51,7 @@ public class IpLogServiceImpl implements IpLogService {
 
     private void checkAndBanIfExceedLimit(String ipAddress, String apiEndpoint, ZonedDateTime now) {
         IpLog log = ipLogRepo.findByIpAddressAndApiEndpoint(ipAddress, apiEndpoint);
-        if (log != null && log.getCount() > 5 && blackListIpRepo.findByIpAddress(ipAddress).isEmpty()) {
+        if (log != null && log.getCount() > 120 && blackListIpRepo.findByIpAddress(ipAddress).isEmpty()) {
             BlackListIp bannedIp = new BlackListIp();
             bannedIp.setIpAddress(ipAddress);
             bannedIp.setBanTime(now);

@@ -3,7 +3,7 @@ package com.fpt.cursus.config;
 import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.exception.exceptions.AuthException;
 import com.fpt.cursus.repository.AccountRepo;
-import com.fpt.cursus.repository.BlackListIPRepo;
+import com.fpt.cursus.repository.BlackListIpRepo;
 import com.fpt.cursus.service.ApiLogService;
 import com.fpt.cursus.service.IpLogService;
 import com.fpt.cursus.util.TokenHandler;
@@ -34,7 +34,7 @@ public class Filter extends OncePerRequestFilter {
     private final AccountRepo accountRepo;
     private final IpLogService ipLogService;
     private final ApiLogService apiLogService;
-    private final BlackListIPRepo blackListIpRepo;
+    private final BlackListIpRepo blackListIpRepo;
     private final Set<String> whitelistUris;
 
     @Autowired
@@ -42,7 +42,7 @@ public class Filter extends OncePerRequestFilter {
                   TokenHandler tokenHandler,
                   AccountRepo accountRepo,
                   IpLogService ipLogService,
-                  BlackListIPRepo blackListIpRepo,
+                  BlackListIpRepo blackListIpRepo,
                   ApiLogService apiLogService) {
         this.resolver = resolver;
         this.tokenHandler = tokenHandler;

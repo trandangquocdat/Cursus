@@ -71,7 +71,7 @@ class ProcessControllerTest {
         //when
         when(courseService.percentDoneCourse(anyLong())).thenReturn(75.0);
         //then
-        mockMvc.perform(put("/process/percent-done")
+        mockMvc.perform(get("/process/percent-done")
                         .param("courseId", "1"))
                 .andExpect(content().string("75.0"));
     }

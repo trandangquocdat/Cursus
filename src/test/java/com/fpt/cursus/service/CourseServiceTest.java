@@ -941,37 +941,6 @@ class CourseServiceTest {
     }
 
     @Test
-    void testPercentDoneCourseTotalLessons0() {
-        //given
-        Course course = new Course();
-        Chapter chapter = new Chapter();
-        chapter.setLesson(List.of());
-        course.setChapter(List.of(chapter));
-        //when
-        when(accountUtil.getCurrentAccount()).thenReturn(account);
-        when(courseRepo.findById(anyLong())).thenReturn(Optional.of(course));
-        //then
-        double result = courseService.percentDoneCourse(1L);
-        assertEquals(0, result);
-    }
-
-    @Test
-    void testPercentDoneCourseTotalLessons1() {
-        //given
-        Course course = new Course();
-        Chapter chapter = new Chapter();
-        Lesson lesson = new Lesson();
-        chapter.setLesson(List.of(lesson));
-        course.setChapter(List.of(chapter));
-        //when
-        when(accountUtil.getCurrentAccount()).thenReturn(account);
-        when(courseRepo.findById(anyLong())).thenReturn(Optional.of(course));
-        //then
-        double result = courseService.percentDoneCourse(1L);
-        assertEquals(0, result);
-    }
-
-    @Test
     void testGetAllGeneralCourses() {
         //given
         int offset = 1;
@@ -1246,6 +1215,150 @@ class CourseServiceTest {
         assertThrows(AppException.class,
                 () -> courseService.removeFromWishList(1L),
                 ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL.getMessage());
+    }
+
+    @Test
+    void testGetDetailCourseById() {
+        // Given
+        Long courseId = 1L;
+        when(courseRepo.findById(courseId)).thenReturn(Optional.of(sampleCourse));
+
+        // When
+        Course result = courseService.getDetailCourseById(courseId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(sampleCourse.getName(), result.getName());
+        assertEquals(sampleCourse.getPrice(), result.getPrice());
+        assertEquals(sampleCourse.getStatus(), result.getStatus());
+    }
+
+    @Test
+    void testGetGeneralCourseById() {
+        // Given
+        Long courseId = 1L;
+        GeneralCourse sampleCourseGeneralCourse = new GeneralCourse();
+        sampleCourseGeneralCourse.setId(courseId);
+        sampleCourseGeneralCourse.setName("Java");
+        sampleCourseGeneralCourse.setPrice(1000.0);
+        sampleCourseGeneralCourse.setStatus(CourseStatus.PUBLISHED);
+        sampleCourseGeneralCourse.setPictureLink("link");
+        // When
+        when(courseRepo.findById(courseId)).thenReturn(Optional.of(sampleCourse));
+        when(modelMapper.map(sampleCourse, GeneralCourse.class)).thenReturn(sampleCourseGeneralCourse);
+        when(fileService.getSignedImageUrl(anyString())).thenReturn("link");
+        // Then
+        GeneralCourse result = courseService.getGeneralCourseById(courseId);
+        assertNotNull(result);
+        assertEquals(sampleCourseGeneralCourse.getName(), result.getName());
+        assertEquals(sampleCourseGeneralCourse.getPrice(), result.getPrice());
+        assertEquals(sampleCourseGeneralCourse.getStatus(), result.getStatus());
+        assertEquals(sampleCourseGeneralCourse.getPictureLink(), result.getPictureLink());
+    }
+
+    @Test
+    void testPercentDoneCourseEnrolledNull() {
+        //given
+        account.setEnrolledCourseJson(null);
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        //then
+        assertThrows(AppException.class,
+                () -> courseService.percentDoneCourse(1L),
+                ErrorCode.COURSE_NOT_ENROLLED.getMessage());
+    }
+
+    @Test
+    void testPercentDoneCourseEnrolledEmpty() {
+        //given
+        account.setEnrolledCourseJson("");
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        //then
+        assertThrows(AppException.class,
+                () -> courseService.percentDoneCourse(1L),
+                ErrorCode.COURSE_NOT_ENROLLED.getMessage());
+    }
+
+    @Test
+    void testPercentDoneCourseNotEnrolled() throws JsonProcessingException {
+        //given
+        account.setEnrolledCourseJson("[1]");
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class)))
+                .thenReturn(List.of(2L));
+        //then
+        assertThrows(AppException.class,
+                () -> courseService.percentDoneCourse(1L),
+                ErrorCode.COURSE_NOT_ENROLLED.getMessage());
+    }
+
+    @Test
+    void testPercentDoneCourseEnrolledFail() throws JsonProcessingException {
+        //given
+        account.setEnrolledCourseJson("[1]");
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class)))
+                .thenThrow(JsonProcessingException.class);
+        //then
+        assertThrows(AppException.class,
+                () -> courseService.percentDoneCourse(1L),
+                ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL.getMessage());
+    }
+
+    @Test
+    void testPercentDoneCourse() throws JsonProcessingException {
+        //given
+        StudiedCourse studiedCourse = new StudiedCourse();
+        studiedCourse.setCourseId(1L);
+        List<StudiedCourse> studiedCourses = List.of(studiedCourse);
+        account.setEnrolledCourseJson("[1,2]");
+        account.setStudiedCourseJson(objectMapper.writeValueAsString(studiedCourses));
+        Chapter chapter = new Chapter();
+        Lesson lesson = new Lesson();
+        chapter.setLesson(List.of(lesson));
+        sampleCourse.setChapter(List.of(chapter));
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class)))
+                .thenReturn(List.of(1L));
+        when(courseRepo.findById(1L)).thenReturn(Optional.of(sampleCourse));
+        //then
+        double result = courseService.percentDoneCourse(1L);
+        assertEquals(0, result);
+    }
+
+    @Test
+    void testPercentDoneCourseTotal0() throws JsonProcessingException {
+        //given
+        StudiedCourse studiedCourse = new StudiedCourse();
+        studiedCourse.setCourseId(1L);
+        List<StudiedCourse> studiedCourses = List.of(studiedCourse);
+        account.setEnrolledCourseJson("[1,2]");
+        account.setStudiedCourseJson(objectMapper.writeValueAsString(studiedCourses));
+        Chapter chapter = new Chapter();
+        chapter.setLesson(List.of());
+        sampleCourse.setChapter(List.of(chapter));
+        //when
+        when(accountUtil.getCurrentAccount()).thenReturn(account);
+        when(objectMapper.readValue(anyString(), any(TypeReference.class)))
+                .thenReturn(List.of(1L));
+        when(courseRepo.findById(1L)).thenReturn(Optional.of(sampleCourse));
+        //then
+        double result = courseService.percentDoneCourse(1L);
+        assertEquals(0, result);
+    }
+
+    @Test
+    void testGetAllCategory() {
+        //given
+        List<Category> categories = List.of(Category.values());
+        //when
+        List<Category> result = courseService.getAllCategory();
+        //then
+        assertEquals(categories.size(), result.size());
     }
 
 }

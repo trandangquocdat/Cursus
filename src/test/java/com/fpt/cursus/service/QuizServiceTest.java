@@ -13,6 +13,7 @@ import com.fpt.cursus.entity.Account;
 import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Quiz;
 import com.fpt.cursus.exception.exceptions.AppException;
+import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.QuizRepo;
 import com.fpt.cursus.service.impl.QuizServiceImpl;
 import com.fpt.cursus.util.AccountUtil;
@@ -31,6 +32,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -72,7 +75,7 @@ class QuizServiceTest {
     private QuizServiceImpl quizService;
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         mockQuiz = new Quiz();
         mockQuiz.setName("TestName");
         mockQuiz.setCreatedDate(new Date());
@@ -172,7 +175,7 @@ class QuizServiceTest {
         when(courseService.getCourseById(anyLong())).thenReturn(new Course());
 
         //Then
-        assertThrows(AppException.class, ()-> quizService.createQuiz(mockExcelFile,1l,"TestName"));
+        assertThrows(AppException.class, () -> quizService.createQuiz(mockExcelFile, 1l, "TestName"));
 
     }
 
@@ -197,7 +200,7 @@ class QuizServiceTest {
         when(courseService.getCourseById(anyLong())).thenReturn(new Course());
 
         //Then
-        assertThrows(AppException.class, ()-> quizService.createQuiz(mockExcelFile,1l,"TestName"));
+        assertThrows(AppException.class, () -> quizService.createQuiz(mockExcelFile, 1l, "TestName"));
 
     }
 
@@ -220,7 +223,7 @@ class QuizServiceTest {
         when(objectMapper.writeValueAsString(any(List.class))).thenThrow(JsonProcessingException.class);
 
         //Then
-        assertThrows(AppException.class, ()-> quizService.createQuiz(mockExcelFile,1l,"TestName"));
+        assertThrows(AppException.class, () -> quizService.createQuiz(mockExcelFile, 1l, "TestName"));
 
     }
 
@@ -279,10 +282,10 @@ class QuizServiceTest {
     }
 
     @Test
-    void getQuizByIdEmptyJsonTest() throws JsonProcessingException {
+    void getQuizByIdEmptyJsonTest() {
 
         //Given
-        mockQuiz.setQuizJson(new String());
+        mockQuiz.setQuizJson("");
 
         //When
         when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
@@ -295,7 +298,7 @@ class QuizServiceTest {
     }
 
     @Test
-    void getQuizByIdNullJsonTest() throws JsonProcessingException {
+    void getQuizByIdNullJsonTest() {
 
         //Given
         mockQuiz.setQuizJson(null);
@@ -318,7 +321,7 @@ class QuizServiceTest {
         when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenThrow(JsonProcessingException.class);
 
         //Then
-        assertThrows(AppException.class, ()-> quizService.getQuizById(1L));
+        assertThrows(AppException.class, () -> quizService.getQuizById(1L));
 
     }
 
@@ -359,7 +362,7 @@ class QuizServiceTest {
     }
 
     @Test
-    void scoringQuizDuplicateAnswer() throws JsonProcessingException {
+    void scoringQuizDuplicateAnswer() {
 
         //Given
         UserAnswerDto userAnswerDto = new UserAnswerDto();
@@ -368,7 +371,7 @@ class QuizServiceTest {
         UserAnswerDto userAnswerDto2 = new UserAnswerDto();
         userAnswerDto2.setAnswerId("1");
         userAnswerDto2.setQuestionId(1);
-        List<UserAnswerDto> userAnswerDtoList = Arrays.asList(userAnswerDto,userAnswerDto2);
+        List<UserAnswerDto> userAnswerDtoList = Arrays.asList(userAnswerDto, userAnswerDto2);
         CheckAnswerReq mockCheckAnswerReq = new CheckAnswerReq();
         mockCheckAnswerReq.setQuizId(1);
         mockCheckAnswerReq.setAnswers(userAnswerDtoList);
@@ -442,6 +445,15 @@ class QuizServiceTest {
         //Then
         assertNotNull(quizResultRes);
 
+    }
+
+    @Test
+    void testGetColumnLetterFail() throws NoSuchMethodException {
+        Method method = quizService.getClass()
+                .getDeclaredMethod("getColumnLetter", int.class);
+        method.setAccessible(true);
+        assertThrows(InvocationTargetException.class, () -> method.invoke(quizService, 6),
+                ErrorCode.QUIZ_READ_FAIL.getMessage());
     }
 
 }

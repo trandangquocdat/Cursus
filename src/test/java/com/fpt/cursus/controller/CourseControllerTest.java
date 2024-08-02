@@ -177,4 +177,31 @@ class CourseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray());
     }
+
+    @Test
+    void testGetAllCategory() throws Exception {
+        //given
+        List<Category> categories = List.of(Category.values());
+        //when
+        when(courseService.getAllCategory()).thenReturn(categories);
+        //then
+        mockMvc.perform(get("/category"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0]").value("ALL"));
+    }
+
+    @Test
+    void tstViewCourseById() throws Exception {
+        //given
+        GeneralCourse generalCourse = new GeneralCourse();
+        generalCourse.setId(1L);
+        //when
+        when(courseService.getGeneralCourseById(anyLong())).thenReturn(generalCourse);
+        //then
+        mockMvc.perform(get("/course/view-general-by-id")
+                        .param("id", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1));
+    }
 }

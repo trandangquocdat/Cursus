@@ -240,4 +240,34 @@ class OrderServiceTest {
         }
     }
 
+    @Test
+    void testFindAllByCourseIdInSuccess() {
+        //given
+        List<Long> ids = new ArrayList<>();
+        ids.add(1L);
+        List<OrdersDetail> ordersDetails = new ArrayList<>();
+        OrdersDetail ordersDetail = new OrdersDetail();
+        ordersDetail.setId(1L);
+        ordersDetails.add(ordersDetail);
+        //when
+        when(ordersDetailRepo.findAllByCourseIdIn(ids)).thenReturn(ordersDetails);
+        //then
+        List<OrdersDetail> result = orderService.findAllByCourseIdIn(ids);
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void testFindAllByCourseIdInFail() {
+        //given
+        List<Long> ids = new ArrayList<>();
+        ids.add(1L);
+        //when
+        when(ordersDetailRepo.findAllByCourseIdIn(ids)).thenReturn(new ArrayList<>());
+        //then
+        assertThrows(AppException.class,
+                () -> orderService.findAllByCourseIdIn(ids),
+                ErrorCode.ORDER_NOT_FOUND.getMessage());
+    }
+
 }

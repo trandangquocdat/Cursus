@@ -11,6 +11,7 @@ import com.fpt.cursus.enums.Role;
 import com.fpt.cursus.service.AccountService;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.DashboardService;
+import com.fpt.cursus.service.EnrollCourseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +41,8 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
 @ContextConfiguration(classes = {
         AccountService.class,
         CourseService.class,
-        DashboardService.class
+        DashboardService.class,
+        EnrollCourseService.class
 })
 class UserControllerTest {
 
@@ -53,6 +55,9 @@ class UserControllerTest {
     @MockBean
     private DashboardService dashboardService;
 
+    @MockBean
+    private EnrollCourseService enrollCourseService;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -61,7 +66,8 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = standaloneSetup(new UserController(accountService, courseService, dashboardService))
+        mockMvc = standaloneSetup(new UserController(accountService, courseService,
+                dashboardService, enrollCourseService))
                 .alwaysDo(print())
                 .build();
     }
@@ -322,5 +328,33 @@ class UserControllerTest {
                         .param("pageSize", "10"))
                 .andExpectAll(status().isOk(),
                         content().json(objectMapper.writeValueAsString(page)));
+    }
+
+    @Test
+    void testEnrollCourse() throws Exception {
+        // given
+        long courseId = 1L;
+        // when
+        doNothing().when(enrollCourseService).enrollCourse(anyLong()); // phương thức này không trả về giá trị gì
+        // then
+        mockMvc.perform(put("/enroll-course")
+                        .param("id", Long.toString(courseId)))
+                .andExpectAll(status().isOk(),
+                        content().string("Enroll successfully"));
+    }
+
+    @Test
+    void testViewDetailCourseById() throws Exception {
+        // given
+        long courseId = 1L;
+        Course course = new Course();
+        course.setId(courseId);
+        // when
+        when(courseService.getDetailCourseById(anyLong())).thenReturn(course);
+        // then
+        mockMvc.perform(get("/enrolled-course/view-detail-by-id")
+                        .param("id", Long.toString(courseId)))
+                .andExpectAll(status().isOk(),
+                        content().json(objectMapper.writeValueAsString(course)));
     }
 }
