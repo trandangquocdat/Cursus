@@ -366,6 +366,29 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public Page<GeneralCourse> getPurchasedCourse(int offset, int pageSize, String sortBy) {
+        pageUtil.checkOffset(offset);
+        Account account = accountUtil.getCurrentAccount();
+        List<Long> purchasedCourse;
+        try {
+            if (account.getPurchasedCourseJson() == null || account.getPurchasedCourseJson().isEmpty()) {
+                throw new AppException(ErrorCode.COURSE_ENROLL_FAIL);
+            }
+            purchasedCourse = objectMapper.readValue(account.getPurchasedCourseJson(), new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.COURSE_ENROLL_FAIL);
+        }
+
+        Pageable pageable = pageUtil.getPageable(sortBy, offset - 1, pageSize);
+        Page<Course> courses = courseRepo.findByIdInAndStatus(purchasedCourse, CourseStatus.PUBLISHED, pageable);
+        for (Course course : courses) {
+            course.setPictureLink(fileService.getSignedImageUrl(course.getPictureLink()));
+        }
+        return convertToGeneralCoursePage(courses);
+    }
+
+    @Override
     public void saveCourse(Course course) {
         courseRepo.save(course);
     }
