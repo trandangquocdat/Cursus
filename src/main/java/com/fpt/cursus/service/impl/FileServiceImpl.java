@@ -73,8 +73,6 @@ public class FileServiceImpl implements FileService {
             }
         } catch (StorageException e) {
             throw new IOException(e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 

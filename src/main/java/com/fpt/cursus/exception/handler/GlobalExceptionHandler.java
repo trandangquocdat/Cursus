@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -25,28 +26,23 @@ public class GlobalExceptionHandler {
         this.apiResUtil = apiResUtil;
     }
 
-    //    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<?> handleRuntimeException(Exception exception) {
-//        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, ErrorCode.UNCATEGORIZED_ERROR.getCode(), ErrorCode.UNCATEGORIZED_ERROR.getMessage(), null);
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
-//    }
     @ExceptionHandler(AppException.class)
-    public ResponseEntity<?> handleAppException(AppException exception) {
+    public ResponseEntity<Object> handleAppException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
         ApiRes<?> apiRes = apiResUtil.returnApiRes(false, errorCode.getCode(), errorCode.getMessage(), null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+    public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
         String exceptionMessage = exception.getMessage();
         ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), exceptionMessage, null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidation(MethodArgumentNotValidException exception) {
-        String enumKey = exception.getFieldError().getDefaultMessage();
+    public ResponseEntity<Object> handleValidation(MethodArgumentNotValidException exception) {
+        String enumKey = Objects.requireNonNull(exception.getFieldError()).getDefaultMessage();
         ErrorCode errorCode = ErrorCode.valueOf(enumKey);
         String message = errorCode.getMessage();
         ApiRes<?> apiRes = apiResUtil.returnApiRes(false, errorCode.getCode(), message, null);
@@ -54,16 +50,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = FirebaseAuthException.class)
-    public ResponseEntity<ApiRes<?>> handleFirebaseAuthException(FirebaseAuthException exception) {
+    public ResponseEntity<ApiRes<Object>> handleFirebaseAuthException(FirebaseAuthException exception) {
         String message = exception.getMessage();
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), message, null);
+        ApiRes<Object> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), message, null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(apiRes);
     }
 
     @ExceptionHandler(value = IOException.class)
-    public ResponseEntity<?> handleFirebaseAuthException(IOException exception) {
+    public ResponseEntity<Object> handleFirebaseAuthException(IOException exception) {
         String message = exception.getMessage();
         ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.BAD_REQUEST.value(), message, null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiRes);

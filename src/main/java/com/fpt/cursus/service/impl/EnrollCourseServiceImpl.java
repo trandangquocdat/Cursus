@@ -55,17 +55,8 @@ public class EnrollCourseServiceImpl implements EnrollCourseService {
     @Override
     public void enrollCourse(Long id) {
         Account account = accountUtil.getCurrentAccount();
-        List<Long> purchasedCourse;
         Course course = courseService.getCourseById(id);
-        try {
-            if (account.getPurchasedCourseJson() == null || account.getPurchasedCourseJson().isEmpty()) {
-                throw new AppException(ErrorCode.COURSE_ENROLL_FAIL);
-            }
-            purchasedCourse = objectMapper.readValue(account.getPurchasedCourseJson(), new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            throw new AppException(ErrorCode.COURSE_ENROLL_FAIL);
-        }
+        List<Long> purchasedCourse = courseService.getPurchasedCourse(account);
 
         if (!purchasedCourse.contains(id)) {
             throw new AppException(ErrorCode.COURSE_ENROLL_FAIL);

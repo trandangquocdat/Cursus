@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
@@ -101,6 +102,7 @@ public class QuizServiceImpl implements QuizService {
                     case ANSWER_START_INDEX, ANSWER_START_INDEX + 1, ANSWER_START_INDEX + 2, ANSWER_END_INDEX -> {
                         QuizAnswer answer = new QuizAnswer();
                         answer.setContent(cell.toString());
+                        answer.setIsCorrect(false);
                         answer.setQuestionId(quizQuestion.getQuestionId());
                         answer.setId(getColumnLetter(cellIndex));
                         answers.add(answer);
@@ -160,11 +162,9 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    public QuizRes getAnswerById(Long id) {
+    public List<QuizQuestion> getAnswerById(Long id) {
         Quiz quiz = quizRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.QUIZ_NOT_FOUND));
-        QuizRes quizRes = new QuizRes();
-        quizRes.setQuestions(getQuizQuestions(quiz));
-        return quizRes;
+        return getQuizQuestions(quiz);
     }
 
     public List<QuizQuestion> getQuizQuestions(Quiz quiz) {
@@ -179,8 +179,23 @@ public class QuizServiceImpl implements QuizService {
         }
     }
 
-    private CheckAnswerReq getCheckAnswerReq(CheckAnswerReq request) {
+
+    @Override
+    public QuizResultRes scoringQuiz(CheckAnswerReq request) {
+        int correctCount = 0;
+        int wrongCount = 0;
+        int skippedCount = 0;
+        double totalScore = 0;
+        // Ensure no duplicate question IDs
         List<UserAnswerDto> userAnswers = request.getAnswers();
+        if (userAnswers == null || userAnswers.isEmpty() || userAnswers.get(0).getAnswerId() == null) {
+            QuizResultRes res = new QuizResultRes();
+            res.setCorrect(correctCount);
+            res.setWrong(wrongCount);
+            res.setSkipped(10);
+            res.setScore(totalScore);
+            return res;
+        }
         Set<Integer> questionIds = new HashSet<>();
 
         for (UserAnswerDto answer : userAnswers) {
@@ -189,47 +204,44 @@ public class QuizServiceImpl implements QuizService {
             }
         }
 
-        return request;
-    }
-
-    @Override
-    public QuizResultRes scoringQuiz(CheckAnswerReq request) {
-        request = getCheckAnswerReq(request); // Ensure no duplicate question IDs
-
         Quiz quiz = quizRepo.findById(request.getQuizId())
                 .orElseThrow(() -> new AppException(ErrorCode.QUIZ_NOT_FOUND));
 
-        List<QuizQuestion> quizQuestions = getQuizQuestions(quiz);
+        List<QuizQuestion> correctAnswers = getAnswerById(quiz.getId());
+
+        // Create a map for quick lookups of user answers
+        Map<Integer, String> userAnswerMap = request.getAnswers().stream()
+                .collect(Collectors.toMap(UserAnswerDto::getQuestionId, UserAnswerDto::getAnswerId));
+
+        // Create a map for quick lookups of correct answers
+        Map<Integer, String> correctAnswerMap = correctAnswers.stream()
+                .collect(Collectors.toMap(
+                        QuizQuestion::getQuestionId,
+                        question -> question.getAnswers().stream()
+                                .filter(QuizAnswer::getIsCorrect)
+                                .findFirst()
+                                .map(QuizAnswer::getId)
+                                .orElseThrow(() -> new AppException(ErrorCode.QUIZ_READ_FAIL))// Ensure that there's always a correct answer
+                ));
+
 
         QuizResultRes result = new QuizResultRes();
-        int correctCount = 0;
-        int wrongCount = 0;
-        int skippedCount = 0;
-        double totalScore = 0;
 
-        for (QuizQuestion question : quizQuestions) {
-            boolean isAnswered = false;
-            for (UserAnswerDto userAnswer : request.getAnswers()) {
-                if (question.getQuestionId() == userAnswer.getQuestionId()) {
-                    isAnswered = true;
-                    boolean isCorrect = false;
-                    for (QuizAnswer answer : question.getAnswers()) {
-                        if (answer.getId().equals(userAnswer.getAnswerId()) && Boolean.TRUE.equals(answer.getIsCorrect())) {
-                            isCorrect = true;
-                            break;
-                        }
-                    }
-                    if (isCorrect) {
-                        correctCount++;
-                        totalScore += question.getQuestionScore();
-                    } else {
-                        wrongCount++;
-                    }
-                    break;
-                }
-            }
-            if (!isAnswered) {
+
+
+        for (QuizQuestion question : correctAnswers) {
+            String userAnswerId = userAnswerMap.get(question.getQuestionId());
+            if (userAnswerId == null) {
                 skippedCount++;
+                continue;
+            }
+
+            boolean isCorrect = userAnswerId.equals(correctAnswerMap.get(question.getQuestionId()));
+            if (isCorrect) {
+                correctCount++;
+                totalScore += question.getQuestionScore();
+            } else {
+                wrongCount++;
             }
         }
 

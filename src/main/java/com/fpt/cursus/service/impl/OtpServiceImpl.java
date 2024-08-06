@@ -82,7 +82,7 @@ public class OtpServiceImpl implements OtpService {
     }
 
     @Override
-    @Scheduled(cron = "0 0 0 * * ?") // Lập lịch chạy mỗi ngày vào nửa đêm
+    @Scheduled(cron = "0 0 0 * * ?")
     public void deleteOldOtps() {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
         otpRepo.deleteInvalidOrExpiredOtps(sevenDaysAgo);

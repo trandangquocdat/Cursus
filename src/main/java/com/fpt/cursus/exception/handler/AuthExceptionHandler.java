@@ -21,20 +21,23 @@ public class AuthExceptionHandler {
     }
 
     @ExceptionHandler(AuthException.class)
-    public ResponseEntity<?> duplicate(AuthException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.UNAUTHORIZED.value(), exception.getMessage(), null);
+    public ResponseEntity<Object> duplicate(AuthException exception) {
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.UNAUTHORIZED.value(),
+                exception.getMessage(), null);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiRes);
     }
 
     @ExceptionHandler(InternalAuthenticationServiceException.class)
-    public ResponseEntity<?> handleException(InternalAuthenticationServiceException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage(), null);
+    public ResponseEntity<Object> handleException(InternalAuthenticationServiceException exception) {
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                exception.getMessage(), null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiRes);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<?> handleException(AccessDeniedException exception) {
-        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.FORBIDDEN.value(), "Forbidden", null);
+    public ResponseEntity<Object> handleException(AccessDeniedException exception) {
+        ApiRes<?> apiRes = apiResUtil.returnApiRes(false, HttpStatus.FORBIDDEN.value(),
+                "You don't have permission to access this resource", null);
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiRes);
     }
 

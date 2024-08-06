@@ -102,7 +102,6 @@ class QuizServiceTest {
         mockExcelFile = mock(MultipartFile.class);
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet();
-        Row dataRow = sheet.createRow(0);
         Row dataRow2 = sheet.createRow(1);
         dataRow2.createCell(0).setCellValue(1);
         dataRow2.createCell(1).setCellValue("Test");
@@ -135,17 +134,17 @@ class QuizServiceTest {
         dataRow5.createCell(4).setCellValue("C");
         dataRow5.createCell(5).setCellValue("D");
         dataRow5.createCell(6).setCellValue("D");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        workbook.write(baos);
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        workbook.write(bao);
         workbook.close();
-        byte[] workBookToByteArray = baos.toByteArray();
+        byte[] workBookToByteArray = bao.toByteArray();
         when(mockExcelFile.getInputStream()).thenReturn(new ByteArrayInputStream(workBookToByteArray));
 
         //When
         when(accountUtil.getCurrentAccount()).thenReturn(new Account());
         when(courseService.getCourseById(anyLong())).thenReturn(new Course());
         when(quizRepo.save(any(Quiz.class))).thenReturn(mockQuiz);
-        Quiz createdQuiz = quizService.createQuiz(mockExcelFile, 1l, "TestName");
+        Quiz createdQuiz = quizService.createQuiz(mockExcelFile, 1L, "TestName");
 
         //Then
         assertNotNull(createdQuiz);
@@ -331,11 +330,11 @@ class QuizServiceTest {
         //When
         when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
         when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(mockQuestions);
-        QuizRes quizRes = quizService.getAnswerById(1L);
+        List<QuizQuestion> quizRes = quizService.getAnswerById(1L);
 
         //Then
         assertNotNull(quizRes);
-        assertEquals(mockQuestions, quizRes.getQuestions());
+        assertEquals(mockQuestions, quizRes);
 
     }
 

@@ -101,7 +101,6 @@ public class LessonServiceImpl implements LessonService {
             FileInputStream fileInputStream = new FileInputStream(file);
             return new MockMultipartFile(file.getName(), file.getName(), "application/octet-stream", fileInputStream);
         } catch (IOException e) {
-            e.printStackTrace();
             return null;
         }
     }

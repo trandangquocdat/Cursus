@@ -1,5 +1,6 @@
 package com.fpt.cursus.controller;
 
+import com.fpt.cursus.dto.object.QuizQuestion;
 import com.fpt.cursus.dto.request.CheckAnswerReq;
 import com.fpt.cursus.dto.response.QuizRes;
 import com.fpt.cursus.dto.response.QuizResultRes;
@@ -16,6 +17,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -76,7 +79,7 @@ class QuizControllerTest {
     void testGetAnswerById_Success() {
         setUpSecurityContext();
         Long answerId = 1L;
-        QuizRes quizRes = new QuizRes();
+        List<QuizQuestion> quizRes = List.of();
         when(quizService.getAnswerById(answerId)).thenReturn(quizRes);
 
         ResponseEntity<Object> response = quizController.getAnswerById(answerId);

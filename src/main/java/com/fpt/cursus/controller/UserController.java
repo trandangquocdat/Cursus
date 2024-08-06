@@ -141,7 +141,7 @@ public class UserController {
     @Operation(summary = "View course created by current user",
             description = "view course which created by current user, for admin and instructor")
     @GetMapping("/view-my-course")
-    @PreAuthorize("hasAuthority('ADMIN') || hasAuthority('INSTRUCTOR') ")
+    @PreAuthorize("hasAuthority('ADMIN')" + " || hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> viewMyCourse(@RequestParam(required = false) String sortBy,
                                                @RequestParam(defaultValue = "1", required = false) int offset,
                                                @RequestParam(defaultValue = "10", required = false) int pageSize) {
@@ -165,6 +165,7 @@ public class UserController {
     }
 
     @GetMapping("/instructor-dashboard")
+    @PreAuthorize("hasAuthority('INSTRUCTOR')")
     public ResponseEntity<Object> getInstructorDashboard() {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(dashboardService.getInstructorDashboardRes());

@@ -181,7 +181,7 @@ public class AccountServiceImpl implements AccountService {
             Account account = accountRepo.findAccountByEmail(email);
             return buildLoginResponse(account);
         } catch (FirebaseAuthException e) {
-            throw new RuntimeException(e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_ERROR);
         }
     }
 
@@ -475,9 +475,9 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    private void saveSubscribersUsers(Account account, List<Long> subscribedsUsers) {
+    private void saveSubscribersUsers(Account account, List<Long> subscribersUsers) {
         try {
-            account.setSubscribersJson(objectMapper.writeValueAsString(subscribedsUsers));
+            account.setSubscribersJson(objectMapper.writeValueAsString(subscribersUsers));
             this.saveAccount(account);
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.PROCESS_ADD_STUDIED_COURSE_FAIL);

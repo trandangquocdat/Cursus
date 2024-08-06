@@ -69,4 +69,7 @@ public interface CourseService {
     Course getDetailCourseById(Long id);
 
     Page<GeneralCourse> getPurchasedCourse(int offset, int pageSize, String sortBy);
+
+    List<Long> getPurchasedCourse(Account account);
+
 }
