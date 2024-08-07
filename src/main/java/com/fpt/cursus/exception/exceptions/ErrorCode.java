@@ -99,7 +99,11 @@ public enum ErrorCode {
     COURSE_ENROLL_EXISTS(781, "Course already enrolled"),
     COURSE_NOT_ENROLLED(782, "Course not enrolled"),
     //
+    //
+    ALREADY_SUBSCRIBED(790, "Already subscribed"),
+    NOT_SUBSCRIBE(791, "Not subscribed"),
     INVALID_OFFSET(800, "Invalid Page"),
+
     ;
 
     private final int code;

@@ -10,9 +10,11 @@ import com.fpt.cursus.dto.request.CheckAnswerReq;
 import com.fpt.cursus.dto.response.QuizRes;
 import com.fpt.cursus.dto.response.QuizResultRes;
 import com.fpt.cursus.entity.Quiz;
+import com.fpt.cursus.entity.QuizResult;
 import com.fpt.cursus.exception.exceptions.AppException;
 import com.fpt.cursus.exception.exceptions.ErrorCode;
 import com.fpt.cursus.repository.QuizRepo;
+import com.fpt.cursus.repository.QuizResultRepo;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.QuizService;
 import com.fpt.cursus.util.AccountUtil;
@@ -39,6 +41,7 @@ public class QuizServiceImpl implements QuizService {
     private static final int CORRECT_ANSWER_INDEX = 6;
 
     private final QuizRepo quizRepo;
+    private final QuizResultRepo quizResultRepo;
     private final ObjectMapper objectMapper;
     private final AccountUtil accountUtil;
     private final CourseService courseService;
@@ -47,11 +50,13 @@ public class QuizServiceImpl implements QuizService {
     public QuizServiceImpl(QuizRepo quizRepo,
                            ObjectMapper objectMapper,
                            AccountUtil accountUtil,
-                           CourseService courseService) {
+                           CourseService courseService,
+                           QuizResultRepo quizResultRepo) {
         this.quizRepo = quizRepo;
         this.objectMapper = objectMapper;
         this.accountUtil = accountUtil;
         this.courseService = courseService;
+        this.quizResultRepo = quizResultRepo;
     }
 
     private static void removeIsCorrectField(List<QuizQuestion> questions) {
@@ -186,7 +191,7 @@ public class QuizServiceImpl implements QuizService {
         int wrongCount = 0;
         int skippedCount = 0;
         double totalScore = 0;
-        // Ensure no duplicate question IDs
+
         List<UserAnswerDto> userAnswers = request.getAnswers();
         if (userAnswers == null || userAnswers.isEmpty() || userAnswers.get(0).getAnswerId() == null) {
             QuizResultRes res = new QuizResultRes();
@@ -196,8 +201,8 @@ public class QuizServiceImpl implements QuizService {
             res.setScore(totalScore);
             return res;
         }
+        // Ensure no duplicate question IDs
         Set<Integer> questionIds = new HashSet<>();
-
         for (UserAnswerDto answer : userAnswers) {
             if (!questionIds.add(answer.getQuestionId())) {
                 throw new AppException(ErrorCode.DUPLICATE_QUESTION_ID);
@@ -249,6 +254,18 @@ public class QuizServiceImpl implements QuizService {
         result.setWrong(wrongCount);
         result.setSkipped(skippedCount);
         result.setScore(totalScore);
+        //Save Quiz Result
+        QuizResult quizResult = new QuizResult();
+        quizResult.setQuizId(quiz.getId());
+        try {
+            quizResult.setAnswerJson(objectMapper.writeValueAsString(userAnswers));
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.QUIZ_READ_FAIL);
+        }
+        quizResult.setCreatedDate(new Date());
+        quizResult.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
+        quizResult.setScore(totalScore);
+        quizResultRepo.save(quizResult);
 
         return result;
     }

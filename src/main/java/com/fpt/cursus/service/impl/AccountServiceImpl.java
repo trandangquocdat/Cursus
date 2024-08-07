@@ -240,6 +240,8 @@ public class AccountServiceImpl implements AccountService {
             listSubscribing.add(id);
             saveSubscribingUsers(currentAccount, listSubscribing);
             accountRepo.save(currentAccount);
+        } else{
+            throw new AppException(ErrorCode.ALREADY_SUBSCRIBED);
         }
     }
 
@@ -249,6 +251,9 @@ public class AccountServiceImpl implements AccountService {
         Account currentAccount = accountUtil.getCurrentAccount();
 
         List<Long> listSubscriber = getSubscribersUsers(account);
+        if (!listSubscriber.contains(currentAccount.getId())) {
+            throw new AppException(ErrorCode.NOT_SUBSCRIBE);
+        }
         listSubscriber.remove(currentAccount.getId());
         saveSubscribersUsers(account, listSubscriber);
         accountRepo.save(account);
@@ -438,7 +443,9 @@ public class AccountServiceImpl implements AccountService {
         // Get the current account
         Account account = accountUtil.getCurrentAccount();
         List<Long> subscribers = getSubscribersUsers(account);
-
+        if (subscribers.isEmpty()) {
+            return new PageImpl<>(new ArrayList<>(), pageable, 0);
+        }
         // Fetch paginated subscribers
 
         Page<Account> accountsPage = accountRepo.findByIdIn(subscribers, pageable);
@@ -456,7 +463,9 @@ public class AccountServiceImpl implements AccountService {
         // Get the current account
         Account account = accountUtil.getCurrentAccount();
         List<Long> subscribing = getSubscribingUsers(account);
-
+        if (subscribing.isEmpty()) {
+            return new PageImpl<>(new ArrayList<>(), pageable, 0);
+        }
         // Fetch paginated subscribers
         Page<Account> accountsPage = accountRepo.findByIdIn(subscribing, pageable);
         List<Account> accountsWithAvatars = setAvatar(accountsPage.getContent());
