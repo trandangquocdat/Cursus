@@ -9,6 +9,8 @@ import com.fpt.cursus.dto.object.UserAnswerDto;
 import com.fpt.cursus.dto.request.CheckAnswerReq;
 import com.fpt.cursus.dto.response.QuizRes;
 import com.fpt.cursus.dto.response.QuizResultRes;
+import com.fpt.cursus.entity.Account;
+import com.fpt.cursus.entity.Course;
 import com.fpt.cursus.entity.Quiz;
 import com.fpt.cursus.entity.QuizResult;
 import com.fpt.cursus.exception.exceptions.AppException;
@@ -18,6 +20,7 @@ import com.fpt.cursus.repository.QuizResultRepo;
 import com.fpt.cursus.service.CourseService;
 import com.fpt.cursus.service.QuizService;
 import com.fpt.cursus.util.AccountUtil;
+import com.fpt.cursus.util.FileUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -45,18 +48,20 @@ public class QuizServiceImpl implements QuizService {
     private final ObjectMapper objectMapper;
     private final AccountUtil accountUtil;
     private final CourseService courseService;
-
+    private final FileUtil fileUtil;
     @Autowired
     public QuizServiceImpl(QuizRepo quizRepo,
                            ObjectMapper objectMapper,
                            AccountUtil accountUtil,
                            CourseService courseService,
-                           QuizResultRepo quizResultRepo) {
+                           QuizResultRepo quizResultRepo,
+                           FileUtil fileUtil) {
         this.quizRepo = quizRepo;
         this.objectMapper = objectMapper;
         this.accountUtil = accountUtil;
         this.courseService = courseService;
         this.quizResultRepo = quizResultRepo;
+        this.fileUtil = fileUtil;
     }
 
     private static void removeIsCorrectField(List<QuizQuestion> questions) {
@@ -76,6 +81,9 @@ public class QuizServiceImpl implements QuizService {
         quiz.setCreatedDate(new Date());
         quiz.setCreatedBy(accountUtil.getCurrentAccount().getUsername());
         quiz.setCourse(courseService.getCourseById(courseId));
+        if(!fileUtil.isExcel(excelFile)) {
+            throw new AppException(ErrorCode.FILE_INVALID_EXCEL);
+        }
         try (Workbook workbook = new XSSFWorkbook(excelFile.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0); // Assuming the data is in the first sheet
             Iterator<Row> rowIterator = sheet.iterator();
@@ -156,14 +164,23 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    public QuizRes getQuizById(Long id) {
-        Quiz quiz = quizRepo.findById(id).orElseThrow(() -> new AppException(ErrorCode.QUIZ_NOT_FOUND));
-        QuizRes quizRes = new QuizRes();
-        quizRes.setQuiz(quiz);
-        List<QuizQuestion> questions = getQuizQuestions(quiz);
-        removeIsCorrectField(questions);
-        quizRes.setQuestions(questions);
-        return quizRes;
+    public QuizRes getQuizByCourseId(Long id) {
+        Course course = courseService.getCourseById(id);
+        if(courseService.percentDoneCourse(id) < 100){
+            throw new AppException(ErrorCode.COURSE_NOT_ENOUGH_QUIZ);
+        }
+        Long quizId = course.getQuiz().getId();
+        Quiz quiz = quizRepo.findById(quizId).orElseThrow(() -> new AppException(ErrorCode.QUIZ_NOT_FOUND));
+        if(checkTimesDoQuiz(quiz)){
+            QuizRes quizRes = new QuizRes();
+            quizRes.setQuiz(quiz);
+            List<QuizQuestion> questions = getQuizQuestions(quiz);
+            removeIsCorrectField(questions);
+            quizRes.setQuestions(questions);
+            return quizRes;
+        }else{
+            throw new AppException(ErrorCode.QUIZ_TIMES_EXCEED);
+        }
     }
 
     @Override
@@ -270,5 +287,10 @@ public class QuizServiceImpl implements QuizService {
         return result;
     }
 
+    private boolean checkTimesDoQuiz(Quiz quiz) {
+        Account account = accountUtil.getCurrentAccount();
+        List<QuizResult> quizResults = quizResultRepo.findAllByCreatedByAndQuizId(account.getUsername(), quiz.getId());
+        return quizResults.size() < 3;
+    }
 
 }
