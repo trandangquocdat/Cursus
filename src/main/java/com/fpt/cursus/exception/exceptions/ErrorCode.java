@@ -83,6 +83,7 @@ public enum ErrorCode {
     FILE_INVALID_IMAGE(744, "Invalid image type"),
     FILE_INVALID_PDF(745, "File must be PDF"),
     FILE_INVALID_VIDEO(746, "File must be video"),
+    FILE_INVALID_EXCEL(747, "File must be excel"),
 
     //
     PROCESS_CALCULATE_PERCENT_FAIL(750, "Calculate percent fail"),
@@ -94,6 +95,8 @@ public enum ErrorCode {
     QUIZ_NOT_FOUND(770, "Quiz not found"),
     QUIZ_READ_FAIL(771, "Quiz read fail"),
     DUPLICATE_QUESTION_ID(772, "Cannot have duplicate question id"),
+    COURSE_NOT_ENOUGH_QUIZ(773, "Please study all Lesson before do quiz"),
+    QUIZ_TIMES_EXCEED(774, "Quiz times exceed"),
     //
     COURSE_ENROLL_FAIL(780, "Course enroll fail"),
     COURSE_ENROLL_EXISTS(781, "Course already enrolled"),

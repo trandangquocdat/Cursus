@@ -48,7 +48,7 @@ public class OtpServiceImpl implements OtpService {
         if (otp == null) {
             throw new AppException(ErrorCode.OTP_NOT_FOUND);
         }
-        return otpRepo.findOtpByEmailAndValid(email, valid);
+        return otp;
     }
 
     @Override

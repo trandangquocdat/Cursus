@@ -12,7 +12,7 @@ import java.util.List;
 public interface QuizService {
     Quiz createQuiz(MultipartFile excelFile, Long courseId, String name);
 
-    QuizRes getQuizById(Long id);
+    QuizRes getQuizByCourseId(Long id);
 
     QuizResultRes scoringQuiz(CheckAnswerReq request);
 

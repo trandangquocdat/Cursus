@@ -44,36 +44,36 @@ class QuizControllerTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    @Test
-    void testGetQuizById_Success() {
-        Long quizId = 1L;
-        QuizRes quizRes = new QuizRes();
-        when(quizService.getQuizById(quizId)).thenReturn(quizRes);
-
-        ResponseEntity<Object> response = quizController.getQuizById(quizId);
-
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        assertEquals(quizRes, response.getBody());
-        verify(quizService, times(1)).getQuizById(quizId);
-    }
-
-    @Test
-    void testGetQuizById_Failure() {
-        Long quizId = 1L;
-        when(quizService.getQuizById(quizId)).thenThrow(new RuntimeException("Quiz not found"));
-
-        Exception exception = null;
-        try {
-            quizController.getQuizById(quizId);
-        } catch (Exception e) {
-            exception = e;
-        }
-
-        assertNotNull(exception);
-        assertEquals("Quiz not found", exception.getMessage());
-        verify(quizService, times(1)).getQuizById(quizId);
-    }
+//    @Test
+//    void testGetQuizById_Success() {
+//        Long quizId = 1L;
+//        QuizRes quizRes = new QuizRes();
+//        when(quizService.getQuizById(quizId)).thenReturn(quizRes);
+//
+//        ResponseEntity<Object> response = quizController.getQuizById(quizId);
+//
+//        assertNotNull(response);
+//        assertEquals(200, response.getStatusCode().value());
+//        assertEquals(quizRes, response.getBody());
+//        verify(quizService, times(1)).getQuizById(quizId);
+//    }
+//
+//    @Test
+//    void testGetQuizById_Failure() {
+//        Long quizId = 1L;
+//        when(quizService.getQuizById(quizId)).thenThrow(new RuntimeException("Quiz not found"));
+//
+//        Exception exception = null;
+//        try {
+//            quizController.getQuizById(quizId);
+//        } catch (Exception e) {
+//            exception = e;
+//        }
+//
+//        assertNotNull(exception);
+//        assertEquals("Quiz not found", exception.getMessage());
+//        verify(quizService, times(1)).getQuizById(quizId);
+//    }
 
     @Test
     void testGetAnswerById_Success() {

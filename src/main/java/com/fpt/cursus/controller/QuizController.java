@@ -23,7 +23,7 @@ public class QuizController {
 
     @GetMapping("/quiz")
     public ResponseEntity<Object> getQuizById(@RequestParam("id") Long id) {
-        return ResponseEntity.ok(quizService.getQuizById(id));
+        return ResponseEntity.ok(quizService.getQuizByCourseId(id));
     }
 
     @GetMapping("/quiz/answer")

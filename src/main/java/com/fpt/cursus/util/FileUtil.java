@@ -62,4 +62,24 @@ public class FileUtil {
             return false;
         }
     }
+
+    public boolean isExcel(MultipartFile file) {
+        Tika tika = new Tika();
+        try {
+            // Xác định loại file dựa trên nội dung của file
+            String contentType = tika.detect(file.getInputStream());
+
+            // Kiểm tra contentType có phải là Excel hay không
+            if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
+                    contentType.equals("application/vnd.ms-excel")) {
+                return true;
+            }
+
+            // Nếu không xác định được bằng contentType, kiểm tra bằng tên file
+            String fileName = file.getOriginalFilename();
+            return fileName != null && (fileName.endsWith(".xlsx") || fileName.endsWith(".xls"));
+        } catch (IOException e) {
+            return false;
+        }
+    }
 }

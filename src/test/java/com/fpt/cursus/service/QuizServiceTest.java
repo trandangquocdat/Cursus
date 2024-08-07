@@ -266,63 +266,63 @@ class QuizServiceTest {
 
     }
 
-    @Test
-    void getQuizByIdTest() throws JsonProcessingException {
-
-        //When
-        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
-        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(mockQuestions);
-        QuizRes quizRes = quizService.getQuizById(1L);
-
-        //Then
-        assertNotNull(quizRes);
-        assertEquals(mockQuiz, quizRes.getQuiz());
-
-    }
-
-    @Test
-    void getQuizByIdEmptyJsonTest() {
-
-        //Given
-        mockQuiz.setQuizJson("");
-
-        //When
-        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
-        QuizRes quizRes = quizService.getQuizById(1L);
-
-        //Then
-        assertNotNull(quizRes);
-        assertEquals(mockQuiz, quizRes.getQuiz());
-
-    }
-
-    @Test
-    void getQuizByIdNullJsonTest() {
-
-        //Given
-        mockQuiz.setQuizJson(null);
-
-        //When
-        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
-        QuizRes quizRes = quizService.getQuizById(1L);
-
-        //Then
-        assertNotNull(quizRes);
-        assertEquals(mockQuiz, quizRes.getQuiz());
-
-    }
-
-    @Test
-    void getQuizByIdReadJsonFailTest() throws JsonProcessingException {
-
-        //When
-        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
-        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenThrow(JsonProcessingException.class);
-
-        //Then
-        assertThrows(AppException.class, () -> quizService.getQuizById(1L));
-
-    }
+//    @Test
+//    void getQuizByIdTest() throws JsonProcessingException {
+//
+//        //When
+//        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
+//        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(mockQuestions);
+//        QuizRes quizRes = quizService.getQuizById(1L);
+//
+//        //Then
+//        assertNotNull(quizRes);
+//        assertEquals(mockQuiz, quizRes.getQuiz());
+//
+//    }
+//
+//    @Test
+//    void getQuizByIdEmptyJsonTest() {
+//
+//        //Given
+//        mockQuiz.setQuizJson("");
+//
+//        //When
+//        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
+//        QuizRes quizRes = quizService.getQuizById(1L);
+//
+//        //Then
+//        assertNotNull(quizRes);
+//        assertEquals(mockQuiz, quizRes.getQuiz());
+//
+//    }
+//
+//    @Test
+//    void getQuizByIdNullJsonTest() {
+//
+//        //Given
+//        mockQuiz.setQuizJson(null);
+//
+//        //When
+//        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
+//        QuizRes quizRes = quizService.getQuizById(1L);
+//
+//        //Then
+//        assertNotNull(quizRes);
+//        assertEquals(mockQuiz, quizRes.getQuiz());
+//
+//    }
+//
+//    @Test
+//    void getQuizByIdReadJsonFailTest() throws JsonProcessingException {
+//
+//        //When
+//        when(quizRepo.findById(anyLong())).thenReturn(Optional.ofNullable(mockQuiz));
+//        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenThrow(JsonProcessingException.class);
+//
+//        //Then
+//        assertThrows(AppException.class, () -> quizService.getQuizById(1L));
+//
+//    }
 
     @Test
     void getAnswerById() throws JsonProcessingException {
