@@ -286,7 +286,6 @@ public class QuizServiceImpl implements QuizService {
 
         return result;
     }
-
     private boolean checkTimesDoQuiz(Quiz quiz) {
         Account account = accountUtil.getCurrentAccount();
         List<QuizResult> quizResults = quizResultRepo.findAllByCreatedByAndQuizId(account.getUsername(), quiz.getId());
